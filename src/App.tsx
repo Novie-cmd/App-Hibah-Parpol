@@ -51,6 +51,17 @@ import {
   StatusLPJ
 } from './types';
 
+import { 
+  INITIAL_PARTAI, 
+  generateInitialDokumen, 
+  INITIAL_HIBAH, 
+  INITIAL_LPJ, 
+  INITIAL_AUDIT, 
+  INITIAL_PENGGUNA, 
+  INITIAL_NOTIFIKASI, 
+  INITIAL_PENGATURAN 
+} from './data';
+
 // Modular Components
 import SpreadsheetView from './components/SpreadsheetView';
 import LaporanView from './components/LaporanView';
@@ -102,6 +113,8 @@ export default function App() {
     fetchData();
   }, []);
 
+  const [isOffline, setIsOffline] = useState(false);
+
   const fetchData = async () => {
     setIsLoading(true);
     try {
@@ -116,18 +129,80 @@ export default function App() {
         setPengguna(data.pengguna || []);
         setNotifikasi(data.notifikasi || []);
         setPengaturan(data.pengaturan || null);
+        setIsOffline(false);
+        
+        // Save copy to local storage
+        localStorage.setItem('kesbangpol_db', JSON.stringify(data));
         
         // Default session as Super Admin
         if (data.pengguna && data.pengguna.length > 0) {
           setCurrentUser(data.pengguna.find((u: any) => u.username === 'admin_kesbang') || data.pengguna[0]);
         }
+      } else {
+        throw new Error("Server returned non-ok status: " + res.status);
       }
     } catch (err) {
-      console.error('Failed to sync with API. Running offline mode.', err);
+      console.warn('Failed to sync with API. Running offline/static mode with localStorage fallback.', err);
+      setIsOffline(true);
+      
+      // Load from localStorage or seed
+      let localDb: any = null;
+      try {
+        const raw = localStorage.getItem('kesbangpol_db');
+        if (raw) {
+          localDb = JSON.parse(raw);
+        }
+      } catch (e) {
+        console.error("Failed to parse localStorage database", e);
+      }
+      
+      if (!localDb || !localDb.partai || !localDb.pengaturan) {
+        localDb = {
+          partai: INITIAL_PARTAI,
+          dokumen: generateInitialDokumen(INITIAL_PARTAI),
+          hibah: INITIAL_HIBAH,
+          lpj: INITIAL_LPJ,
+          audit: INITIAL_AUDIT,
+          pengguna: INITIAL_PENGGUNA,
+          notifikasi: INITIAL_NOTIFIKASI,
+          pengaturan: INITIAL_PENGATURAN
+        };
+        localStorage.setItem('kesbangpol_db', JSON.stringify(localDb));
+      }
+      
+      setPartai(localDb.partai || []);
+      setDokumen(localDb.dokumen || []);
+      setHibah(localDb.hibah || []);
+      setLpj(localDb.lpj || []);
+      setAudit(localDb.audit || []);
+      setPengguna(localDb.pengguna || []);
+      setNotifikasi(localDb.notifikasi || []);
+      setPengaturan(localDb.pengaturan || null);
+      
+      if (localDb.pengguna && localDb.pengguna.length > 0) {
+        setCurrentUser(localDb.pengguna.find((u: any) => u.username === 'admin_kesbang') || localDb.pengguna[0]);
+      }
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Automatically persist offline changes to localStorage
+  useEffect(() => {
+    if (!isLoading && pengaturan) {
+      const db = {
+        partai,
+        dokumen,
+        hibah,
+        lpj,
+        audit,
+        pengguna,
+        notifikasi,
+        pengaturan
+      };
+      localStorage.setItem('kesbangpol_db', JSON.stringify(db));
+    }
+  }, [partai, dokumen, hibah, lpj, audit, pengguna, notifikasi, pengaturan, isLoading]);
 
   // Log Dynamic audit activities to server
   const logAktivitas = async (aktivitas: string, objek: string, detail: string) => {
@@ -179,9 +254,23 @@ export default function App() {
         logAktivitas(selectedPartai ? 'Edit' : 'Tambah Data', `Partai ${p.singkatan}`, `Profil partai dan kursi DPRD berhasil dimutakhirkan.`);
         setPartaiFormOpen(false);
         setSelectedPartai(null);
+      } else {
+        throw new Error("Server returned non-ok status");
       }
     } catch (err) {
-      alert("Error saving data: " + err);
+      // Offline fallback
+      setPartai(prev => {
+        const idx = prev.findIndex(item => item.id === p.id);
+        if (idx > -1) {
+          const updated = [...prev];
+          updated[idx] = p;
+          return updated;
+        }
+        return [...prev, p];
+      });
+      logAktivitas(selectedPartai ? 'Edit' : 'Tambah Data', `Partai ${p.singkatan}`, `Profil partai dan kursi DPRD berhasil dimutakhirkan (Offline).`);
+      setPartaiFormOpen(false);
+      setSelectedPartai(null);
     }
   };
 
@@ -195,9 +284,16 @@ export default function App() {
         setHibah(prev => prev.filter(h => h.partaiId !== id));
         setLpj(prev => prev.filter(l => l.partaiId !== id));
         logAktivitas('Hapus', `Partai ${singkatan}`, `Menghapus entitas partai politik dan berkas penunjang.`);
+      } else {
+        throw new Error("Server returned non-ok status");
       }
     } catch (e) {
-      alert("gagal menghapus partai: " + e);
+      // Offline fallback
+      setPartai(prev => prev.filter(p => p.id !== id));
+      setDokumen(prev => prev.filter(d => d.partaiId !== id));
+      setHibah(prev => prev.filter(h => h.partaiId !== id));
+      setLpj(prev => prev.filter(l => l.partaiId !== id));
+      logAktivitas('Hapus', `Partai ${singkatan}`, `Menghapus entitas partai politik dan berkas penunjang (Offline).`);
     }
   };
 
@@ -258,9 +354,32 @@ export default function App() {
 
         setUploadDocOpen(null);
         alert(`Dokumen "${uploadDocOpen}" berhasil diunggah.`);
+      } else {
+        throw new Error("Server returned non-ok status");
       }
     } catch (err) {
-      alert("Error: " + err);
+      // Offline fallback
+      setDokumen(prev => [...prev, newDoc]);
+      
+      // Add default log
+      logAktivitas('Upload Dokumen', uploadDocOpen, `Mengunggah berkas persyaratan baru (Offline).`);
+      
+      // Add Notification
+      setNotifikasi(prev => [
+        {
+          id: `n_up_${Date.now()}`,
+          partaiId: targetPartaiId,
+          partaiNama: partaiObj?.singkatan,
+          tipe: 'pengingat',
+          pesan: `Berkas "${uploadDocOpen}" berhasil diunggah. Menunggu pemeriksaan verifikator Kesbangpol.`,
+          tanggal: new Date().toISOString(),
+          dibaca: false
+        },
+        ...prev
+      ]);
+
+      setUploadDocOpen(null);
+      alert(`Dokumen "${uploadDocOpen}" berhasil diunggah (Offline).`);
     }
   };
 
@@ -288,9 +407,54 @@ export default function App() {
         
         setVerificationModalOpen(null);
         alert("Dokumen berhasil divalidasi!");
+      } else {
+        throw new Error("Server returned non-ok status");
       }
     } catch (e) {
-      alert("Gagal menyimpan verifikasi: " + e);
+      // Offline fallback
+      setDokumen(prev => prev.map(d => {
+        if (d.id === verificationModalOpen.id) {
+          return {
+            ...d,
+            statusVerifikasi: verifStatus,
+            catatanVerifikator: verifNotes,
+            updatedAt: new Date().toISOString(),
+            uploadedBy: `${currentUser.namaLengkap} (Verifikator)`
+          };
+        }
+        return d;
+      }));
+
+      // Add log manually
+      setAudit(prev => [{
+        id: `a_${Date.now()}`,
+        userId: currentUser.id,
+        username: currentUser.username,
+        role: currentUser.role,
+        aktivitas: 'Verifikasi',
+        objek: verificationModalOpen.tipeDokumen,
+        detail: `Verifikasi dokumen partai (ID: ${verificationModalOpen.partaiId}) menjadi ${verifStatus}. Catatan: ${verifNotes} (Offline)`,
+        timestamp: new Date().toISOString(),
+        ipAddress: '127.0.0.1'
+      }, ...prev]);
+
+      // Add Notification
+      const partaiObj = partai.find(p => p.id === verificationModalOpen.partaiId);
+      setNotifikasi(prev => [
+        {
+          id: `n_${Date.now()}`,
+          partaiId: verificationModalOpen.partaiId,
+          partaiNama: partaiObj ? partaiObj.singkatan : 'Parpol',
+          tipe: verifStatus === 'Lengkap' ? 'diterima' : 'ditolak',
+          pesan: `Dokumen "${verificationModalOpen.tipeDokumen}" partai ${partaiObj ? partaiObj.singkatan : ''} dinyatakan ${verifStatus}. ${verifNotes ? 'Catatan: ' + verifNotes : ''}`,
+          tanggal: new Date().toISOString(),
+          dibaca: false
+        },
+        ...prev
+      ]);
+
+      setVerificationModalOpen(null);
+      alert("Dokumen berhasil divalidasi (Offline)!");
     }
   };
 
@@ -318,9 +482,41 @@ export default function App() {
         logAktivitas('Edit', `Hibah Parpol ID: ${hibahFormOpen.partaiId}`, `Pembaruan data tahapan penyaluran hibah.`);
         setHibahFormOpen(null);
         alert("Data penyaluran hibah berhasil diperbarui!");
+      } else {
+        throw new Error("Server returned non-ok status");
       }
     } catch (e) {
-      alert("Gagal memperbarui dana hibah: " + e);
+      // Offline fallback
+      setHibah(prev => {
+        const idx = prev.findIndex(h => h.id === hibahFormOpen.id);
+        if (idx > -1) {
+          const copy = [...prev];
+          copy[idx] = hibahFormOpen;
+          return copy;
+        }
+        return [...prev, hibahFormOpen];
+      });
+
+      // Add notification for cair
+      if (hibahFormOpen.statusPenyaluran === 'Cair') {
+        const partaiObj = partai.find(p => p.id === hibahFormOpen.partaiId);
+        setNotifikasi(prev => [
+          {
+            id: `n_cair_${Date.now()}`,
+            partaiId: hibahFormOpen.partaiId,
+            partaiNama: partaiObj ? partaiObj.singkatan : 'Parpol',
+            tipe: 'cair',
+            pesan: `Dana Hibah TA ${hibahFormOpen.tahunAnggaran} Partai ${partaiObj ? partaiObj.singkatan : ''} sebesar Rp ${hibahFormOpen.nilaiBantuan.toLocaleString('id-ID')} telah dicairkan (SP2D: ${hibahFormOpen.nomorSp2d}).`,
+            tanggal: new Date().toISOString(),
+            dibaca: false
+          },
+          ...prev
+        ]);
+      }
+
+      logAktivitas('Edit', `Hibah Parpol ID: ${hibahFormOpen.partaiId}`, `Pembaruan data tahapan penyaluran hibah (Offline).`);
+      setHibahFormOpen(null);
+      alert("Data penyaluran hibah berhasil diperbarui (Offline)!");
     }
   };
 
@@ -340,9 +536,15 @@ export default function App() {
         logAktivitas('Verifikasi', `LPJ ID: ${lpjReviewOpen.id}`, `Validasi laporan evaluasi LPJ menjadi [${lpjReviewOpen.statusDiterima}].`);
         setLpjReviewOpen(null);
         alert("Status evaluasi LPJ berhasil diperbarui!");
+      } else {
+        throw new Error("Server returned non-ok status");
       }
     } catch (err) {
-      alert("Gagal menyimpan LPJ: " + err);
+      // Offline fallback
+      setLpj(prev => prev.map(l => l.id === lpjReviewOpen.id ? lpjReviewOpen : l));
+      logAktivitas('Verifikasi', `LPJ ID: ${lpjReviewOpen.id}`, `Validasi laporan evaluasi LPJ menjadi [${lpjReviewOpen.statusDiterima}] (Offline).`);
+      setLpjReviewOpen(null);
+      alert("Status evaluasi LPJ berhasil diperbarui (Offline)!");
     }
   };
 
@@ -354,9 +556,31 @@ export default function App() {
       if (res.ok) {
         fetchData();
         alert("Database Kesbangpol berhasil dikembalikan ke keadaan semula.");
+      } else {
+        throw new Error("Server returned non-ok status");
       }
     } catch (e) {
-      alert("Error: " + e);
+      // Offline fallback
+      const defaultDb = {
+        partai: INITIAL_PARTAI,
+        dokumen: generateInitialDokumen(INITIAL_PARTAI),
+        hibah: INITIAL_HIBAH,
+        lpj: INITIAL_LPJ,
+        audit: INITIAL_AUDIT,
+        pengguna: INITIAL_PENGGUNA,
+        notifikasi: INITIAL_NOTIFIKASI,
+        pengaturan: INITIAL_PENGATURAN
+      };
+      localStorage.setItem('kesbangpol_db', JSON.stringify(defaultDb));
+      setPartai(defaultDb.partai);
+      setDokumen(defaultDb.dokumen);
+      setHibah(defaultDb.hibah);
+      setLpj(defaultDb.lpj);
+      setAudit(defaultDb.audit);
+      setPengguna(defaultDb.pengguna);
+      setNotifikasi(defaultDb.notifikasi);
+      setPengaturan(defaultDb.pengaturan);
+      alert("Database Kesbangpol berhasil dikembalikan ke keadaan semula (Offline).");
     }
   };
 
