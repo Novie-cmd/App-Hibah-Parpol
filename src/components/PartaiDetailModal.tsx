@@ -308,9 +308,9 @@ export default function PartaiDetailModal({
                           {isOperatorPartai && (
                             <button
                               onClick={() => onTriggerUpload(tipe)}
-                              className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[9px] font-bold shadow-2xs transition"
+                              className="px-2 py-1 bg-emerald-650 hover:bg-emerald-700 text-white rounded text-[9px] font-bold shadow-2xs transition flex items-center gap-1 shrink-0"
                             >
-                              Upload
+                              📥 Import
                             </button>
                           )}
                         </>

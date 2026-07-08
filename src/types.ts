@@ -66,6 +66,7 @@ export interface DokumenHibah {
   version: number;
   updatedAt: string;
   uploadedBy: string;
+  fileData?: string; // Base64 data of imported/uploaded file
   history?: DokumenRevision[];
 }
 

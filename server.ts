@@ -278,6 +278,36 @@ async function startServer() {
     }
   });
 
+  // Pengguna CRUD
+  app.post('/api/pengguna', (req, res) => {
+    try {
+      const db = getDatabase();
+      const u = req.body;
+      const idx = db.pengguna.findIndex((item: any) => item.id === u.id);
+      if (idx > -1) {
+        db.pengguna[idx] = u;
+      } else {
+        db.pengguna.push(u);
+      }
+      saveDatabase(db);
+      res.json({ success: true, data: u });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.delete('/api/pengguna/:id', (req, res) => {
+    try {
+      const db = getDatabase();
+      const { id } = req.params;
+      db.pengguna = db.pengguna.filter((item: any) => item.id !== id);
+      saveDatabase(db);
+      res.json({ success: true });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
   // Spreadsheet Database Management (Backup, Restore, Raw Edit)
   app.post('/api/database/restore', (req, res) => {
     try {

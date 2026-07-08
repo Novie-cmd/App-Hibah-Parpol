@@ -32,6 +32,7 @@ export default function DocumentViewerModal({
   onDownloadSimulated
 }: DocumentViewerModalProps) {
   const [activeTab, setActiveTab] = useState<'preview' | 'revisions'>('preview');
+  const [viewType, setViewType] = useState<'system' | 'imported'>(document.fileData ? 'imported' : 'system');
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
@@ -56,25 +57,53 @@ export default function DocumentViewerModal({
         </div>
 
         {/* Tab Controls */}
-        <div className="flex border-b border-slate-100 bg-slate-50/50">
-          <button
-            onClick={() => setActiveTab('preview')}
-            className={`px-5 py-3 text-xs font-bold border-r border-slate-100 flex items-center gap-1.5 transition ${
-              activeTab === 'preview' ? 'bg-white text-emerald-700 border-b-2 border-b-emerald-600' : 'text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            <ShieldCheck className="h-4 w-4" />
-            Arsip Lembaran Negara
-          </button>
-          <button
-            onClick={() => setActiveTab('revisions')}
-            className={`px-5 py-3 text-xs font-bold border-r border-slate-100 flex items-center gap-1.5 transition ${
-              activeTab === 'revisions' ? 'bg-white text-emerald-700 border-b-2 border-b-emerald-600' : 'text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            <History className="h-4 w-4" />
-            Riwayat Revisi ({document.history?.length || 1})
-          </button>
+        <div className="flex border-b border-slate-100 bg-slate-50/50 justify-between items-center pr-4">
+          <div className="flex">
+            <button
+              onClick={() => setActiveTab('preview')}
+              className={`px-5 py-3 text-xs font-bold border-r border-slate-100 flex items-center gap-1.5 transition ${
+                activeTab === 'preview' ? 'bg-white text-emerald-700 border-b-2 border-b-emerald-600' : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              <ShieldCheck className="h-4 w-4" />
+              Arsip Lembaran Negara
+            </button>
+            <button
+              onClick={() => setActiveTab('revisions')}
+              className={`px-5 py-3 text-xs font-bold border-r border-slate-100 flex items-center gap-1.5 transition ${
+                activeTab === 'revisions' ? 'bg-white text-emerald-700 border-b-2 border-b-emerald-600' : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              <History className="h-4 w-4" />
+              Riwayat Revisi ({document.history?.length || 1})
+            </button>
+          </div>
+
+          {/* Toggle View Type if fileData is available */}
+          {document.fileData && activeTab === 'preview' && (
+            <div className="flex bg-slate-100 p-1 rounded-lg gap-1 border border-slate-200">
+              <button
+                onClick={() => setViewType('imported')}
+                className={`px-3 py-1 rounded text-[10px] font-extrabold transition flex items-center gap-1 ${
+                  viewType === 'imported'
+                    ? 'bg-emerald-600 text-white shadow-2xs'
+                    : 'text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                📁 Berkas Impor
+              </button>
+              <button
+                onClick={() => setViewType('system')}
+                className={`px-3 py-1 rounded text-[10px] font-extrabold transition flex items-center gap-1 ${
+                  viewType === 'system'
+                    ? 'bg-emerald-600 text-white shadow-2xs'
+                    : 'text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                🏛️ Salinan Sistem
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Modal content body */}
@@ -82,12 +111,50 @@ export default function DocumentViewerModal({
           
           {/* TAB 1: PREVIEW */}
           {activeTab === 'preview' && (
-            <div className="bg-white max-w-2xl mx-auto p-10 shadow-lg rounded-sm border border-slate-200 aspect-[1/1.4] flex flex-col justify-between text-xs relative select-none">
-              
-              {/* official seal watermark in background */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-3 pointer-events-none">
-                <span className="text-9xl">🇮🇩</span>
+            viewType === 'imported' && document.fileData ? (
+              <div className="bg-white max-w-2xl mx-auto p-6 shadow-lg rounded-sm border border-slate-200 flex flex-col justify-between text-xs relative select-none">
+                <div className="w-full border-b pb-2.5 mb-4 flex justify-between items-center text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">
+                  <span>Berkas Dokumen Parpol yang Diimpor</span>
+                  <span className="text-emerald-700 bg-emerald-50 border border-emerald-150 px-2 py-0.5 rounded text-[9px]">Original ({document.fileType.toUpperCase()})</span>
+                </div>
+                
+                <div className="w-full flex justify-center items-center py-6 bg-slate-50 rounded-lg border border-slate-200/50 min-h-[420px]">
+                  {document.fileData.startsWith('data:image') ? (
+                    <img src={document.fileData} alt={document.tipeDokumen} className="max-w-full max-h-[580px] object-contain rounded-md shadow-xs border border-slate-150" referrerPolicy="no-referrer" />
+                  ) : (
+                    <div className="text-center space-y-3.5 p-10 max-w-md">
+                      <div className="p-4 bg-emerald-50 rounded-full text-emerald-600 w-16 h-16 flex items-center justify-center mx-auto shadow-sm border border-emerald-100">
+                        <FileText className="h-8 w-8" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-extrabold text-slate-700 text-sm">{document.fileName}</p>
+                        <p className="text-[10px] text-slate-400 font-bold font-mono">Ukuran Berkas: {document.fileSize} &bull; Tipe: {document.fileType.toUpperCase()}</p>
+                      </div>
+                      <p className="text-[11px] text-slate-500 leading-relaxed font-medium">Dokumen digital berhasil diimpor ke server kearsipan daerah. Anda dapat mengunduh berkas asli di bawah ini.</p>
+                      <a 
+                        href={document.fileData} 
+                        download={document.fileName} 
+                        className="inline-flex items-center gap-1.5 px-4.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-lg text-xs shadow-md transition transform active:scale-95 cursor-pointer"
+                      >
+                        <Download className="h-4 w-4" />
+                        Unduh Berkas Asli
+                      </a>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="w-full border-t pt-2.5 mt-5 text-[9px] text-slate-400 font-mono flex justify-between">
+                  <span>Diimpor oleh: {document.uploadedBy}</span>
+                  <span>Tanggal Unggah: {document.tanggal}</span>
+                </div>
               </div>
+            ) : (
+              <div className="bg-white max-w-2xl mx-auto p-10 shadow-lg rounded-sm border border-slate-200 aspect-[1/1.4] flex flex-col justify-between text-xs relative select-none">
+                
+                {/* official seal watermark in background */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-3 pointer-events-none">
+                  <span className="text-9xl">🇮🇩</span>
+                </div>
 
               {/* Official governmental letterhead */}
               <div className="text-center border-b-2 border-slate-800 pb-3">
@@ -173,7 +240,8 @@ export default function DocumentViewerModal({
                 </span>
               </div>
             </div>
-          )}
+          )
+        )}
 
           {/* TAB 2: REVISION HISTORY */}
           {activeTab === 'revisions' && (
