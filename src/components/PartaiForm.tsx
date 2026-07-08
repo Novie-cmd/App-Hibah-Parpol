@@ -24,6 +24,15 @@ interface PartaiFormProps {
   onClose: () => void;
 }
 
+const BANK_PRESETS = [
+  "Bank NTB Syariah Cabang Utama Mataram",
+  "Bank NTB Syariah Cabang Selong",
+  "Bank Rakyat Indonesia (BRI) Cabang Mataram",
+  "Bank Mandiri Cabang Mataram",
+  "Bank Negara Indonesia (BNI) Cabang Mataram",
+  "Bank Syariah Indonesia (BSI) Cabang Mataram"
+];
+
 export default function PartaiForm({
   partai,
   pengaturan,
@@ -52,6 +61,7 @@ export default function PartaiForm({
 
   // Rekening Bank
   const [namaBank, setNamaBank] = useState('Bank NTB Syariah Cabang Utama Mataram');
+  const [isCustomBank, setIsCustomBank] = useState(false);
   const [nomorRekening, setNomorRekening] = useState('');
   const [atasNamaRekening, setAtasNamaRekening] = useState('');
 
@@ -96,6 +106,8 @@ export default function PartaiForm({
       setNpwpPartai(partai.npwpPartai);
 
       setNamaBank(partai.namaBank);
+      const isPreset = BANK_PRESETS.includes(partai.namaBank);
+      setIsCustomBank(!isPreset && partai.namaBank !== '');
       setNomorRekening(partai.nomorRekening);
       setAtasNamaRekening(partai.atasNamaRekening);
 
@@ -314,13 +326,26 @@ export default function PartaiForm({
                   type="text" 
                   value={alamatKantor} 
                   onChange={(e) => setAlamatKantor(e.target.value)}
-                  placeholder="Jl. Raya Perkantoran Pemda Cikarang"
+                  placeholder="Jl. Pejanggik No. 12, Mataram"
                   className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-medium focus:bg-white"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-500 font-bold mb-1">Kecamatan</label>
+                <label className="block text-slate-500 font-bold mb-1">Kabupaten / Kota di NTB</label>
+                <select 
+                  value={kabupatenKota} 
+                  onChange={(e) => setKabupatenKota(e.target.value)}
+                  className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold focus:bg-white cursor-pointer"
+                >
+                  {pengaturan.kabupatenDaftar.map((kab, i) => (
+                    <option key={i} value={kab}>{kab}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-500 font-bold mb-1">Kecamatan di NTB</label>
                 <select 
                   value={kecamatan} 
                   onChange={(e) => setKecamatan(e.target.value)}
@@ -330,16 +355,6 @@ export default function PartaiForm({
                     <option key={i} value={kec}>{kec}</option>
                   ))}
                 </select>
-              </div>
-
-              <div>
-                <label className="block text-slate-500 font-bold mb-1">Kelurahan / Desa</label>
-                <input 
-                  type="text" 
-                  value={kelurahan} 
-                  onChange={(e) => setKelurahan(e.target.value)}
-                  className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-medium"
-                />
               </div>
             </div>
 
@@ -401,18 +416,46 @@ export default function PartaiForm({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-slate-500 font-bold mb-1">Nama Bank Penerima <span className="text-rose-500">*</span></label>
-                <select 
-                  value={namaBank} 
-                  onChange={(e) => setNamaBank(e.target.value)}
-                  className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold"
-                >
-                  <option value="Bank NTB Syariah Cabang Utama Mataram">Bank NTB Syariah Cabang Utama Mataram</option>
-                  <option value="Bank NTB Syariah Cabang Selong">Bank NTB Syariah Cabang Selong</option>
-                  <option value="Bank Rakyat Indonesia (BRI) Cabang Mataram">Bank Rakyat Indonesia (BRI) Cabang Mataram</option>
-                  <option value="Bank Mandiri Cabang Mataram">Bank Mandiri Cabang Mataram</option>
-                  <option value="Bank Negara Indonesia (BNI) Cabang Mataram">Bank Negara Indonesia (BNI) Cabang Mataram</option>
-                  <option value="Bank Syariah Indonesia (BSI) Cabang Mataram">Bank Syariah Indonesia (BSI) Cabang Mataram</option>
-                </select>
+                {isCustomBank ? (
+                  <div className="relative">
+                    <input 
+                      type="text"
+                      value={namaBank}
+                      onChange={(e) => setNamaBank(e.target.value)}
+                      className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold focus:bg-white"
+                      placeholder="Ketik nama bank secara manual..."
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsCustomBank(false);
+                        setNamaBank(BANK_PRESETS[0]);
+                      }}
+                      className="mt-1 text-[10px] text-emerald-600 font-bold hover:underline block cursor-pointer"
+                    >
+                      &larr; Pilih dari daftar bank preset
+                    </button>
+                  </div>
+                ) : (
+                  <select 
+                    value={namaBank} 
+                    onChange={(e) => {
+                      if (e.target.value === "CUSTOM") {
+                        setIsCustomBank(true);
+                        setNamaBank('');
+                      } else {
+                        setNamaBank(e.target.value);
+                      }
+                    }}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold cursor-pointer"
+                  >
+                    {BANK_PRESETS.map((preset) => (
+                      <option key={preset} value={preset}>{preset}</option>
+                    ))}
+                    <option value="CUSTOM">&#9998; Ketik manual / bank lainnya...</option>
+                  </select>
+                )}
               </div>
 
               <div>
