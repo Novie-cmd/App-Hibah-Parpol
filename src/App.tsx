@@ -1202,7 +1202,7 @@ export default function App() {
                   <div>
                     <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">Jumlah Partai Politik</span>
                     <span className="text-xl font-extrabold text-slate-800 block mt-1">{totalPartaiCount} Parpol</span>
-                    <span className="text-[10px] text-emerald-600 font-bold block mt-1">DPC Kabupaten Bekasi</span>
+                    <span className="text-[10px] text-emerald-600 font-bold block mt-1">DPC/DPD Provinsi NTB</span>
                   </div>
                   <div className="p-3 bg-slate-100 rounded-lg text-slate-600"><Users className="h-6 w-6" /></div>
                 </div>
@@ -2464,7 +2464,7 @@ export default function App() {
 
             <form onSubmit={handleUploadSimulated} className="p-5 space-y-4">
               <p className="text-[11px] text-slate-400 leading-relaxed font-medium">
-                Silakan lengkapi rincian dokumen resmi dan lampirkan berkas fisik hasil scan atau dokumen digital (.PDF, .JPG, .PNG) untuk dimasukkan ke database Kearsipan Kesbangpol Kabupaten Bekasi.
+                Silakan lengkapi rincian dokumen resmi dan lampirkan berkas fisik hasil scan atau dokumen digital (.PDF, .JPG, .PNG) untuk dimasukkan ke database Kearsipan Kesbangpol Provinsi Nusa Tenggara Barat.
               </p>
 
               {/* Parpol Selector */}

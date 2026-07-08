@@ -174,7 +174,7 @@ export default function DocumentViewerModal({
                 {/* Substantive content */}
                 <div className="space-y-3 text-slate-700 leading-relaxed text-[11px]">
                   <p>
-                    Bahwa berdasarkan ketentuan Peraturan Bupati tentang Tata Cara Penganggaran, Pelaksanaan, Penatausahaan, Pertanggungjawaban dan Pelaporan serta Monitoring Penerimaan Hibah Bantuan Keuangan Partai Politik APBD Kabupaten Bekasi, yang bertanda tangan di bawah ini menerangkan bahwa:
+                    Bahwa berdasarkan ketentuan Peraturan Gubernur tentang Tata Cara Penganggaran, Pelaksanaan, Penatausahaan, Pertanggungjawaban dan Pelaporan serta Monitoring Penerimaan Hibah Bantuan Keuangan Partai Politik APBD Provinsi Nusa Tenggara Barat, yang bertanda tangan di bawah ini menerangkan bahwa:
                   </p>
 
                   <table className="w-full border-0 my-3 ml-2 font-medium">

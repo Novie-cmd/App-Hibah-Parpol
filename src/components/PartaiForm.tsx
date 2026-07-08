@@ -36,8 +36,8 @@ export default function PartaiForm({
   const [nomorUrut, setNomorUrut] = useState(1);
   const [logo, setLogo] = useState('🔴');
   const [alamatKantor, setAlamatKantor] = useState('');
-  const [provinsi, setProvinsi] = useState('Jawa Barat');
-  const [kabupatenKota, setKabupatenKota] = useState('Kabupaten Bekasi');
+  const [provinsi, setProvinsi] = useState('Nusa Tenggara Barat');
+  const [kabupatenKota, setKabupatenKota] = useState('Kota Mataram');
   const [kecamatan, setKecamatan] = useState('');
   const [kelurahan, setKelurahan] = useState('');
   const [kodePos, setKodePos] = useState('');
@@ -51,7 +51,7 @@ export default function PartaiForm({
   const [npwpPartai, setNpwpPartai] = useState('');
 
   // Rekening Bank
-  const [namaBank, setNamaBank] = useState('Bank BJB Cabang Cikarang');
+  const [namaBank, setNamaBank] = useState('Bank NTB Syariah Cabang Utama Mataram');
   const [nomorRekening, setNomorRekening] = useState('');
   const [atasNamaRekening, setAtasNamaRekening] = useState('');
 
@@ -406,10 +406,12 @@ export default function PartaiForm({
                   onChange={(e) => setNamaBank(e.target.value)}
                   className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold"
                 >
-                  <option value="Bank BJB Cabang Cikarang">Bank BJB Cabang Cikarang</option>
-                  <option value="Bank Mandiri Cikarang">Bank Mandiri Cikarang</option>
-                  <option value="Bank Syariah Indonesia Cikarang">Bank Syariah Indonesia Cikarang</option>
-                  <option value="Bank DKI Cabang Pembantu Cikarang">Bank DKI Cabang Pembantu Cikarang</option>
+                  <option value="Bank NTB Syariah Cabang Utama Mataram">Bank NTB Syariah Cabang Utama Mataram</option>
+                  <option value="Bank NTB Syariah Cabang Selong">Bank NTB Syariah Cabang Selong</option>
+                  <option value="Bank Rakyat Indonesia (BRI) Cabang Mataram">Bank Rakyat Indonesia (BRI) Cabang Mataram</option>
+                  <option value="Bank Mandiri Cabang Mataram">Bank Mandiri Cabang Mataram</option>
+                  <option value="Bank Negara Indonesia (BNI) Cabang Mataram">Bank Negara Indonesia (BNI) Cabang Mataram</option>
+                  <option value="Bank Syariah Indonesia (BSI) Cabang Mataram">Bank Syariah Indonesia (BSI) Cabang Mataram</option>
                 </select>
               </div>
 

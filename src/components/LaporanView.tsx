@@ -156,7 +156,7 @@ export default function LaporanView({
   };
 
   const handleExportPDF = () => {
-    setSuccessMsg('Mengonversi file ke format PDF Pemerintah Kabupaten Bekasi... Mengunduh Berkas Laporan.');
+    setSuccessMsg('Mengonversi file ke format PDF Pemerintah Provinsi Nusa Tenggara Barat... Mengunduh Berkas Laporan.');
     setTimeout(() => {
       setSuccessMsg('');
       alert(`Berkas "Laporan_Kepatuhan_Hibah_${jenis.toUpperCase()}_TA${filterTahun}.pdf" berhasil digenerate dan diunduh.`);
@@ -310,7 +310,7 @@ export default function LaporanView({
               {jenis === 'kadaluarsa' && 'Monitoring Dokumen Persyaratan Akan Berakhir Masa Berlaku'}
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
-              Badan Kesatuan Bangsa dan Politik Kabupaten Bekasi &bull; Anggaran Berjalan: {filterTahun} &bull; Dicetak: {new Date().toLocaleDateString('id-ID')}
+              Badan Kesatuan Bangsa dan Politik Provinsi Nusa Tenggara Barat &bull; Anggaran Berjalan: {filterTahun} &bull; Dicetak: {new Date().toLocaleDateString('id-ID')}
             </p>
           </div>
 
@@ -610,13 +610,13 @@ export default function LaporanView({
           <div className="hidden print:block grid grid-cols-2 gap-8 mt-12 pt-8 text-[11px]">
             <div className="text-center">
               <p>Mengetahui,</p>
-              <p className="font-bold uppercase mt-1">Kepala Badan Kesbangpol Kabupaten Bekasi</p>
+              <p className="font-bold uppercase mt-1">Kepala Badan Kesbangpol Provinsi NTB</p>
               <div className="h-16"></div>
               <p className="font-bold underline">H. Enun Sarji, S.H., M.M.</p>
               <p className="text-slate-500">NIP. 19740925 199803 1 002</p>
             </div>
             <div className="text-center">
-              <p>Cikarang Pusat, {new Date().toLocaleDateString('id-ID')}</p>
+              <p>Mataram, {new Date().toLocaleDateString('id-ID')}</p>
               <p className="font-bold uppercase mt-1">Verifikator Kearsipan Daerah</p>
               <div className="h-16"></div>
               <p className="font-bold underline">Randi Hermawan, S.STP.</p>
