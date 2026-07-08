@@ -1251,8 +1251,12 @@ export default function App() {
                         {/* Header card */}
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2.5">
-                            <span className="text-3xl p-1 bg-slate-50 border border-slate-150 rounded-lg shadow-2xs select-none">
-                              {p.logo || '🔴'}
+                            <span className="text-3xl w-12 h-12 p-1 bg-slate-50 border border-slate-150 rounded-lg shadow-2xs select-none flex items-center justify-center overflow-hidden shrink-0">
+                              {p.logo && (p.logo.startsWith('data:image') || p.logo.startsWith('http') || p.logo.startsWith('/')) ? (
+                                <img src={p.logo} alt={p.singkatan} className="w-10 h-10 object-contain rounded" referrerPolicy="no-referrer" />
+                              ) : (
+                                p.logo || '🔴'
+                              )}
                             </span>
                             <div>
                               <h3 className="font-extrabold text-slate-800 text-sm">{p.nama}</h3>

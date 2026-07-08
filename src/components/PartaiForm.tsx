@@ -120,6 +120,28 @@ export default function PartaiForm({
     }
   }, [partai, pengaturan]);
 
+  // Handle Logo file import and convert to Base64 string
+  const handleLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Ukuran berkas logo gambar maksimal 2 MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setLogo(event.target.result as string);
+      }
+    };
+    reader.onerror = () => {
+      alert("Gagal membaca file gambar.");
+    };
+    reader.readAsDataURL(file);
+  };
+
   // Handle submit
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -240,14 +262,47 @@ export default function PartaiForm({
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-500 font-bold mb-1">Logo (Emoji)</label>
-                  <input 
-                    type="text" 
-                    value={logo} 
-                    onChange={(e) => setLogo(e.target.value)}
-                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-center"
-                    placeholder="🔴"
-                  />
+                  <label className="block text-slate-500 font-bold mb-1">Logo / Lambang Parpol</label>
+                  <div className="flex items-center gap-2">
+                    <div className="w-10 h-10 bg-slate-100 border border-slate-200 rounded-lg flex items-center justify-center overflow-hidden shrink-0">
+                      {logo && (logo.startsWith('data:image') || logo.startsWith('http') || logo.startsWith('/')) ? (
+                        <img src={logo} alt="Pratinjau" className="w-8 h-8 object-contain rounded" />
+                      ) : (
+                        <span className="text-xl select-none">{logo || '🔴'}</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <input 
+                        type="text" 
+                        value={logo && logo.startsWith('data:image') ? '🔴 [Logo Gambar Diimpor]' : logo} 
+                        onChange={(e) => setLogo(e.target.value)}
+                        className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-center font-bold focus:bg-white"
+                        placeholder="🔴 atau ketik Emoji"
+                        disabled={logo && logo.startsWith('data:image')}
+                        title={logo && logo.startsWith('data:image') ? "Logo saat ini menggunakan gambar. Klik 'Reset' untuk kembali menggunakan emoji." : "Ketik emoji lambang parpol"}
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-2 flex gap-1.5 justify-between">
+                    <label className="cursor-pointer bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-3 py-1 rounded text-[10px] font-extrabold text-center block flex-1 transition shadow-2xs">
+                      <span>📥 Import Logo</span>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleLogoFileChange}
+                        className="hidden" 
+                      />
+                    </label>
+                    {logo && logo.startsWith('data:image') && (
+                      <button 
+                        type="button"
+                        onClick={() => setLogo('🔴')}
+                        className="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-2.5 py-1 rounded text-[10px] font-extrabold transition"
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

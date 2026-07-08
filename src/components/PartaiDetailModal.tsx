@@ -58,8 +58,12 @@ export default function PartaiDetailModal({
         {/* Header */}
         <div className="p-5 border-b border-slate-150 flex items-center justify-between bg-slate-50">
           <div className="flex items-center gap-3">
-            <div className="text-3xl p-1 bg-white border border-slate-200 rounded-lg shadow-2xs">
-              {partai.logo || '🔴'}
+            <div className="text-3xl w-14 h-14 p-1 bg-white border border-slate-200 rounded-lg shadow-2xs flex items-center justify-center overflow-hidden shrink-0 select-none">
+              {partai.logo && (partai.logo.startsWith('data:image') || partai.logo.startsWith('http') || partai.logo.startsWith('/')) ? (
+                <img src={partai.logo} alt={partai.singkatan} className="w-12 h-12 object-contain rounded" referrerPolicy="no-referrer" />
+              ) : (
+                partai.logo || '🔴'
+              )}
             </div>
             <div>
               <div className="flex items-center gap-2">
