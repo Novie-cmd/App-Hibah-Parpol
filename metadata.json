@@ -1,0 +1,6 @@
+{
+  "name": "Sistem Informasi Data Partai Politik Penerima Hibah Bantuan",
+  "description": "Aplikasi digital Badan Kesatuan Bangsa dan Politik (Kesbangpol) untuk mengelola data, dokumen, verifikasi, pencairan hibah, LPJ, dan arsip digital partai politik secara terstruktur.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

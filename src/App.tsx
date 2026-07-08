@@ -1,0 +1,2003 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import React, { useState, useEffect } from 'react';
+import { 
+  LayoutDashboard, 
+  Users, 
+  FileCheck, 
+  Wallet, 
+  FileText, 
+  Archive, 
+  Table, 
+  FileBarChart, 
+  UserCheck, 
+  History, 
+  Settings, 
+  Bell, 
+  Search, 
+  Plus, 
+  Edit, 
+  Trash2, 
+  Download, 
+  Upload, 
+  CheckCircle, 
+  XCircle, 
+  AlertTriangle, 
+  Building2, 
+  ExternalLink,
+  ChevronRight,
+  Eye,
+  LogOut,
+  RefreshCw,
+  FolderOpen,
+  X
+} from 'lucide-react';
+
+// Types
+import { 
+  Partai, 
+  DokumenHibah, 
+  DataHibah, 
+  LaporanPertanggungjawaban, 
+  AuditLog, 
+  Pengguna, 
+  Notifikasi, 
+  PengaturanSistem,
+  StatusVerifikasi,
+  StatusPenyaluran,
+  StatusLPJ
+} from './types';
+
+// Modular Components
+import SpreadsheetView from './components/SpreadsheetView';
+import LaporanView from './components/LaporanView';
+import AuditTrailView from './components/AuditTrailView';
+import PartaiForm from './components/PartaiForm';
+import PartaiDetailModal from './components/PartaiDetailModal';
+import DocumentViewerModal from './components/DocumentViewerModal';
+
+export default function App() {
+  // Navigation Menu state
+  const [activeMenu, setActiveMenu] = useState<'dashboard' | 'parpol' | 'verifikasi' | 'hibah' | 'lpj' | 'arsip' | 'spreadsheet' | 'laporan' | 'pengguna' | 'audit' | 'pengaturan'>('dashboard');
+
+  // Core collections state
+  const [partai, setPartai] = useState<Partai[]>([]);
+  const [dokumen, setDokumen] = useState<DokumenHibah[]>([]);
+  const [hibah, setHibah] = useState<DataHibah[]>([]);
+  const [lpj, setLpj] = useState<LaporanPertanggungjawaban[]>([]);
+  const [audit, setAudit] = useState<AuditLog[]>([]);
+  const [pengguna, setPengguna] = useState<Pengguna[]>([]);
+  const [notifikasi, setNotifikasi] = useState<Notifikasi[]>([]);
+  const [pengaturan, setPengaturan] = useState<PengaturanSistem | null>(null);
+
+  // Loading & Error States
+  const [isLoading, setIsLoading] = useState(true);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [searchGlobal, setSearchGlobal] = useState('');
+
+  // Active User session state
+  const [currentUser, setCurrentUser] = useState<Pengguna | null>(null);
+
+  // Modal control states
+  const [selectedPartai, setSelectedPartai] = useState<Partai | null>(null);
+  const [detailPartaiOpen, setDetailPartaiOpen] = useState<Partai | null>(null);
+  const [partaiFormOpen, setPartaiFormOpen] = useState(false);
+  const [documentViewerOpen, setDocumentViewerOpen] = useState<DokumenHibah | null>(null);
+
+  // Interactive Action Forms states
+  const [verificationModalOpen, setVerificationModalOpen] = useState<DokumenHibah | null>(null);
+  const [verifChecklist, setVerifChecklist] = useState<string[]>([]);
+  const [verifStatus, setVerifStatus] = useState<StatusVerifikasi>('Lengkap');
+  const [verifNotes, setVerifNotes] = useState('');
+
+  const [hibahFormOpen, setHibahFormOpen] = useState<DataHibah | null>(null);
+  const [lpjReviewOpen, setLpjReviewOpen] = useState<LaporanPertanggungjawaban | null>(null);
+  const [uploadDocOpen, setUploadDocOpen] = useState<string | null>(null); // Type of doc to upload
+
+  // Fetch initial state from database.json on mount
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/data');
+      if (res.ok) {
+        const data = await res.json();
+        setPartai(data.partai || []);
+        setDokumen(data.dokumen || []);
+        setHibah(data.hibah || []);
+        setLpj(data.lpj || []);
+        setAudit(data.audit || []);
+        setPengguna(data.pengguna || []);
+        setNotifikasi(data.notifikasi || []);
+        setPengaturan(data.pengaturan || null);
+        
+        // Default session as Super Admin
+        if (data.pengguna && data.pengguna.length > 0) {
+          setCurrentUser(data.pengguna.find((u: any) => u.username === 'admin_kesbang') || data.pengguna[0]);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to sync with API. Running offline mode.', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Log Dynamic audit activities to server
+  const logAktivitas = async (aktivitas: string, objek: string, detail: string) => {
+    if (!currentUser) return;
+    const newLog = {
+      userId: currentUser.id,
+      username: currentUser.username,
+      role: currentUser.role,
+      aktivitas,
+      objek,
+      detail,
+      timestamp: new Date().toISOString()
+    };
+    try {
+      const res = await fetch('/api/audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newLog)
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setAudit(prev => [saved.data, ...prev]);
+      }
+    } catch (e) {
+      // Fallback
+      setAudit(prev => [{ ...newLog, id: `a_${Date.now()}`, ipAddress: '127.0.0.1' }, ...prev]);
+    }
+  };
+
+  // CRUD PARTAI
+  const handleSavePartai = async (p: Partai) => {
+    try {
+      const res = await fetch('/api/partai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(p)
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setPartai(prev => {
+          const idx = prev.findIndex(item => item.id === p.id);
+          if (idx > -1) {
+            const updated = [...prev];
+            updated[idx] = saved.data;
+            return updated;
+          }
+          return [...prev, saved.data];
+        });
+        logAktivitas(selectedPartai ? 'Edit' : 'Tambah Data', `Partai ${p.singkatan}`, `Profil partai dan kursi DPRD berhasil dimutakhirkan.`);
+        setPartaiFormOpen(false);
+        setSelectedPartai(null);
+      }
+    } catch (err) {
+      alert("Error saving data: " + err);
+    }
+  };
+
+  const handleDeletePartai = async (id: string, singkatan: string) => {
+    if (!confirm(`Apakah Anda yakin ingin menghapus partai ${singkatan}? Seluruh dokumen kearsipan dan rincian hibahnya juga akan ikut terhapus.`)) return;
+    try {
+      const res = await fetch(`/api/partai/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setPartai(prev => prev.filter(p => p.id !== id));
+        setDokumen(prev => prev.filter(d => d.partaiId !== id));
+        setHibah(prev => prev.filter(h => h.partaiId !== id));
+        setLpj(prev => prev.filter(l => l.partaiId !== id));
+        logAktivitas('Hapus', `Partai ${singkatan}`, `Menghapus entitas partai politik dan berkas penunjang.`);
+      }
+    } catch (e) {
+      alert("gagal menghapus partai: " + e);
+    }
+  };
+
+  // UPLOAD DOKUMEN (SIMULATED)
+  const handleUploadSimulated = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!uploadDocOpen || !currentUser) return;
+    const targetPartaiId = currentUser.partaiId || partai[0]?.id; // If parpol operator, use their ID
+    if (!targetPartaiId) return;
+
+    const partaiObj = partai.find(p => p.id === targetPartaiId);
+    const docNo = `DOC/${partaiObj?.singkatan || 'PARPOL'}/${Date.now().toString().slice(-4)}/2026`;
+    const docName = `${(partaiObj?.singkatan || 'parpol').toLowerCase()}_${uploadDocOpen.toLowerCase().replace(/ /g, '_')}_2026.pdf`;
+
+    const newDoc: DokumenHibah = {
+      id: `d_new_${Date.now()}`,
+      partaiId: targetPartaiId,
+      tipeDokumen: uploadDocOpen,
+      nomorDokumen: docNo,
+      tanggal: new Date().toISOString().split('T')[0],
+      masaBerlaku: "2027-02-15",
+      statusVerifikasi: 'Menunggu Verifikasi',
+      catatanVerifikator: "Berkas digital diupload oleh operator partai, menunggu review verifikator.",
+      fileName: docName,
+      fileType: 'pdf',
+      fileSize: "1.4 MB",
+      version: 1,
+      updatedAt: new Date().toISOString(),
+      uploadedBy: `${currentUser.namaLengkap} (${currentUser.role})`
+    };
+
+    try {
+      const res = await fetch('/api/dokumen', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newDoc)
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setDokumen(prev => [...prev, saved.data]);
+        
+        // Add default log
+        logAktivitas('Upload Dokumen', uploadDocOpen, `Mengunggah berkas persyaratan baru.`);
+        
+        // Add Notification
+        setNotifikasi(prev => [
+          {
+            id: `n_up_${Date.now()}`,
+            partaiId: targetPartaiId,
+            partaiNama: partaiObj?.singkatan,
+            tipe: 'pengingat',
+            pesan: `Berkas "${uploadDocOpen}" berhasil diunggah. Menunggu pemeriksaan verifikator Kesbangpol.`,
+            tanggal: new Date().toISOString(),
+            dibaca: false
+          },
+          ...prev
+        ]);
+
+        setUploadDocOpen(null);
+        alert(`Dokumen "${uploadDocOpen}" berhasil diunggah.`);
+      }
+    } catch (err) {
+      alert("Error: " + err);
+    }
+  };
+
+  // VERIFIKASI DOKUMEN
+  const handleSaveVerification = async () => {
+    if (!verificationModalOpen || !currentUser) return;
+    try {
+      const res = await fetch('/api/dokumen/verifikasi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: verificationModalOpen.id,
+          statusVerifikasi: verifStatus,
+          catatanVerifikator: verifNotes,
+          namaVerifikator: currentUser.namaLengkap
+        })
+      });
+      if (res.ok) {
+        const responseData = await res.json();
+        // Update document in state
+        setDokumen(prev => prev.map(d => d.id === verificationModalOpen.id ? responseData.data : d));
+        
+        // Reload all data to sync notifications and audit trails updated by server
+        fetchData();
+        
+        setVerificationModalOpen(null);
+        alert("Dokumen berhasil divalidasi!");
+      }
+    } catch (e) {
+      alert("Gagal menyimpan verifikasi: " + e);
+    }
+  };
+
+  // SAVE HIBAH PENYALURAN DATA
+  const handleSaveHibah = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!hibahFormOpen) return;
+    try {
+      const res = await fetch('/api/hibah', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(hibahFormOpen)
+      });
+      if (res.ok) {
+        const responseData = await res.json();
+        setHibah(prev => {
+          const idx = prev.findIndex(h => h.id === hibahFormOpen.id);
+          if (idx > -1) {
+            const copy = [...prev];
+            copy[idx] = responseData.data;
+            return copy;
+          }
+          return [...prev, responseData.data];
+        });
+        logAktivitas('Edit', `Hibah Parpol ID: ${hibahFormOpen.partaiId}`, `Pembaruan data tahapan penyaluran hibah.`);
+        setHibahFormOpen(null);
+        alert("Data penyaluran hibah berhasil diperbarui!");
+      }
+    } catch (e) {
+      alert("Gagal memperbarui dana hibah: " + e);
+    }
+  };
+
+  // REVIEW LPJ (LAPORAN PERTANGGUNGJAWABAN)
+  const handleSaveLPJ = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!lpjReviewOpen) return;
+    try {
+      const res = await fetch('/api/lpj', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(lpjReviewOpen)
+      });
+      if (res.ok) {
+        const responseData = await res.json();
+        setLpj(prev => prev.map(l => l.id === lpjReviewOpen.id ? responseData.data : l));
+        logAktivitas('Verifikasi', `LPJ ID: ${lpjReviewOpen.id}`, `Validasi laporan evaluasi LPJ menjadi [${lpjReviewOpen.statusDiterima}].`);
+        setLpjReviewOpen(null);
+        alert("Status evaluasi LPJ berhasil diperbarui!");
+      }
+    } catch (err) {
+      alert("Gagal menyimpan LPJ: " + err);
+    }
+  };
+
+  // RESET DATABASE TO DEFAULT SEED
+  const handleResetDatabase = async () => {
+    if (!confirm("Apakah Anda yakin ingin mengatur ulang database? Seluruh data yang ditambahkan akan dihapus dan diganti dengan data bawaan Kesbangpol.")) return;
+    try {
+      const res = await fetch('/api/database/reset', { method: 'POST' });
+      if (res.ok) {
+        fetchData();
+        alert("Database Kesbangpol berhasil dikembalikan ke keadaan semula.");
+      }
+    } catch (e) {
+      alert("Error: " + e);
+    }
+  };
+
+  // DOWNLOAD BACKUP DATABASE JSON FILE
+  const handleDownloadBackup = () => {
+    const backupDb = {
+      partai,
+      dokumen,
+      hibah,
+      lpj,
+      audit,
+      pengguna,
+      notifikasi,
+      pengaturan
+    };
+    const blob = new Blob([JSON.stringify(backupDb, null, 2)], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `backup_kesbangpol_hibah_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    logAktivitas('Download', 'Backup Database', 'Mengunduh salinan berkas database JSON');
+  };
+
+  // IMPORT BACKUP DATABASE JSON
+  const handleImportBackup = () => {
+    const raw = prompt("Tempel (Paste) isi text JSON dari file backup Anda di bawah ini:");
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed.partai && parsed.dokumen && parsed.pengaturan) {
+        fetch('/api/database/restore', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(parsed)
+        }).then(res => {
+          if (res.ok) {
+            fetchData();
+            alert("Database berhasil direstore dari file backup Anda!");
+          }
+        });
+      } else {
+        alert("Format berkas backup tidak sesuai skema Kesbangpol.");
+      }
+    } catch (e) {
+      alert("Format JSON tidak valid: " + e);
+    }
+  };
+
+  // Helper getters for Dashboard statistics
+  const totalPartaiCount = partai.length;
+  const activePartaiCount = partai.filter(p => p.statusAktif).length;
+  const totalHibahNilai = partai.reduce((sum, p) => sum + p.totalHakBantuan, 0);
+  
+  const docsLengkapCount = dokumen.filter(d => d.statusVerifikasi === 'Lengkap').length;
+  const requiredDocsTotal = totalPartaiCount * (pengaturan?.tipeDokumenDaftar.length || 16);
+  const totalIncompleteDocs = requiredDocsTotal - docsLengkapCount;
+
+  // Notification mark as read
+  const markNotificationRead = async (id: string) => {
+    try {
+      const res = await fetch('/api/notifikasi/read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      if (res.ok) {
+        setNotifikasi(prev => prev.map(n => id === 'all' ? { ...n, dibaca: true } : (n.id === id ? { ...n, dibaca: true } : n)));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // Handle simulated document downloads
+  const triggerSimulatedDownload = (docName: string) => {
+    alert(`Mengunduh file "${docName}" ke komputer Anda secara aman.`);
+    logAktivitas('Download Dokumen', docName, 'Mengunduh arsip digital parpol.');
+  };
+
+  if (isLoading || !pengaturan) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center font-sans text-xs">
+        <RefreshCw className="h-8 w-8 text-emerald-600 animate-spin" />
+        <p className="mt-4 text-slate-500 font-bold tracking-wide">Menghubungkan ke Database Kearsipan Kesbangpol...</p>
+      </div>
+    );
+  }
+
+  // Filter out search elements
+  const getFilteredPartai = () => {
+    return partai.filter(p => {
+      const matchesSearch = 
+        p.nama.toLowerCase().includes(searchGlobal.toLowerCase()) ||
+        p.singkatan.toLowerCase().includes(searchGlobal.toLowerCase()) ||
+        p.ketua.toLowerCase().includes(searchGlobal.toLowerCase()) ||
+        p.kabupatenKota.toLowerCase().includes(searchGlobal.toLowerCase());
+      return matchesSearch;
+    });
+  };
+
+  const getFilteredDocuments = () => {
+    return dokumen.filter(d => {
+      const p = partai.find(party => party.id === d.partaiId);
+      const matchesSearch = 
+        d.tipeDokumen.toLowerCase().includes(searchGlobal.toLowerCase()) ||
+        d.nomorDokumen.toLowerCase().includes(searchGlobal.toLowerCase()) ||
+        (p?.nama || '').toLowerCase().includes(searchGlobal.toLowerCase()) ||
+        (p?.singkatan || '').toLowerCase().includes(searchGlobal.toLowerCase());
+      return matchesSearch;
+    });
+  };
+
+  const isOperator = currentUser?.role === 'Operator Partai';
+
+  return (
+    <div className="min-h-screen bg-slate-100 flex flex-col font-sans select-none antialiased">
+      
+      {/* 1. APP BAR HEADER */}
+      <header className="bg-slate-900 text-white h-16 px-6 border-b border-slate-800 flex items-center justify-between shadow-md select-none no-print sticky top-0 z-40">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">🏛️</span>
+          <div>
+            <h1 className="text-xs font-extrabold tracking-wide text-slate-100 uppercase">Sistem Informasi Data Hibah Parpol</h1>
+            <p className="text-[10px] text-slate-400 font-bold tracking-wide mt-0.5 uppercase">Badan Kesatuan Bangsa dan Politik (Kesbangpol)</p>
+          </div>
+        </div>
+
+        {/* Middle Global Search */}
+        <div className="hidden lg:flex items-center gap-2 bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 w-80">
+          <Search className="h-3.5 w-3.5 text-slate-400" />
+          <input 
+            type="text" 
+            placeholder="Cari partai, dokumen, pengurus..."
+            value={searchGlobal}
+            onChange={(e) => setSearchGlobal(e.target.value)}
+            className="bg-transparent border-none text-[11px] text-slate-200 placeholder-slate-400 focus:outline-none w-full"
+          />
+          {searchGlobal && (
+            <button onClick={() => setSearchGlobal('')} className="text-slate-400 hover:text-white">
+              <XCircle className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+
+        {/* Right Session Panel */}
+        <div className="flex items-center gap-4">
+          
+          {/* Active Budget Year Badge */}
+          <span className="bg-emerald-600 text-white font-extrabold px-3 py-1 rounded-full text-[10px] shadow-xs select-none uppercase tracking-wider">
+            TA {pengaturan.tahunAnggaranAktif}
+          </span>
+
+          {/* Test Session Switcher for testing all requested roles */}
+          <div className="flex items-center gap-1.5 bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-lg">
+            <span className="text-[10px] text-slate-400 font-bold">Role:</span>
+            <select
+              value={currentUser?.id}
+              onChange={(e) => {
+                const userObj = pengguna.find(u => u.id === e.target.value);
+                if (userObj) {
+                  setCurrentUser(userObj);
+                  logAktivitas('Login', 'Sesi Pengguna', `Berganti peran pengguna menjadi [${userObj.role}]`);
+                }
+              }}
+              className="bg-transparent text-[10px] font-extrabold text-emerald-400 focus:outline-none cursor-pointer"
+            >
+              {pengguna.map(u => (
+                <option key={u.id} value={u.id} className="text-slate-900 font-sans font-medium">
+                  {u.namaLengkap} ({u.role})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Notification bell */}
+          <div className="relative">
+            <button 
+              onClick={() => setNotifOpen(!notifOpen)}
+              className="p-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white transition relative shadow-2xs"
+            >
+              <Bell className="h-4 w-4" />
+              {notifikasi.filter(n => !n.dibaca).length > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-[8px] font-extrabold h-4 w-4 rounded-full flex items-center justify-center animate-bounce">
+                  {notifikasi.filter(n => !n.dibaca).length}
+                </span>
+              )}
+            </button>
+
+            {/* Notification drop-feed */}
+            {notifOpen && (
+              <div className="absolute right-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-150 w-80 text-slate-700 overflow-hidden text-xs z-50">
+                <div className="p-3 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+                  <span className="font-extrabold text-slate-800">Notifikasi Masuk ({notifikasi.filter(n => !n.dibaca).length})</span>
+                  <button 
+                    onClick={() => markNotificationRead('all')}
+                    className="text-[10px] font-extrabold text-emerald-600 hover:text-emerald-700"
+                  >
+                    Tandai Semua Dibaca
+                  </button>
+                </div>
+                <div className="divide-y divide-slate-100 max-h-60 overflow-y-auto">
+                  {notifikasi.length === 0 ? (
+                    <p className="p-4 text-center text-slate-400 italic">Tidak ada notifikasi sistem.</p>
+                  ) : (
+                    notifikasi.map(n => (
+                      <div 
+                        key={n.id} 
+                        onClick={() => markNotificationRead(n.id)}
+                        className={`p-3 hover:bg-slate-50 transition cursor-pointer flex gap-2 ${!n.dibaca ? 'bg-emerald-50/20' : ''}`}
+                      >
+                        <div className="mt-0.5">
+                          {n.tipe === 'warning_kadaluarsa' || n.tipe === 'lpj_warning' ? (
+                            <AlertTriangle className="h-3.5 w-3.5 text-rose-500" />
+                          ) : n.tipe === 'diterima' || n.tipe === 'cair' ? (
+                            <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
+                          ) : (
+                            <XCircle className="h-3.5 w-3.5 text-rose-500" />
+                          )}
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="font-semibold text-slate-800 text-[11px] leading-tight">{n.pesan}</p>
+                          <span className="text-[9px] text-slate-400 block font-mono">
+                            {new Date(n.tanggal).toLocaleDateString('id-ID')}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+        </div>
+      </header>
+
+      {/* 2. BODY LAYOUT */}
+      <div className="flex-1 flex overflow-hidden">
+        
+        {/* SIDEBAR NAVIGATION */}
+        <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between shrink-0 select-none no-print">
+          
+          {/* Menu navigation */}
+          <nav className="p-4 space-y-1">
+            <div className="text-[10px] uppercase font-bold tracking-wider text-slate-500 px-3 py-1 border-b border-slate-800/80 mb-2 select-none">
+              Navigasi Aplikasi
+            </div>
+
+            <button
+              onClick={() => setActiveMenu('dashboard')}
+              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
+                activeMenu === 'dashboard' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              <span>Dashboard Utama</span>
+            </button>
+
+            <button
+              onClick={() => setActiveMenu('parpol')}
+              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
+                activeMenu === 'parpol' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <Users className="h-4 w-4" />
+              <span>Master Data Parpol</span>
+            </button>
+
+            <button
+              onClick={() => setActiveMenu('verifikasi')}
+              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
+                activeMenu === 'verifikasi' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <FileCheck className="h-4 w-4" />
+              <span>Verifikasi Berkas</span>
+            </button>
+
+            <button
+              onClick={() => setActiveMenu('hibah')}
+              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
+                activeMenu === 'hibah' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <Wallet className="h-4 w-4" />
+              <span>Penyaluran Hibah</span>
+            </button>
+
+            <button
+              onClick={() => setActiveMenu('lpj')}
+              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
+                activeMenu === 'lpj' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <FileText className="h-4 w-4" />
+              <span>Evaluasi LPJ</span>
+            </button>
+
+            <button
+              onClick={() => setActiveMenu('arsip')}
+              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
+                activeMenu === 'arsip' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <Archive className="h-4 w-4" />
+              <span>Arsip Dokumen</span>
+            </button>
+
+            <button
+              onClick={() => setActiveMenu('spreadsheet')}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
+                activeMenu === 'spreadsheet' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Table className="h-4 w-4" />
+                <span>Spreadsheet Database</span>
+              </div>
+              <span className="bg-emerald-900 text-emerald-400 text-[9px] px-1.5 py-0.5 rounded font-mono font-bold">GRID</span>
+            </button>
+
+            <button
+              onClick={() => setActiveMenu('laporan')}
+              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
+                activeMenu === 'laporan' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <FileBarChart className="h-4 w-4" />
+              <span>Rekap & Laporan</span>
+            </button>
+
+            <button
+              onClick={() => setActiveMenu('pengguna')}
+              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
+                activeMenu === 'pengguna' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <UserCheck className="h-4 w-4" />
+              <span>Manajemen Pengguna</span>
+            </button>
+
+            <button
+              onClick={() => setActiveMenu('audit')}
+              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
+                activeMenu === 'audit' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <History className="h-4 w-4" />
+              <span>Audit Trail Logs</span>
+            </button>
+
+            <button
+              onClick={() => setActiveMenu('pengaturan')}
+              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
+                activeMenu === 'pengaturan' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <Settings className="h-4 w-4" />
+              <span>Pengaturan Sistem</span>
+            </button>
+          </nav>
+
+          {/* User profile card in footer */}
+          <div className="p-4 border-t border-slate-800 bg-slate-950/40">
+            <div className="flex items-center gap-3">
+              <img 
+                src={currentUser?.avatar} 
+                alt="Profile avatar" 
+                className="w-9 h-9 rounded-full object-cover border border-slate-700 shadow-2xs"
+              />
+              <div className="overflow-hidden">
+                <span className="font-bold text-slate-200 block truncate">{currentUser?.namaLengkap}</span>
+                <span className="text-[10px] text-slate-500 font-bold block truncate uppercase tracking-wider">{currentUser?.role}</span>
+              </div>
+            </div>
+            
+            {isOperator && currentUser?.partaiId && (
+              <div className="mt-3 bg-emerald-950/60 border border-emerald-900/60 px-2 py-1.5 rounded text-emerald-400 font-bold text-[9px] uppercase tracking-wide text-center">
+                Operator: {partai.find(p => p.id === currentUser.partaiId)?.singkatan}
+              </div>
+            )}
+          </div>
+        </aside>
+
+        {/* MAIN DISPLAY VIEWPORT CONTAINER */}
+        <main className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50 relative print:p-0 print:bg-white print:overflow-visible">
+          
+          {/* HEADER DASHBOARD INFO BAR */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-5 no-print">
+            <div>
+              <h2 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+                {activeMenu === 'dashboard' && 'Dashboard Analitis Hibah'}
+                {activeMenu === 'parpol' && 'Pusat Profil Partai Politik'}
+                {activeMenu === 'verifikasi' && 'Validasi Berkas Persyaratan Administrasi'}
+                {activeMenu === 'hibah' && 'Manajemen Milestones Penyaluran Hibah'}
+                {activeMenu === 'lpj' && 'Evaluasi Laporan Pertanggungjawaban (LPJ)'}
+                {activeMenu === 'arsip' && 'Kearsipan Dokumen & Berkas Digital'}
+                {activeMenu === 'spreadsheet' && 'Sistem Kearsipan Lembar Kerja'}
+                {activeMenu === 'laporan' && 'Laporan Komparatif & Rekapitulasi'}
+                {activeMenu === 'pengguna' && 'Otorisasi Pengguna Sistem'}
+                {activeMenu === 'audit' && 'Catatan Aktivitas Pengguna (Audit Trail)'}
+                {activeMenu === 'pengaturan' && 'Sistem Konfigurasi & Kearsipan Backup'}
+              </h2>
+              <p className="text-xs text-slate-500 mt-1">
+                {activeMenu === 'dashboard' && 'Rekapitulasi cepat, status kearsipan nasional parpol dprd dpc kabupaten bekasi.'}
+                {activeMenu === 'parpol' && 'Mengelola data partai politik aktif dprd daerah, pengurus, domisili, dan nomor rekening.'}
+                {activeMenu === 'verifikasi' && 'Verifikasi, validasi berkas fisik, pencatatan checklist, revisi, dan approve.'}
+                {activeMenu === 'hibah' && 'Tracking tahapan pencairan, penetapan SK bupati, penandatanganan NPHD, hingga penerbitan SP2D.'}
+                {activeMenu === 'lpj' && 'Mengevaluasi pelaporan LPJ hibah tahun berjalan dari partai penerima bantuan.'}
+                {activeMenu === 'arsip' && 'Arsip digital terpusat seluruh dokumen persyaratan hibah lengkap dengan versi kearsipan.'}
+                {activeMenu === 'spreadsheet' && 'Sistem lembar kerja spreadsheet virtual untuk pengeditan raw database langsung.'}
+                {activeMenu === 'laporan' && 'Unduh berkas laporan resmi pemerintah, rekap tahunan, dan pencetakan PDF.'}
+                {activeMenu === 'pengguna' && 'Mengelola otorisasi hak akses pengguna admin kesbangpol, verifikator, pimpinan, operator parpol.'}
+                {activeMenu === 'audit' && 'Log kearsipan sekuritas audit trail yang melacak alamat IP, user, objek perubahan.'}
+                {activeMenu === 'pengaturan' && 'Menyetting bantuan anggaran per suara dprd, backup database json, restore data.'}
+              </p>
+            </div>
+
+            {/* Quick Actions widget for administrative convenience */}
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={fetchData}
+                className="p-2 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 text-slate-600 transition shadow-2xs"
+                title="Sinkronkan dengan server database.json"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </button>
+
+              {currentUser?.role !== 'Pimpinan' && currentUser?.role !== 'Verifikator' && activeMenu === 'parpol' && (
+                <button
+                  onClick={() => {
+                    setSelectedPartai(null);
+                    setPartaiFormOpen(true);
+                  }}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-xs flex items-center gap-1.5 transition"
+                >
+                  <Plus className="h-4 w-4" />
+                  Daftarkan Parpol
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* VIEWPORT CONTROLLER */}
+          
+          {/* A. DASHBOARD VIEW */}
+          {activeMenu === 'dashboard' && (
+            <div className="space-y-6">
+              
+              {/* Stat Summary Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white p-5 rounded-xl shadow-xs border border-slate-200/60 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">Jumlah Partai Politik</span>
+                    <span className="text-xl font-extrabold text-slate-800 block mt-1">{totalPartaiCount} Parpol</span>
+                    <span className="text-[10px] text-emerald-600 font-bold block mt-1">DPC Kabupaten Bekasi</span>
+                  </div>
+                  <div className="p-3 bg-slate-100 rounded-lg text-slate-600"><Users className="h-6 w-6" /></div>
+                </div>
+
+                <div className="bg-white p-5 rounded-xl shadow-xs border border-slate-200/60 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">Jumlah Partai Aktif</span>
+                    <span className="text-xl font-extrabold text-slate-800 block mt-1">{activePartaiCount} Aktif</span>
+                    <span className="text-[10px] text-slate-500 font-semibold block mt-1">{totalPartaiCount - activePartaiCount} Parpol tidak mengajukan</span>
+                  </div>
+                  <div className="p-3 bg-emerald-50 rounded-lg text-emerald-700"><CheckCircle className="h-6 w-6" /></div>
+                </div>
+
+                <div className="bg-white p-5 rounded-xl shadow-xs border border-slate-200/60 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">Total Nilai Hibah TA {pengaturan.tahunAnggaranAktif}</span>
+                    <span className="text-base font-black text-emerald-800 block mt-1">
+                      Rp {totalHibahNilai.toLocaleString('id-ID')}
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-bold block mt-1">Maksimal Alokasi APBD</span>
+                  </div>
+                  <div className="p-3 bg-emerald-50 rounded-lg text-emerald-700"><Wallet className="h-6 w-6" /></div>
+                </div>
+
+                <div className="bg-white p-5 rounded-xl shadow-xs border border-slate-200/60 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">Dokumen Belum Lengkap</span>
+                    <span className="text-xl font-extrabold text-rose-600 block mt-1">{totalIncompleteDocs} Berkas</span>
+                    <span className="text-[10px] text-slate-500 font-semibold block mt-1">Harus diverifikasi</span>
+                  </div>
+                  <div className="p-3 bg-rose-50 rounded-lg text-rose-700"><AlertTriangle className="h-6 w-6" /></div>
+                </div>
+              </div>
+
+              {/* Bento body rows */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                {/* Column 1 & 2: Main dashboard body list */}
+                <div className="lg:col-span-2 space-y-6">
+                  
+                  {/* Alert notification widget */}
+                  <div className="bg-white rounded-xl border border-slate-200/60 p-5 space-y-4">
+                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4 text-rose-500" />
+                      Notifikasi Tenggat Masa Berlaku Dokumen (SK Pengurus / Domisili)
+                    </h3>
+                    <div className="space-y-3">
+                      {dokumen
+                        .filter(d => d.tipeDokumen === 'SK Kepengurusan' || d.tipeDokumen === 'Surat Domisili')
+                        .map(d => {
+                          const p = partai.find(party => party.id === d.partaiId);
+                          const today = new Date();
+                          const exp = d.masaBerlaku ? new Date(d.masaBerlaku) : null;
+                          const diffTime = exp ? exp.getTime() - today.getTime() : 0;
+                          const diffDays = exp ? Math.ceil(diffTime / (1000 * 60 * 60 * 24)) : 999;
+                          const isWarning = diffDays <= 60; // less than 60 days
+                          
+                          if (!isWarning) return null;
+                          return (
+                            <div key={d.id} className="bg-rose-50/50 p-3.5 rounded-lg border border-rose-100 flex items-center justify-between">
+                              <div className="space-y-0.5">
+                                <span className="font-bold text-slate-800 block text-[11px]">{p?.nama} ({p?.singkatan})</span>
+                                <span className="text-[10px] text-slate-500 block">Berkas "{d.tipeDokumen}" akan kadaluarsa pada <strong className="text-rose-600 font-semibold">{d.masaBerlaku}</strong></span>
+                              </div>
+                              <span className="font-bold text-rose-600 font-mono text-[11px] bg-white border border-rose-200 px-2.5 py-1 rounded">
+                                {diffDays < 0 ? 'Kadaluarsa' : `${diffDays} Hari`}
+                              </span>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </div>
+
+                  {/* List of Pending Verifications */}
+                  <div className="bg-white rounded-xl border border-slate-200/60 p-5 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                        <FileCheck className="h-4 w-4 text-emerald-600" />
+                        Pemeriksaan Berkas Menunggu Verifikasi
+                      </h3>
+                      <button 
+                        onClick={() => setActiveMenu('verifikasi')}
+                        className="text-[10px] font-extrabold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+                      >
+                        Lihat Semua Berkas
+                        <ChevronRight className="h-3 w-3" />
+                      </button>
+                    </div>
+
+                    <div className="divide-y divide-slate-100">
+                      {dokumen.filter(d => d.statusVerifikasi === 'Menunggu Verifikasi').slice(0, 5).map(d => {
+                        const p = partai.find(party => party.id === d.partaiId);
+                        return (
+                          <div key={d.id} className="py-3 flex items-center justify-between hover:bg-slate-50/40 px-2 rounded-lg transition">
+                            <div className="space-y-1">
+                              <span className="font-bold text-slate-800 text-[11px] block">{d.tipeDokumen}</span>
+                              <div className="flex items-center gap-2 text-[10px] text-slate-400 font-bold font-mono">
+                                <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">{p?.singkatan}</span>
+                                <span>No: {d.nomorDokumen}</span>
+                                <span>Tanggal: {d.tanggal}</span>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => {
+                                setVerifStatus('Lengkap');
+                                setVerifNotes(d.catatanVerifikator);
+                                setVerificationModalOpen(d);
+                              }}
+                              className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[10px] font-bold shadow-2xs transition"
+                            >
+                              Verifikasi
+                            </button>
+                          </div>
+                        );
+                      })}
+                      {dokumen.filter(d => d.statusVerifikasi === 'Menunggu Verifikasi').length === 0 && (
+                        <p className="p-4 text-center text-slate-400 italic">Hebat! Tidak ada berkas tertunda menunggu verifikasi kearsipan.</p>
+                      )}
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Column 3: Dashboard Side Bento */}
+                <div className="space-y-6">
+                  
+                  {/* Quick stats distribution */}
+                  <div className="bg-slate-900 rounded-xl p-5 text-white space-y-4">
+                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-300 flex items-center gap-2 select-none">
+                      <Wallet className="h-4 w-4 text-emerald-400" />
+                      Alokasi Anggaran TA {pengaturan.tahunAnggaranAktif}
+                    </h3>
+
+                    <div className="space-y-3.5 pt-2">
+                      {partai.filter(p => p.statusAktif).map(p => {
+                        const percentage = totalHibahNilai > 0 ? Math.round((p.totalHakBantuan / totalHibahNilai) * 100) : 0;
+                        return (
+                          <div key={p.id} className="space-y-1">
+                            <div className="flex justify-between font-bold text-[11px]">
+                              <span>{p.singkatan}</span>
+                              <span className="font-mono text-emerald-300">Rp {p.totalHakBantuan.toLocaleString('id-ID')} ({percentage}%)</span>
+                            </div>
+                            <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                              <div className="bg-emerald-500 h-full" style={{ width: `${percentage}%` }}></div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* App parameters card */}
+                  <div className="bg-white rounded-xl border border-slate-200/60 p-5 space-y-4">
+                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                      <Settings className="h-4 w-4 text-slate-500" />
+                      Konfigurasi Sistem Aktif
+                    </h3>
+                    <div className="space-y-2.5 leading-relaxed text-slate-600">
+                      <div>
+                        <span className="text-[10px] font-bold text-slate-400 block uppercase">Instansi Pemerintah</span>
+                        <span className="font-bold text-slate-800">{pengaturan.namaInstansi}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-bold text-slate-400 block uppercase">Nilai Hibah per Suara DPRD</span>
+                        <span className="font-mono font-extrabold text-slate-800">Rp {pengaturan.nilaiBantuanPerSuara.toLocaleString('id-ID')} / Suara Sah</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-bold text-slate-400 block uppercase">Jumlah Jenis Berkas Wajib</span>
+                        <span className="font-bold text-slate-800">{pengaturan.tipeDokumenDaftar.length} Berkas Kelengkapan</span>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+          )}
+
+          {/* B. MASTER DATA PARTAI */}
+          {activeMenu === 'parpol' && (
+            <div className="space-y-6">
+              
+              {/* Search filter bar specific to parpol tab */}
+              <div className="bg-white p-4 rounded-xl shadow-2xs border border-slate-200/60 flex items-center justify-between">
+                <div className="relative w-full max-w-sm">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                  <input 
+                    type="text" 
+                    placeholder="Cari berdasarkan nama, singkatan, ketua..."
+                    value={searchGlobal}
+                    onChange={(e) => setSearchGlobal(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:bg-white"
+                  />
+                </div>
+              </div>
+
+              {/* Grid layout of political party profiles */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {getFilteredPartai().map(p => {
+                  const partyDocs = dokumen.filter(d => d.partaiId === p.id);
+                  const completeDocs = partyDocs.filter(d => d.statusVerifikasi === 'Lengkap').length;
+                  const totalReqDocs = pengaturan.tipeDokumenDaftar.length;
+                  const completenessPercent = Math.round((completeDocs / totalReqDocs) * 100);
+                  
+                  return (
+                    <div key={p.id} className="bg-white rounded-xl shadow-xs border border-slate-200/60 p-5 flex flex-col justify-between hover:shadow-md transition">
+                      <div className="space-y-4">
+                        {/* Header card */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-3xl p-1 bg-slate-50 border border-slate-150 rounded-lg shadow-2xs select-none">
+                              {p.logo || '🔴'}
+                            </span>
+                            <div>
+                              <h3 className="font-extrabold text-slate-800 text-sm">{p.nama}</h3>
+                              <span className="text-[10px] text-slate-400 font-extrabold font-mono uppercase">
+                                {p.singkatan} &bull; Urut {p.nomorUrut}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          <span className={`px-2 py-0.5 text-[8px] font-extrabold rounded ${p.statusAktif ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                            {p.statusAktif ? 'AKTIF' : 'NONAKTIF'}
+                          </span>
+                        </div>
+
+                        {/* Mid content info */}
+                        <div className="space-y-2 text-slate-600 leading-relaxed border-t border-b border-slate-100 py-3 font-medium">
+                          <div>
+                            <span className="text-[10px] text-slate-400 font-bold uppercase block">Ketua DPC/DPD</span>
+                            <span className="text-slate-800 font-bold">{p.ketua}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <div>
+                              <span className="text-[10px] text-slate-400 font-bold uppercase block">Jumlah Kursi DPRD</span>
+                              <span className="text-slate-800 font-bold font-mono">{p.jumlahKursiDprd} Kursi</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-[10px] text-slate-400 font-bold uppercase block">Hak Dana Bantuan</span>
+                              <span className="text-emerald-700 font-bold font-mono">Rp {p.totalHakBantuan.toLocaleString('id-ID')}</span>
+                            </div>
+                          </div>
+
+                          {/* Completeness Bar */}
+                          <div className="space-y-1 pt-1.5">
+                            <div className="flex justify-between text-[10px] font-bold">
+                              <span>Kepatuhan Dokumen Persyaratan</span>
+                              <span className="font-mono text-slate-800">{completeDocs}/{totalReqDocs} ({completenessPercent}%)</span>
+                            </div>
+                            <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                              <div className="bg-emerald-500 h-full" style={{ width: `${completenessPercent}%` }}></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Card actions */}
+                      <div className="flex items-center justify-between gap-2 pt-4">
+                        <button
+                          onClick={() => setDetailPartaiOpen(p)}
+                          className="flex items-center gap-1 text-[10px] font-extrabold text-slate-600 hover:text-emerald-700 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg shadow-2xs transition"
+                        >
+                          <FolderOpen className="h-3.5 w-3.5" />
+                          Lembar Profil
+                        </button>
+
+                        {!isOperator && currentUser?.role !== 'Pimpinan' && currentUser?.role !== 'Verifikator' && (
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => {
+                                setSelectedPartai(p);
+                                setPartaiFormOpen(true);
+                              }}
+                              className="p-1.5 hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-500 hover:text-emerald-700 transition"
+                              title="Edit Profil"
+                            >
+                              <Edit className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeletePartai(p.id, p.singkatan)}
+                              className="p-1.5 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 rounded-lg text-slate-400 hover:text-rose-600 transition"
+                              title="Hapus Parpol"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+            </div>
+          )}
+
+          {/* C. VERIFIKASI DOKUMEN VIEW */}
+          {activeMenu === 'verifikasi' && (
+            <div className="space-y-6">
+              
+              {/* Table of all uploaded documents */}
+              <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                <div className="p-4 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/50">
+                  <span className="font-extrabold text-slate-800">Verifikasi Dokumen Kelengkapan Hibah</span>
+                  <div className="relative w-full max-w-xs">
+                    <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-400" />
+                    <input 
+                      type="text" 
+                      placeholder="Cari berkas parpol..."
+                      value={searchGlobal}
+                      onChange={(e) => setSearchGlobal(e.target.value)}
+                      className="w-full pl-8 pr-3 py-1 bg-white border border-slate-200 rounded-lg text-[10px] focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200 select-none divide-x divide-slate-200/60">
+                        <th className="p-3 w-12 text-center">No</th>
+                        <th className="p-3 w-40">Partai Politik</th>
+                        <th className="p-3">Jenis Dokumen Persyaratan</th>
+                        <th className="p-3 w-44">Nomor Dokumen</th>
+                        <th className="p-3 w-28 text-center">Tanggal SK</th>
+                        <th className="p-3 w-32 text-center">Masa Berlaku</th>
+                        <th className="p-3 w-36 text-center">Status Verifikasi</th>
+                        <th className="p-3 w-32 text-center">Aksi Verifikasi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-150 text-slate-700">
+                      {getFilteredDocuments().map((d, idx) => {
+                        const p = partai.find(party => party.id === d.partaiId);
+                        return (
+                          <tr key={d.id} className="hover:bg-slate-50/50">
+                            <td className="p-3 text-center text-slate-400 font-mono font-bold">{idx + 1}</td>
+                            <td className="p-3 font-bold text-slate-900">{p?.nama} ({p?.singkatan})</td>
+                            <td className="p-3 font-semibold text-slate-800">{d.tipeDokumen}</td>
+                            <td className="p-3 text-slate-600 font-mono text-[11px]">{d.nomorDokumen}</td>
+                            <td className="p-3 text-center text-slate-500">{d.tanggal}</td>
+                            <td className="p-3 text-center text-slate-500 font-mono font-bold">{d.masaBerlaku}</td>
+                            <td className="p-3 text-center">
+                              <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
+                                d.statusVerifikasi === 'Lengkap' ? 'bg-emerald-100 text-emerald-800' :
+                                d.statusVerifikasi === 'Perbaikan' ? 'bg-rose-100 text-rose-800' :
+                                d.statusVerifikasi === 'Menunggu Verifikasi' ? 'bg-blue-150 text-blue-800' : 'bg-slate-150 text-slate-700'
+                              }`}>
+                                {d.statusVerifikasi}
+                              </span>
+                            </td>
+                            <td className="p-3 text-center">
+                              <div className="flex items-center justify-center gap-1.5">
+                                <button
+                                  onClick={() => setDocumentViewerOpen(d)}
+                                  className="p-1.5 hover:bg-slate-100 rounded text-slate-500 hover:text-slate-800 transition"
+                                  title="Pratinjau PDF"
+                                >
+                                  <Eye className="h-3.5 w-3.5" />
+                                </button>
+                                {currentUser?.role !== 'Pimpinan' && currentUser?.role !== 'Operator Partai' && (
+                                  <button
+                                    onClick={() => {
+                                      setVerifStatus(d.statusVerifikasi);
+                                      setVerifNotes(d.catatanVerifikator);
+                                      setVerificationModalOpen(d);
+                                    }}
+                                    className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[10px] font-bold shadow-2xs transition"
+                                  >
+                                    Validasi
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {getFilteredDocuments().length === 0 && (
+                        <tr>
+                          <td colSpan={8} className="p-8 text-center text-slate-400 italic">Tidak ada berkas yang diunggah.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* D. DATA HIBAH VIEW */}
+          {activeMenu === 'hibah' && (
+            <div className="space-y-6">
+              
+              <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                  <span className="font-extrabold text-slate-800">Manajemen Milestones & SK Penyaluran Dana Hibah</span>
+                  <span className="text-[10px] text-slate-400 font-medium">Berdasarkan usulan tim verifikator Kesbangpol</span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200 select-none divide-x divide-slate-200/60">
+                        <th className="p-3 w-12 text-center">No</th>
+                        <th className="p-3 w-40">Partai Politik</th>
+                        <th className="p-3 w-28 text-center">Tahun Anggaran</th>
+                        <th className="p-3 text-right">Nilai Bantuan (Rp)</th>
+                        <th className="p-3">Nomor SK / NPHD</th>
+                        <th className="p-3 w-44 text-center">Milestones Status</th>
+                        <th className="p-3 w-32">Nomor SP2D</th>
+                        <th className="p-3 w-28 text-center">Aksi Pelacakan</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-150 text-slate-700">
+                      {partai.filter(p => p.statusAktif).map((p, idx) => {
+                        const h = hibah.find(item => item.partaiId === p.id && item.tahunAnggaran === pengaturan.tahunAnggaranAktif);
+                        return (
+                          <tr key={p.id} className="hover:bg-slate-50/50">
+                            <td className="p-3 text-center text-slate-400 font-mono font-bold">{idx + 1}</td>
+                            <td className="p-3 font-bold text-slate-900">{p.nama} ({p.singkatan})</td>
+                            <td className="p-3 text-center font-bold font-mono">{pengaturan.tahunAnggaranAktif}</td>
+                            <td className="p-3 text-right font-bold text-emerald-800 font-mono">Rp {p.totalHakBantuan.toLocaleString('id-ID')}</td>
+                            <td className="p-3">
+                              <div className="flex flex-col gap-0.5 text-[10px] text-slate-500">
+                                <span>SK: {h?.nomorSk || 'Belum Terbit'}</span>
+                                <span>NPHD: {h?.nomorNphd || 'Belum Ditandatangani'}</span>
+                              </div>
+                            </td>
+                            <td className="p-3 text-center">
+                              <span className={`px-2.5 py-1 rounded text-[9px] font-extrabold ${
+                                h?.statusPenyaluran === 'Cair' ? 'bg-emerald-100 text-emerald-800' :
+                                h?.statusPenyaluran === 'SP2D Terbit' ? 'bg-cyan-100 text-cyan-800' :
+                                h?.statusPenyaluran === 'Proses Verifikasi' ? 'bg-amber-100 text-amber-800' : 'bg-slate-150 text-slate-700'
+                              }`}>
+                                {h?.statusPenyaluran || 'Belum Diproses'}
+                              </span>
+                            </td>
+                            <td className="p-3 text-slate-600 font-mono font-bold text-[11px]">{h?.nomorSp2d || '-'}</td>
+                            <td className="p-3 text-center">
+                              {currentUser?.role !== 'Pimpinan' && currentUser?.role !== 'Verifikator' && currentUser?.role !== 'Operator Partai' ? (
+                                <button
+                                  onClick={() => {
+                                    const defaultForm = h || {
+                                      id: `h_${p.id}`,
+                                      partaiId: p.id,
+                                      tahunAnggaran: pengaturan.tahunAnggaranAktif,
+                                      nomorSk: "SK-BUPATI/334/KESBANGPOL/2026",
+                                      nomorNphd: "",
+                                      nilaiBantuan: p.totalHakBantuan,
+                                      tanggalPenetapan: new Date().toISOString().slice(0, 10),
+                                      tanggalPenandatanganan: "",
+                                      statusPenyaluran: 'Proses Verifikasi',
+                                      tahapPenyaluran: "Tahap Tunggal (100%)",
+                                      tanggalCair: "",
+                                      nomorSp2d: "",
+                                      nomorSpm: "",
+                                      nomorSpd: "",
+                                      keterangan: ""
+                                    };
+                                    setHibahFormOpen(defaultForm);
+                                  }}
+                                  className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[10px] font-bold shadow-2xs transition"
+                                >
+                                  Update Pelacakan
+                                </button>
+                              ) : (
+                                <span className="text-[10px] text-slate-400 font-bold italic">Akses Terbatas</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* E. LPJ EVALUATION VIEW */}
+          {activeMenu === 'lpj' && (
+            <div className="space-y-6">
+              
+              <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                  <span className="font-extrabold text-slate-800">Evaluasi & Validasi LPJ Bantuan Keuangan Parpol</span>
+                  <span className="text-[10px] text-slate-400 font-medium">Batas akhir: 1 tahun setelah pencairan dilakukan</span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200 select-none divide-x divide-slate-200/60">
+                        <th className="p-3 w-12 text-center">No</th>
+                        <th className="p-3 w-40">Partai Politik</th>
+                        <th className="p-3 w-16 text-center">Tahun</th>
+                        <th className="p-3 w-28 text-center">Tgl Lapor</th>
+                        <th className="p-3 text-right">Nilai Penggunaan (Rp)</th>
+                        <th className="p-3">Ringkasan Kegiatan</th>
+                        <th className="p-3 w-40 text-center">Status LPJ</th>
+                        <th className="p-3 w-28 text-center">Aksi Review</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-150 text-slate-700">
+                      {lpj.map((l, idx) => {
+                        const p = partai.find(party => party.id === l.partaiId);
+                        return (
+                          <tr key={l.id} className="hover:bg-slate-50/50">
+                            <td className="p-3 text-center text-slate-400 font-mono font-bold">{idx + 1}</td>
+                            <td className="p-3 font-bold text-slate-900">{p?.nama} ({p?.singkatan})</td>
+                            <td className="p-3 text-center font-bold">{l.tahun}</td>
+                            <td className="p-3 text-center text-slate-500 font-mono">{l.tanggalLaporan}</td>
+                            <td className="p-3 text-right font-bold text-emerald-800 font-mono">Rp {l.nilaiPenggunaanDana.toLocaleString('id-ID')}</td>
+                            <td className="p-3 max-w-xs truncate text-slate-500 italic">{l.ringkasanKegiatan}</td>
+                            <td className="p-3 text-center">
+                              <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
+                                l.statusDiterima === 'Diterima' ? 'bg-emerald-100 text-emerald-800' :
+                                l.statusDiterima === 'Perbaikan' ? 'bg-amber-100 text-amber-800' :
+                                l.statusDiterima === 'Ditolak' ? 'bg-rose-100 text-rose-800' : 'bg-slate-150 text-slate-700'
+                              }`}>
+                                {l.statusDiterima}
+                              </span>
+                            </td>
+                            <td className="p-3 text-center">
+                              {currentUser?.role !== 'Operator Partai' && currentUser?.role !== 'Pimpinan' ? (
+                                <button
+                                  onClick={() => setLpjReviewOpen(l)}
+                                  className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[10px] font-bold shadow-2xs transition"
+                                >
+                                  Evaluasi LPJ
+                                </button>
+                              ) : (
+                                <span className="text-[10px] text-slate-400 font-bold italic">Akses Terbatas</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* F. ARSIP DIGITAL VIEW */}
+          {activeMenu === 'arsip' && (
+            <div className="space-y-6">
+              
+              <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                  <span className="font-extrabold text-slate-800">Kearsipan Dokumen & Berkas Penunjang Daerah</span>
+                  <div className="flex items-center gap-2">
+                    <Search className="h-3.5 w-3.5 text-slate-400" />
+                    <input 
+                      type="text" 
+                      placeholder="Cari arsip digital..."
+                      value={searchGlobal}
+                      onChange={(e) => setSearchGlobal(e.target.value)}
+                      className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-[10px] focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200 select-none">
+                        <th className="p-3 w-12 text-center">No</th>
+                        <th className="p-3 w-28">Partai</th>
+                        <th className="p-3">Jenis Dokumen Persyaratan</th>
+                        <th className="p-3 w-44">Nomor Dokumen</th>
+                        <th className="p-3 w-24 text-center">Ukur File</th>
+                        <th className="p-3 w-32">Pengunggah Berkas</th>
+                        <th className="p-3 w-32 text-center">Unduhan Resmi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-150 text-slate-700">
+                      {getFilteredDocuments().map((d, idx) => {
+                        const p = partai.find(party => party.id === d.partaiId);
+                        return (
+                          <tr key={d.id} className="hover:bg-slate-50/50">
+                            <td className="p-3 text-center text-slate-400 font-mono font-bold">{idx + 1}</td>
+                            <td className="p-3 font-bold text-slate-800">{p?.singkatan}</td>
+                            <td className="p-3 font-medium text-slate-800">{d.tipeDokumen}</td>
+                            <td className="p-3 text-slate-600 font-mono text-[10px]">{d.nomorDokumen}</td>
+                            <td className="p-3 text-center font-mono text-slate-400">{d.fileSize}</td>
+                            <td className="p-3 text-slate-500 truncate">{d.uploadedBy}</td>
+                            <td className="p-3 text-center">
+                              <button
+                                onClick={() => triggerSimulatedDownload(d.fileName)}
+                                className="px-3 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded text-[10px] font-bold text-slate-700 transition"
+                              >
+                                Unduh (PDF)
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* G. DATABASE SPREADSHEET VIEW */}
+          {activeMenu === 'spreadsheet' && (
+            <SpreadsheetView 
+              partai={partai}
+              dokumen={dokumen}
+              hibah={hibah}
+              lpj={lpj}
+              onUpdatePartai={handleSavePartai}
+              onUpdateDokumen={async (d) => {
+                setDokumen(prev => prev.map(item => item.id === d.id ? d : item));
+                await fetch('/api/dokumen', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(d)
+                });
+              }}
+              onUpdateHibah={async (h) => {
+                setHibah(prev => prev.map(item => item.id === h.id ? h : item));
+                await fetch('/api/hibah', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(h)
+                });
+              }}
+              onUpdateLPJ={async (l) => {
+                setLpj(prev => prev.map(item => item.id === l.id ? l : item));
+                await fetch('/api/lpj', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(l)
+                });
+              }}
+              onRefresh={fetchData}
+              logAktivitas={logAktivitas}
+            />
+          )}
+
+          {/* H. REPORT MODULE */}
+          {activeMenu === 'laporan' && (
+            <LaporanView 
+              partai={partai}
+              dokumen={dokumen}
+              hibah={hibah}
+              lpj={lpj}
+              pengaturan={pengaturan}
+              logAktivitas={logAktivitas}
+            />
+          )}
+
+          {/* I. USER AUDITING PROFILE */}
+          {activeMenu === 'pengguna' && (
+            <div className="space-y-6">
+              
+              <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                  <span className="font-extrabold text-slate-800">Daftar Pengguna Aplikasi Terdaftar</span>
+                  <span className="text-[10px] text-slate-400 font-bold">Total {pengguna.length} Akun</span>
+                </div>
+
+                <div className="divide-y divide-slate-100 text-slate-700">
+                  {pengguna.map(u => (
+                    <div key={u.id} className="p-4 flex items-center justify-between hover:bg-slate-50/50 transition">
+                      <div className="flex items-center gap-3">
+                        <img 
+                          src={u.avatar} 
+                          alt={u.namaLengkap} 
+                          className="w-10 h-10 rounded-full object-cover border border-slate-200"
+                        />
+                        <div>
+                          <span className="font-bold text-slate-800 text-sm block">{u.namaLengkap}</span>
+                          <span className="text-[10px] text-slate-400 font-bold block">Username: {u.username} &bull; Email: {u.email}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4">
+                        <span className={`px-2.5 py-1 rounded text-[10px] font-extrabold uppercase tracking-wide ${
+                          u.role === 'Super Admin' ? 'bg-purple-100 text-purple-800' :
+                          u.role === 'Admin Kesbangpol' ? 'bg-emerald-100 text-emerald-800' :
+                          u.role === 'Verifikator' ? 'bg-blue-100 text-blue-800' :
+                          u.role === 'Operator Partai' ? 'bg-cyan-100 text-cyan-800' : 'bg-slate-100 text-slate-800'
+                        }`}>
+                          {u.role}
+                        </span>
+
+                        <span className="text-emerald-600 font-bold text-xs flex items-center gap-1 select-none">
+                          <CheckCircle className="h-3.5 w-3.5" />
+                          {u.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* J. AUDIT TRAIL LOGS */}
+          {activeMenu === 'audit' && (
+            <AuditTrailView 
+              logs={audit}
+              currentUserRole={currentUser?.role || ''}
+              onClearLogs={() => setAudit([])}
+            />
+          )}
+
+          {/* K. SYSTEM SETTINGS PANEL */}
+          {activeMenu === 'pengaturan' && (
+            <div className="space-y-6">
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                {/* Configuration form */}
+                <div className="bg-white rounded-xl border border-slate-150 p-5 space-y-4">
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-800 border-b pb-1.5 select-none">
+                    Konfigurasi Bantuan Keuangan Daerah
+                  </h3>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-slate-500 font-bold mb-1">Tahun Anggaran Aktif</label>
+                      <input 
+                        type="number" 
+                        value={pengaturan.tahunAnggaranAktif} 
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          setPengaturan(prev => prev ? { ...prev, tahunAnggaranAktif: val } : null);
+                        }}
+                        className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-slate-800"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-500 font-bold mb-1">Bantuan per Suara DPRD (Rp)</label>
+                      <input 
+                        type="number" 
+                        value={pengaturan.nilaiBantuanPerSuara} 
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          setPengaturan(prev => prev ? { ...prev, nilaiBantuanPerSuara: val } : null);
+                        }}
+                        className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-slate-800"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-500 font-bold mb-1">Nama Instansi</label>
+                      <input 
+                        type="text" 
+                        value={pengaturan.namaInstansi} 
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setPengaturan(prev => prev ? { ...prev, namaInstansi: val } : null);
+                        }}
+                        className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-slate-800"
+                      />
+                    </div>
+
+                    <button
+                      onClick={async () => {
+                        await fetch('/api/settings', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(pengaturan)
+                        });
+                        logAktivitas('Edit', 'Konfigurasi Sistem', 'Memperbarui parameter sistem keuangan daerah.');
+                        alert("Parameter sistem berhasil disimpan!");
+                      }}
+                      className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-xs transition"
+                    >
+                      Simpan Parameter Daerah
+                    </button>
+                  </div>
+                </div>
+
+                {/* Database Backup / Utility Console */}
+                <div className="bg-white rounded-xl border border-slate-150 p-5 space-y-4">
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-800 border-b pb-1.5 select-none">
+                    Konsul & Utilitas Spreadsheet Database
+                  </h3>
+                  <p className="text-slate-500 leading-relaxed text-[11px]">
+                    Sistem ini terintegrasi penuh menggunakan berkas flat-file <code className="bg-slate-100 text-slate-700 px-1 rounded font-mono text-[10px]">database.json</code> sebagai lembar kerja kearsipan. Lakukan backup berkala.
+                  </p>
+
+                  <div className="space-y-3 pt-2">
+                    <button
+                      onClick={handleDownloadBackup}
+                      className="w-full py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg text-slate-700 font-bold transition flex items-center justify-center gap-1.5"
+                    >
+                      <Download className="h-4 w-4" />
+                      Download Backup Database JSON
+                    </button>
+
+                    <button
+                      onClick={handleImportBackup}
+                      className="w-full py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg text-slate-700 font-bold transition flex items-center justify-center gap-1.5"
+                    >
+                      <Upload className="h-4 w-4" />
+                      Restore Database dari JSON
+                    </button>
+
+                    <button
+                      onClick={handleResetDatabase}
+                      className="w-full py-2 bg-rose-50 hover:bg-rose-600 border border-rose-200 hover:border-rose-600 text-rose-600 hover:text-white font-bold rounded-lg transition flex items-center justify-center gap-1.5"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                      Reset Database ke Seed Awal
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          )}
+
+        </main>
+
+      </div>
+
+      {/* ================= MODAL DIALOGS AND ASSISTANTS ================= */}
+
+      {/* 1. REGISTER / EDIT PARTAI FORM MODAL */}
+      {partaiFormOpen && (
+        <PartaiForm 
+          partai={selectedPartai}
+          pengaturan={pengaturan}
+          onSave={handleSavePartai}
+          onClose={() => setPartaiFormOpen(false)}
+        />
+      )}
+
+      {/* 2. PARTAI PROFILE SHEET MODAL */}
+      {detailPartaiOpen && (
+        <PartaiDetailModal 
+          partai={detailPartaiOpen}
+          dokumen={dokumen}
+          pengaturan={pengaturan}
+          onClose={() => setDetailPartaiOpen(null)}
+          onOpenDocument={(doc) => setDocumentViewerOpen(doc)}
+          isOperatorPartai={currentUser?.role === 'Operator Partai' && currentUser?.partaiId === detailPartaiOpen.id}
+          onTriggerUpload={(tipeDoc) => setUploadDocOpen(tipeDoc)}
+        />
+      )}
+
+      {/* 3. SIMULATED DOCUMENT PREVIEW MODAL */}
+      {documentViewerOpen && (
+        <DocumentViewerModal 
+          document={documentViewerOpen}
+          partai={partai.find(p => p.id === documentViewerOpen.partaiId) || null}
+          onClose={() => setDocumentViewerOpen(null)}
+          onDownloadSimulated={() => triggerSimulatedDownload(documentViewerOpen.fileName)}
+        />
+      )}
+
+      {/* 4. VERIFIKATOR CHECKLIST FORM MODAL */}
+      {verificationModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl border border-slate-150 max-w-lg w-full overflow-hidden text-xs">
+            <div className="p-4 border-b bg-slate-50 flex items-center justify-between">
+              <span className="font-extrabold text-slate-800">Verifikasi Berkas Kearsipan</span>
+              <button onClick={() => setVerificationModalOpen(null)} className="p-1 text-slate-400 hover:text-slate-600 rounded">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            
+            <div className="p-5 space-y-4">
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <span className="font-bold text-slate-400 block text-[9px] uppercase">DOKUMEN DIUJI</span>
+                <span className="font-extrabold text-slate-800 block text-xs">{verificationModalOpen.tipeDokumen}</span>
+                <span className="text-[10px] text-slate-500 font-mono block mt-1">No SK: {verificationModalOpen.nomorDokumen}</span>
+              </div>
+
+              {/* Checklist item verifikasi */}
+              <div className="space-y-2.5">
+                <span className="font-bold text-slate-500 block text-[10px] uppercase">Checklist Verifikasi Administrasi:</span>
+                <div className="space-y-2 leading-tight">
+                  <label className="flex items-center gap-2 cursor-pointer font-medium">
+                    <input type="checkbox" defaultChecked className="w-3.5 h-3.5 rounded text-emerald-600" />
+                    <span>Berkas ber-stempel basah DPC/DPD Partai Politik asli</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer font-medium">
+                    <input type="checkbox" defaultChecked className="w-3.5 h-3.5 rounded text-emerald-600" />
+                    <span>Masa berlaku SK Pengurus / Domisili masih aktif</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer font-medium">
+                    <input type="checkbox" defaultChecked className="w-3.5 h-3.5 rounded text-emerald-600" />
+                    <span>Nama Ketua Umum, Sekretaris & Bendahara cocok dengan SK Kemenkumham</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer font-medium">
+                    <input type="checkbox" defaultChecked className="w-3.5 h-3.5 rounded text-emerald-600" />
+                    <span>Scan berkas digital memiliki resolusi minimal 150 DPI (Terbaca jelas)</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Status input */}
+              <div>
+                <label className="block text-slate-500 font-bold mb-1">Status Verifikasi</label>
+                <select
+                  value={verifStatus}
+                  onChange={(e) => setVerifStatus(e.target.value as StatusVerifikasi)}
+                  className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold focus:bg-white"
+                >
+                  <option value="Lengkap">Lengkap (Terverifikasi)</option>
+                  <option value="Perbaikan">Perlu Perbaikan (Ditolak)</option>
+                </select>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block text-slate-500 font-bold mb-1">Catatan Verifikator Daerah</label>
+                <textarea
+                  value={verifNotes}
+                  onChange={(e) => setVerifNotes(e.target.value)}
+                  placeholder="Tuliskan catatan perbaikan atau rincian persetujuan berkas..."
+                  className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-medium focus:bg-white min-h-[80px]"
+                />
+              </div>
+            </div>
+
+            <div className="p-3 border-t bg-slate-50 flex items-center justify-end gap-2">
+              <button 
+                onClick={() => setVerificationModalOpen(null)} 
+                className="px-4 py-1.5 bg-white border border-slate-200 text-slate-500 rounded font-bold hover:bg-slate-50"
+              >
+                Batal
+              </button>
+              <button 
+                onClick={handleSaveVerification}
+                className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold shadow-xs"
+              >
+                Simpan Verifikasi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. DATA HIBAH TRACKING FORM MODAL */}
+      {hibahFormOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl border border-slate-150 max-w-lg w-full overflow-hidden text-xs">
+            <div className="p-4 border-b bg-slate-50 flex items-center justify-between">
+              <span className="font-extrabold text-slate-800">Update Pelacakan Bantuan Hibah</span>
+              <button onClick={() => setHibahFormOpen(null)} className="p-1 text-slate-400 hover:text-slate-600 rounded">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveHibah} className="p-5 space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-500 font-bold mb-1">Nomor SK Bupati Penetapan</label>
+                  <input 
+                    type="text" 
+                    value={hibahFormOpen.nomorSk} 
+                    onChange={(e) => setHibahFormOpen({ ...hibahFormOpen, nomorSk: e.target.value })}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-500 font-bold mb-1">Nomor NPHD Daerah</label>
+                  <input 
+                    type="text" 
+                    value={hibahFormOpen.nomorNphd} 
+                    onChange={(e) => setHibahFormOpen({ ...hibahFormOpen, nomorNphd: e.target.value })}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-slate-500 font-bold mb-1">Nomor SP2D (BPKAD)</label>
+                  <input 
+                    type="text" 
+                    value={hibahFormOpen.nomorSp2d} 
+                    onChange={(e) => setHibahFormOpen({ ...hibahFormOpen, nomorSp2d: e.target.value })}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-mono font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-500 font-bold mb-1">Nomor SPM</label>
+                  <input 
+                    type="text" 
+                    value={hibahFormOpen.nomorSpm} 
+                    onChange={(e) => setHibahFormOpen({ ...hibahFormOpen, nomorSpm: e.target.value })}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-500 font-bold mb-1">Nomor SPD</label>
+                  <input 
+                    type="text" 
+                    value={hibahFormOpen.nomorSpd} 
+                    onChange={(e) => setHibahFormOpen({ ...hibahFormOpen, nomorSpd: e.target.value })}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-500 font-bold mb-1">Status Penyaluran</label>
+                  <select
+                    value={hibahFormOpen.statusPenyaluran}
+                    onChange={(e) => setHibahFormOpen({ ...hibahFormOpen, statusPenyaluran: e.target.value as StatusPenyaluran })}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold"
+                  >
+                    <option value="Proses Verifikasi">Proses Verifikasi</option>
+                    <option value="SK Penetapan">SK Penetapan Terbit</option>
+                    <option value="NPHD Ditandatangani">NPHD Ditandatangani</option>
+                    <option value="SP2D Terbit">SP2D Terbit (BPKAD)</option>
+                    <option value="Cair">Dana Cair (100%)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-slate-500 font-bold mb-1">Tanggal Dana Cair</label>
+                  <input 
+                    type="date" 
+                    value={hibahFormOpen.tanggalCair} 
+                    onChange={(e) => setHibahFormOpen({ ...hibahFormOpen, tanggalCair: e.target.value })}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-500 font-bold mb-1">Catatan Keterangan Penyaluran</label>
+                <textarea 
+                  value={hibahFormOpen.keterangan} 
+                  onChange={(e) => setHibahFormOpen({ ...hibahFormOpen, keterangan: e.target.value })}
+                  placeholder="Contoh: Transfer penuh ke Bank BJB parpol..."
+                  className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg min-h-[60px]"
+                />
+              </div>
+
+              <div className="pt-3 border-t flex items-center justify-end gap-2 -mx-5 -mb-5 p-4 bg-slate-50">
+                <button 
+                  type="button" 
+                  onClick={() => setHibahFormOpen(null)} 
+                  className="px-4 py-1.5 bg-white border border-slate-200 text-slate-500 rounded font-bold"
+                >
+                  Batal
+                </button>
+                <button 
+                  type="submit" 
+                  className="px-5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold shadow-xs"
+                >
+                  Simpan Tracking
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 6. LPJ EVALUATION MODAL */}
+      {lpjReviewOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl border border-slate-150 max-w-lg w-full overflow-hidden text-xs">
+            <div className="p-4 border-b bg-slate-50 flex items-center justify-between">
+              <span className="font-extrabold text-slate-800">Evaluasi LPJ Bantuan Keuangan</span>
+              <button onClick={() => setLpjReviewOpen(null)} className="p-1 text-slate-400 hover:text-slate-600 rounded">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveLPJ} className="p-5 space-y-4">
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-1">
+                <span className="font-bold text-slate-400 block text-[9px] uppercase">LAPORAN EVALUASI</span>
+                <span className="font-bold text-slate-800 text-xs block">Tahun LPJ: {lpjReviewOpen.tahun}</span>
+                <span className="text-emerald-700 font-extrabold block">Nilai Penggunaan: Rp {lpjReviewOpen.nilaiPenggunaanDana.toLocaleString('id-ID')}</span>
+              </div>
+
+              <div>
+                <label className="block text-slate-500 font-bold mb-1">Status Penerimaan LPJ</label>
+                <select
+                  value={lpjReviewOpen.statusDiterima}
+                  onChange={(e) => setLpjReviewOpen({ ...lpjReviewOpen, statusDiterima: e.target.value as StatusLPJ })}
+                  className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold focus:bg-white"
+                >
+                  <option value="Diterima">Diterima (LPJ Sesuai Kriteria)</option>
+                  <option value="Perbaikan">Butuh Perbaikan Dokumen</option>
+                  <option value="Ditolak">Ditolak</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-500 font-bold mb-1">Hasil Evaluasi / Catatan Auditor</label>
+                <textarea
+                  value={lpjReviewOpen.hasilEvaluasi}
+                  onChange={(e) => setLpjReviewOpen({ ...lpjReviewOpen, hasilEvaluasi: e.target.value })}
+                  placeholder="Kriteria administrasi pelaporan penggunaan dana sesuai Permendagri..."
+                  className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white min-h-[80px]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-500 font-bold mb-1">Catatan Koreksi (Jika Butuh Perbaikan)</label>
+                <input
+                  type="text"
+                  value={lpjReviewOpen.catatan}
+                  onChange={(e) => setLpjReviewOpen({ ...lpjReviewOpen, catatan: e.target.value })}
+                  placeholder="Contoh: Lampirkan daftar hadir sosialisasi parpol..."
+                  className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white"
+                />
+              </div>
+
+              <div className="pt-3 border-t flex items-center justify-end gap-2 -mx-5 -mb-5 p-4 bg-slate-50">
+                <button 
+                  type="button" 
+                  onClick={() => setLpjReviewOpen(null)} 
+                  className="px-4 py-1.5 bg-white border border-slate-200 text-slate-500 rounded font-bold"
+                >
+                  Batal
+                </button>
+                <button 
+                  type="submit" 
+                  className="px-5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold shadow-xs"
+                >
+                  Simpan Evaluasi
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 7. OPERATOR UPLOAD DOCUMENT MODAL */}
+      {uploadDocOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl border border-slate-150 max-w-sm w-full overflow-hidden text-xs">
+            <div className="p-4 border-b bg-slate-50 flex items-center justify-between">
+              <span className="font-extrabold text-slate-800">Unggah Berkas Persyaratan</span>
+              <button onClick={() => setUploadDocOpen(null)} className="p-1 text-slate-400 hover:text-slate-600 rounded">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUploadSimulated} className="p-5 space-y-4">
+              <div className="bg-emerald-50 text-emerald-800 p-3 rounded-lg border border-emerald-100 font-semibold text-[11px]">
+                Tipe Berkas: {uploadDocOpen}
+              </div>
+
+              <div className="border-2 border-dashed border-slate-200 rounded-lg p-6 text-center space-y-2 cursor-pointer hover:bg-slate-50/50">
+                <Upload className="h-8 w-8 text-slate-400 mx-auto" />
+                <span className="font-bold text-slate-700 block">Pilih berkas digital (PDF / DOCX)</span>
+                <span className="text-[10px] text-slate-400 block">Ukuran file maksimal: 10 MB</span>
+              </div>
+
+              <div className="pt-3 border-t flex items-center justify-end gap-2 -mx-5 -mb-5 p-4 bg-slate-50">
+                <button 
+                  type="button" 
+                  onClick={() => setUploadDocOpen(null)} 
+                  className="px-4 py-1.5 bg-white border border-slate-200 text-slate-500 rounded font-bold animate-pulse"
+                >
+                  Batal
+                </button>
+                <button 
+                  type="submit" 
+                  className="px-5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold shadow-xs"
+                >
+                  Mulai Unggah
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
