@@ -21,15 +21,14 @@ export const INITIAL_PENGATURAN: PengaturanSistem = {
   logoInstansi: "https://images.unsplash.com/photo-1624996379697-f01d168b1a52?w=150&h=150&fit=crop&q=80", // Coat of arms styled placeholder
   alamatInstansi: "Jl. Pejanggik No. 12, Mataram, Nusa Tenggara Barat",
   kabupatenDaftar: [
-    "Kabupaten Lombok Barat",
-    "Kabupaten Lombok Tengah",
-    "Kabupaten Lombok Timur",
-    "Kabupaten Lombok Utara",
-    "Kabupaten Sumbawa",
-    "Kabupaten Sumbawa Barat",
-    "Kabupaten Dompu",
-    "Kabupaten Bima",
     "Kota Mataram",
+    "Kab. Lombok Barat",
+    "Kab. Lombok Tengah",
+    "Kab. Lombok Timur",
+    "Kab. Sumbawa Barat",
+    "Kab. Sumbawa",
+    "Kab. Dompu",
+    "Kabupaten Bima",
     "Kota Bima"
   ],
   kecamatanDaftar: [

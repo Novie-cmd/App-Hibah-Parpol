@@ -1151,7 +1151,7 @@ export default function App() {
                 {activeMenu === 'pengaturan' && 'Sistem Konfigurasi & Kearsipan Backup'}
               </h2>
               <p className="text-xs text-slate-500 mt-1">
-                {activeMenu === 'dashboard' && 'Rekapitulasi cepat, status kearsipan nasional parpol dprd dpc kabupaten bekasi.'}
+                {activeMenu === 'dashboard' && 'Sistem kearsipan digital, verifikasi dokumen, dan monitoring hibah bantuan partai politik Provinsi Nusa Tenggara Barat.'}
                 {activeMenu === 'parpol' && 'Mengelola data partai politik aktif dprd daerah, pengurus, domisili, dan nomor rekening.'}
                 {activeMenu === 'verifikasi' && 'Verifikasi, validasi berkas fisik, pencatatan checklist, revisi, dan approve.'}
                 {activeMenu === 'hibah' && 'Tracking tahapan pencairan, penetapan SK bupati, penandatanganan NPHD, hingga penerbitan SP2D.'}

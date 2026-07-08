@@ -93,7 +93,7 @@ export default function PartaiForm({
       setAlamatKantor(partai.alamatKantor);
       setProvinsi(partai.provinsi);
       setKabupatenKota(partai.kabupatenKota);
-      setKecamatan(partai.kecamatan || pengaturan.kecamatanDaftar[0] || '');
+      setKecamatan(partai.kecamatan || '');
       setKelurahan(partai.kelurahan);
       setKodePos(partai.kodePos);
       setNomorTelepon(partai.nomorTelepon);
@@ -128,7 +128,7 @@ export default function PartaiForm({
       setNilaiBantuanPerSuara(partai.nilaiBantuanPerSuara);
     } else {
       setId(`p_${Date.now()}`);
-      setKecamatan(pengaturan.kecamatanDaftar[0] || '');
+      setKecamatan('');
     }
   }, [partai, pengaturan]);
 
@@ -345,16 +345,15 @@ export default function PartaiForm({
               </div>
 
               <div>
-                <label className="block text-slate-500 font-bold mb-1">Kecamatan di NTB</label>
-                <select 
+                <label className="block text-slate-500 font-bold mb-1">Kecamatan <span className="text-rose-500">*</span></label>
+                <input 
+                  type="text" 
                   value={kecamatan} 
                   onChange={(e) => setKecamatan(e.target.value)}
-                  className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold focus:bg-white cursor-pointer"
-                >
-                  {pengaturan.kecamatanDaftar.map((kec, i) => (
-                    <option key={i} value={kec}>{kec}</option>
-                  ))}
-                </select>
+                  placeholder="Ketik Kecamatan..."
+                  className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-medium focus:bg-white focus:outline-emerald-500"
+                  required
+                />
               </div>
             </div>
 
