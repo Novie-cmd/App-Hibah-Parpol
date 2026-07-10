@@ -2285,6 +2285,7 @@ export default function App() {
           partai={detailPartaiOpen}
           dokumen={dokumen}
           pengaturan={pengaturan}
+          hibah={hibah.find(item => item.partaiId === detailPartaiOpen.id && item.tahunAnggaran === pengaturan.tahunAnggaranAktif) || null}
           onClose={() => setDetailPartaiOpen(null)}
           onOpenDocument={(doc) => setDocumentViewerOpen(doc)}
           isOperatorPartai={currentUser?.role === 'Operator Partai' && currentUser?.partaiId === detailPartaiOpen.id}

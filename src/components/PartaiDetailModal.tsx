@@ -22,12 +22,13 @@ import {
   Lock,
   Printer
 } from 'lucide-react';
-import { Partai, DokumenHibah, PengaturanSistem } from '../types';
+import { Partai, DokumenHibah, PengaturanSistem, DataHibah } from '../types';
 
 interface PartaiDetailModalProps {
   partai: Partai;
   dokumen: DokumenHibah[];
   pengaturan: PengaturanSistem;
+  hibah: DataHibah | null;
   onClose: () => void;
   onOpenDocument: (doc: DokumenHibah) => void;
   onTriggerUpload: (tipeDoc: string) => void;
@@ -39,6 +40,7 @@ export default function PartaiDetailModal({
   partai,
   dokumen,
   pengaturan,
+  hibah,
   onClose,
   onOpenDocument,
   onTriggerUpload,
@@ -193,6 +195,58 @@ export default function PartaiDetailModal({
                   <div>
                     <span className="font-bold text-slate-400 block text-[9px] uppercase">ATAS NAMA REKENING</span>
                     <span className="text-slate-800 font-bold uppercase">{partai.atasNamaRekening || '-'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* No. 5 Data Bantuan Hibah Card */}
+              <div className="bg-white rounded-xl border border-slate-150 p-4 space-y-3.5">
+                <h4 className="text-xs font-extrabold uppercase text-slate-700 flex items-center gap-1.5 border-b border-slate-100 pb-1.5 select-none">
+                  <FileText className="h-4 w-4 text-emerald-600" />
+                  No. 5 Data Bantuan Hibah ({pengaturan.tahunAnggaranAktif})
+                </h4>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* NPHD Column */}
+                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-200/50 flex flex-col justify-between">
+                    <div>
+                      <span className="font-bold text-slate-400 block text-[8px] uppercase tracking-wider">1. Dokumen NPHD</span>
+                      <span className="text-slate-800 font-extrabold text-[10px] block mt-1 leading-snug">
+                        Nomor:<br />
+                        <span className="font-mono text-slate-600 break-all">{hibah?.nomorNphd || `900/${partai.nomorUrut + 20}/NPHD-KESBANGPOL/${pengaturan.tahunAnggaranAktif}`}</span>
+                      </span>
+                    </div>
+                    <span className="text-[9px] text-slate-500 block mt-2 border-t pt-1.5 border-slate-200/60">
+                      Tanggal: <strong className="text-emerald-700 font-semibold">{hibah?.tanggalPenandatanganan || 'Belum Diisi'}</strong>
+                    </span>
+                  </div>
+
+                  {/* SPTJM Column */}
+                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-200/50 flex flex-col justify-between">
+                    <div>
+                      <span className="font-bold text-slate-400 block text-[8px] uppercase tracking-wider">2. Dokumen SPTJM</span>
+                      <span className="text-slate-800 font-extrabold text-[10px] block mt-1 leading-snug">
+                        Nomor:<br />
+                        <span className="font-mono text-slate-600 break-all">{`${partai.nomorUrut + 10}/SPTJM/${partai.singkatan}/${pengaturan.tahunAnggaranAktif}`}</span>
+                      </span>
+                    </div>
+                    <span className="text-[9px] text-slate-500 block mt-2 border-t pt-1.5 border-slate-200/60">
+                      Tanggal: <strong className="text-emerald-700 font-semibold">{hibah?.tanggalPenandatanganan || 'Belum Diisi'}</strong>
+                    </span>
+                  </div>
+
+                  {/* BAP Column */}
+                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-200/50 flex flex-col justify-between">
+                    <div>
+                      <span className="font-bold text-slate-400 block text-[8px] uppercase tracking-wider">3. Dokumen BAP</span>
+                      <span className="text-slate-800 font-extrabold text-[10px] block mt-1 leading-snug">
+                        Nomor:<br />
+                        <span className="font-mono text-slate-600 break-all">{`900/${partai.nomorUrut + 10}/BAP-KESBANGPOL/${pengaturan.tahunAnggaranAktif}`}</span>
+                      </span>
+                    </div>
+                    <span className="text-[9px] text-slate-500 block mt-2 border-t pt-1.5 border-slate-200/60">
+                      Tanggal: <strong className="text-emerald-700 font-semibold">{hibah?.tanggalPenandatanganan || 'Belum Diisi'}</strong>
+                    </span>
                   </div>
                 </div>
               </div>
