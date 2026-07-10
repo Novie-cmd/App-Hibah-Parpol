@@ -56,6 +56,15 @@ export default function PartaiDetailModal({
   const totalPerbaikan = partyDocs.filter(d => d.statusVerifikasi === 'Perbaikan').length;
   const totalMenunggu = partyDocs.filter(d => d.statusVerifikasi === 'Menunggu Verifikasi').length;
 
+  const formatIndonesianDate = (rawDate?: string) => {
+    if (!rawDate) return 'Belum Diisi';
+    try {
+      return new Date(rawDate).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+    } catch (e) {
+      return rawDate;
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-xl border border-slate-150 max-w-4xl w-full max-h-[92vh] overflow-y-auto">
@@ -219,7 +228,7 @@ export default function PartaiDetailModal({
                       </span>
                     </div>
                     <span className="text-[9px] text-slate-500 block mt-2 border-t pt-1.5 border-slate-200/60">
-                      Tanggal: <strong className="text-emerald-700 font-semibold">{partai.tanggalNphd || hibah?.tanggalPenandatanganan || 'Belum Diisi'}</strong>
+                      Tanggal: <strong className="text-emerald-700 font-semibold">{formatIndonesianDate(partai.tanggalNphd || hibah?.tanggalPenandatanganan)}</strong>
                     </span>
                   </div>
 
@@ -235,7 +244,7 @@ export default function PartaiDetailModal({
                       </span>
                     </div>
                     <span className="text-[9px] text-slate-500 block mt-2 border-t pt-1.5 border-slate-200/60">
-                      Tanggal: <strong className="text-emerald-700 font-semibold">{partai.tanggalSptjm || 'Belum Diisi'}</strong>
+                      Tanggal: <strong className="text-emerald-700 font-semibold">{formatIndonesianDate(partai.tanggalSptjm)}</strong>
                     </span>
                   </div>
 
@@ -251,7 +260,7 @@ export default function PartaiDetailModal({
                       </span>
                     </div>
                     <span className="text-[9px] text-slate-500 block mt-2 border-t pt-1.5 border-slate-200/60">
-                      Tanggal: <strong className="text-emerald-700 font-semibold">{partai.tanggalBap || 'Belum Diisi'}</strong>
+                      Tanggal: <strong className="text-emerald-700 font-semibold">{formatIndonesianDate(partai.tanggalBap)}</strong>
                     </span>
                   </div>
                 </div>

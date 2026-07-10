@@ -55,17 +55,38 @@ export default function DocumentPrintPreviewModal({
   const nominal = hibah?.nilaiBantuan || partai.totalHakBantuan || 0;
   const nominalTerbilang = formatTerbilang(nominal) + " Rupiah";
   const tahunAnggaran = pengaturan.tahunAnggaranAktif || 2026;
-  const noNphd = hibah?.nomorNphd || `900/${partai.nomorUrut + 20}/NPHD-KESBANGPOL/${tahunAnggaran}`;
+  const noNphd = partai.nomorNphd || hibah?.nomorNphd || `900/${partai.nomorUrut + 20}/NPHD-KESBANGPOL/${tahunAnggaran}`;
   const noSk = hibah?.nomorSk || `SK-GUBERNUR/100.3.3.1-${partai.nomorUrut + 100}/${tahunAnggaran}`;
+  const noSptjm = partai.nomorSptjm || `${partai.nomorUrut + 10}/SPTJM/${partai.singkatan}/${tahunAnggaran}`;
+  const noBap = partai.nomorBap || `900/${partai.nomorUrut + 10}/BAP-KESBANGPOL/${tahunAnggaran}`;
   
   // Format dates elegantly
-  const dateStr = hibah?.tanggalPenandatanganan 
-    ? new Date(hibah.tanggalPenandatanganan).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
-    : "Rabu, 24 Juni 2026";
+  const getLongDate = (customDate?: string) => {
+    if (customDate) {
+      try {
+        return new Date(customDate).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      } catch (e) {}
+    }
+    return hibah?.tanggalPenandatanganan 
+      ? new Date(hibah.tanggalPenandatanganan).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+      : "Rabu, 24 Juni 2026";
+  };
 
-  const shortDateStr = hibah?.tanggalPenandatanganan
-    ? new Date(hibah.tanggalPenandatanganan).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
-    : "Juni 2026";
+  const getShortDate = (customDate?: string) => {
+    if (customDate) {
+      try {
+        return new Date(customDate).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+      } catch (e) {}
+    }
+    return hibah?.tanggalPenandatanganan
+      ? new Date(hibah.tanggalPenandatanganan).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
+      : "Juni 2026";
+  };
+
+  const nphdDate = getLongDate(partai.tanggalNphd);
+  const sptjmDate = getShortDate(partai.tanggalSptjm);
+  const bapDate = getLongDate(partai.tanggalBap);
+  const kuitansiDate = getShortDate(partai.tanggalBap || partai.tanggalNphd || partai.tanggalSptjm);
 
   const formattedNominal = nominal.toLocaleString('id-ID');
 
@@ -244,7 +265,7 @@ export default function DocumentPrintPreviewModal({
                   {/* Body Text */}
                   <div className="space-y-4 text-justify leading-relaxed text-[11px]">
                     <p>
-                      Pada hari ini <span className="font-bold">{dateStr}</span>, yang bertanda tangan di bawah ini :
+                      Pada hari ini <span className="font-bold">{nphdDate}</span>, yang bertanda tangan di bawah ini :
                     </p>
 
                     <ol className="list-decimal pl-5 space-y-4">
@@ -330,7 +351,7 @@ export default function DocumentPrintPreviewModal({
                     <h5 className="font-extrabold underline text-sm tracking-wide text-slate-900 uppercase">
                       SURAT PERNYATAAN TANGGUNGJAWAB MUTLAK
                     </h5>
-                    <p className="font-mono text-[10px] text-slate-500">Nomor: {partai.nomorUrut + 10}/SPTJM/{partai.singkatan}/{tahunAnggaran}</p>
+                    <p className="font-mono text-[10px] text-slate-500">Nomor: {noSptjm}</p>
                   </div>
 
                   <div className="space-y-4 text-justify leading-relaxed text-[11px]">
@@ -375,7 +396,7 @@ export default function DocumentPrintPreviewModal({
 
                   <div className="pt-12 flex justify-end">
                     <div className="text-center w-64 text-[11px] space-y-16">
-                      <p>Mataram, {shortDateStr}</p>
+                      <p>Mataram, {sptjmDate}</p>
                       <div>
                         <p className="font-bold underline">{partai.ketua}</p>
                         <p className="font-bold font-sans text-[10px] text-slate-500 uppercase mt-0.5">Ketua DPW {partai.singkatan} NTB</p>
@@ -399,12 +420,12 @@ export default function DocumentPrintPreviewModal({
                     <h5 className="font-extrabold underline text-xs tracking-wide text-slate-900 uppercase">
                       BERITA ACARA PEMBAYARAN
                     </h5>
-                    <p className="font-mono text-[9px] text-slate-500">Nomor: 900/{partai.nomorUrut + 10}/BAP-KESBANGPOL/{tahunAnggaran}</p>
+                    <p className="font-mono text-[9px] text-slate-500">Nomor: {noBap}</p>
                   </div>
 
                   <div className="space-y-4 text-justify leading-relaxed text-[11px]">
                     <p>
-                      Pada hari ini <span className="font-bold">{dateStr}</span>, kami yang bertanda tangan di bawah ini :
+                      Pada hari ini <span className="font-bold">{bapDate}</span>, kami yang bertanda tangan di bawah ini :
                     </p>
 
                     <ol className="list-decimal pl-5 space-y-3">
@@ -458,7 +479,7 @@ export default function DocumentPrintPreviewModal({
                     <div className="text-right space-y-0.5">
                       <p>Lembar ke : 1,2,3,4,5,6,7</p>
                       <p>Kb. No. : _________________</p>
-                      <p>Tanggal : {shortDateStr}</p>
+                      <p>Tanggal : {kuitansiDate}</p>
                       <p>Kode DPA : _________________</p>
                       <p>Kode SIMDA : _________________</p>
                     </div>
@@ -516,7 +537,7 @@ export default function DocumentPrintPreviewModal({
                     </div>
 
                     <div>
-                      <p>Mataram, {shortDateStr}</p>
+                      <p>Mataram, {kuitansiDate}</p>
                       <p className="font-bold uppercase text-[9px] text-slate-500">Yang menerima uang,</p>
                       <div className="h-12"></div>
                       <p className="font-bold underline">{partai.ketua}</p>
