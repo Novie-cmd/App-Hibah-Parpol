@@ -19,7 +19,8 @@ import {
   Mail, 
   PhoneCall,
   Calendar,
-  Lock
+  Lock,
+  Printer
 } from 'lucide-react';
 import { Partai, DokumenHibah, PengaturanSistem } from '../types';
 
@@ -31,6 +32,7 @@ interface PartaiDetailModalProps {
   onOpenDocument: (doc: DokumenHibah) => void;
   onTriggerUpload: (tipeDoc: string) => void;
   isOperatorPartai: boolean;
+  onPrintDocuments?: (partai: Partai) => void;
 }
 
 export default function PartaiDetailModal({
@@ -40,7 +42,8 @@ export default function PartaiDetailModal({
   onClose,
   onOpenDocument,
   onTriggerUpload,
-  isOperatorPartai
+  isOperatorPartai,
+  onPrintDocuments
 }: PartaiDetailModalProps) {
   const partyDocs = dokumen.filter(d => d.partaiId === partai.id);
   const tipeList = pengaturan.tipeDokumenDaftar;
@@ -325,10 +328,21 @@ export default function PartaiDetailModal({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-150 flex items-center justify-end bg-slate-50">
+        <div className="p-4 border-t border-slate-150 flex items-center justify-between bg-slate-50">
+          <div>
+            {onPrintDocuments && (
+              <button
+                onClick={() => onPrintDocuments(partai)}
+                className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition shadow-2xs flex items-center gap-1.5 cursor-pointer text-xs"
+              >
+                <Printer className="h-4 w-4" />
+                Cetak Dokumen Master (NPHD, SPTJM, BAP, Kuitansi)
+              </button>
+            )}
+          </div>
           <button 
             onClick={onClose} 
-            className="px-4 py-1.5 bg-white border border-slate-200 text-slate-600 font-bold rounded-lg hover:bg-slate-50 transition shadow-2xs"
+            className="px-4 py-1.5 bg-white border border-slate-200 text-slate-600 font-bold rounded-lg hover:bg-slate-50 transition shadow-2xs cursor-pointer"
           >
             Tutup Lembar Profil
           </button>

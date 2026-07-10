@@ -2164,6 +2164,10 @@ export default function App() {
           onOpenDocument={(doc) => setDocumentViewerOpen(doc)}
           isOperatorPartai={currentUser?.role === 'Operator Partai' && currentUser?.partaiId === detailPartaiOpen.id}
           onTriggerUpload={(tipeDoc) => setUploadDocOpen(tipeDoc)}
+          onPrintDocuments={(p) => {
+            const h = hibah.find(item => item.partaiId === p.id && item.tahunAnggaran === pengaturan.tahunAnggaranAktif);
+            setPrintPreviewOpen({ partai: p, hibah: h || null });
+          }}
         />
       )}
 
