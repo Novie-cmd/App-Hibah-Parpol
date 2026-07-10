@@ -18,7 +18,7 @@ export const INITIAL_PENGATURAN: PengaturanSistem = {
   tahunAnggaranAktif: 2026,
   nilaiBantuanPerSuara: 5000, // Rp 5.000 per suara sah sesuai aturan daerah
   namaInstansi: "Badan Kesatuan Bangsa dan Politik (Kesbangpol) Provinsi Nusa Tenggara Barat",
-  logoInstansi: "https://images.unsplash.com/photo-1624996379697-f01d168b1a52?w=150&h=150&fit=crop&q=80", // Coat of arms styled placeholder
+  logoInstansi: "https://upload.wikimedia.org/wikipedia/commons/b/ad/Lambang_Nusa_Tenggara_Barat.png", // Official NTB coat of arms
   alamatInstansi: "Jl. Pejanggik No. 12, Mataram, Nusa Tenggara Barat",
   kabupatenDaftar: [
     "Kota Mataram",

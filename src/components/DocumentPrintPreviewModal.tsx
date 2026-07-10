@@ -204,7 +204,7 @@ export default function DocumentPrintPreviewModal({
                   {/* Title Header with Logos */}
                   <div className="flex justify-between items-center border-b pb-4 mb-4">
                     <img 
-                      src={pengaturan.logoInstansi || "https://images.unsplash.com/photo-1624996379697-f01d168b1a52?w=100&h=100&fit=crop&q=80"} 
+                      src={pengaturan.logoInstansi || "https://upload.wikimedia.org/wikipedia/commons/b/ad/Lambang_Nusa_Tenggara_Barat.png"} 
                       alt="Logo NTB" 
                       className="w-16 h-16 object-contain"
                       referrerPolicy="no-referrer"

@@ -353,6 +353,72 @@ export default function App() {
     }
   };
 
+  const handleLogoImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Ukuran file terlalu besar! Maksimal 2MB agar penyimpanan database tetap efisien.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const base64 = event.target?.result as string;
+      if (base64 && pengaturan) {
+        const updatedPengaturan = {
+          ...pengaturan,
+          logoInstansi: base64
+        };
+        setPengaturan(updatedPengaturan);
+        try {
+          const res = await fetch('/api/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedPengaturan)
+          });
+          if (res.ok) {
+            logAktivitas('Edit', 'Konfigurasi Sistem', 'Mengimpor logo resmi pemerintah daerah baru.');
+            alert("Logo Pemerintah Daerah berhasil diimpor & disimpan ke database!");
+          } else {
+            alert("Gagal mengunggah logo ke server.");
+          }
+        } catch (err) {
+          alert("Gagal mengunggah logo ke server.");
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleResetLogo = async () => {
+    if (!pengaturan) return;
+    if (!window.confirm("Apakah Anda yakin ingin mengembalikan logo Pemda ke lambang resmi Provinsi NTB default?")) {
+      return;
+    }
+
+    const updatedPengaturan = {
+      ...pengaturan,
+      logoInstansi: "https://upload.wikimedia.org/wikipedia/commons/b/ad/Lambang_Nusa_Tenggara_Barat.png"
+    };
+    setPengaturan(updatedPengaturan);
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedPengaturan)
+      });
+      if (res.ok) {
+        logAktivitas('Edit', 'Konfigurasi Sistem', 'Mereset logo pemerintah daerah ke default.');
+        alert("Logo Pemda berhasil dikembalikan ke Lambang Resmi Provinsi NTB!");
+      } else {
+        alert("Gagal mereset logo di server.");
+      }
+    } catch (err) {
+      alert("Gagal mereset logo.");
+    }
+  };
+
   const handleDeletePengguna = async (id: string, namaLengkap: string) => {
     if (currentUser && currentUser.id === id) {
       alert("Anda tidak dapat menghapus akun Anda sendiri yang sedang aktif.");
@@ -1904,9 +1970,9 @@ export default function App() {
 
           {/* I. USER AUDITING PROFILE */}
           {activeMenu === 'pengguna' && (
-            <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               
-              <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+              <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden h-fit">
                 <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
                   <div>
                     <span className="font-extrabold text-slate-800 text-sm block">Daftar Pengguna Aplikasi Terdaftar</span>
@@ -2001,6 +2067,65 @@ export default function App() {
                     );
                   })}
                 </div>
+              </div>
+
+              {/* Import Logo Resmi Column */}
+              <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden h-fit p-5 space-y-4">
+                <div className="border-b border-slate-100 pb-3">
+                  <span className="font-extrabold text-slate-800 text-sm block">Konfigurasi Logo Daerah</span>
+                  <span className="text-[10px] text-slate-400 font-bold">Lambang resmi Pemprov NTB untuk Dokumen Master</span>
+                </div>
+
+                <div className="flex flex-col items-center gap-3 py-5 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                  <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Logo Pemerintah Saat Ini</span>
+                  <img 
+                    src={pengaturan?.logoInstansi || "https://upload.wikimedia.org/wikipedia/commons/b/ad/Lambang_Nusa_Tenggara_Barat.png"} 
+                    alt="Logo Pemprov NTB" 
+                    className="w-28 h-28 object-contain p-2 bg-white rounded-lg border border-slate-150/85 shadow-2xs"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="text-center px-4 mt-1">
+                    <span className="text-[11px] font-extrabold text-slate-700 block">Provinsi Nusa Tenggara Barat</span>
+                    <span className="text-[9px] text-slate-400 font-medium block mt-0.5">Tampilan kiri atas pada NPHD & berkas kuitansi</span>
+                  </div>
+                </div>
+
+                {(currentUser?.role === 'Super Admin' || currentUser?.role === 'Admin Kesbangpol') ? (
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Impor Logo Baru (PNG/JPG)</span>
+                      <label className="block">
+                        <span className="sr-only">Pilih berkas logo</span>
+                        <input 
+                          type="file" 
+                          accept="image/png, image/jpeg, image/jpg"
+                          onChange={handleLogoImport}
+                          className="block w-full text-xs text-slate-500
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-lg file:border-0
+                            file:text-xs file:font-bold
+                            file:bg-emerald-50 file:text-emerald-700
+                            hover:file:bg-emerald-100
+                            cursor-pointer"
+                        />
+                      </label>
+                    </div>
+                    <p className="text-[9px] text-slate-400 leading-relaxed">
+                      *Format gambar yang didukung: PNG, JPG, atau JPEG dengan rasio aspek seimbang (1:1). Maksimal ukuran file: 2MB untuk optimalisasi penyimpanan.
+                    </p>
+                    
+                    <button
+                      onClick={handleResetLogo}
+                      className="w-full py-1.5 bg-slate-50 hover:bg-rose-50 text-slate-600 hover:text-rose-600 font-bold rounded-lg text-[10px] border border-slate-200 hover:border-rose-150 transition cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      Kembalikan ke Logo Default NTB
+                    </button>
+                  </div>
+                ) : (
+                  <div className="bg-amber-50 border border-amber-100 p-3 rounded-lg text-[10px] text-amber-800 leading-normal">
+                    <strong>Akses Terbatas:</strong> Hanya Super Admin atau Admin Kesbangpol yang berhak melakukan impor atau mengubah Logo Resmi Pemerintah Daerah.
+                  </div>
+                )}
               </div>
 
             </div>
