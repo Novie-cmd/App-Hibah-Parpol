@@ -110,7 +110,7 @@ export default function LaporanView({
     let csvContent = "data:text/csv;charset=utf-8,";
     let filename = `rekap_${jenis}_${filterTahun}.csv`;
 
-    csvContent += `PEMERINTAH KABUPATEN BEKASI\n`;
+    csvContent += `PEMERINTAH PROVINSI NUSA TENGGARA BARAT\n`;
     csvContent += `BADAN KESATUAN BANGSA DAN POLITIK (KESBANGPOL)\n`;
     csvContent += `LAPORAN REKAPITULASI: ${jenis.toUpperCase()}\n`;
     csvContent += `Tahun Anggaran: ${filterTahun}\n\n`;
@@ -291,10 +291,10 @@ export default function LaporanView({
           
           {/* GOVERNMENT HEADER FOR PRINTING (hidden in normal UI except on print) */}
           <div className="hidden print:block text-center border-b-2 border-double border-slate-800 pb-4 mb-6">
-            <h1 className="text-xl font-bold tracking-wide">PEMERINTAH KABUPATEN BEKASI</h1>
+            <h1 className="text-xl font-bold tracking-wide">PEMERINTAH PROVINSI NUSA TENGGARA BARAT</h1>
             <h2 className="text-lg font-bold tracking-wide">BADAN KESATUAN BANGSA DAN POLITIK (KESBANGPOL)</h2>
             <p className="text-xs text-slate-600 mt-1">{pengaturan.alamatInstansi}</p>
-            <p className="text-xs text-slate-500">Telepon/Email: kesbangpol@bekasikab.go.id</p>
+            <p className="text-xs text-slate-500">Telepon/Email: kesbangpol@ntbprov.go.id</p>
           </div>
 
           {/* Document Title/Meta */}
@@ -399,7 +399,7 @@ export default function LaporanView({
                     </tr>
                   ))}
                   <tr className="bg-slate-100 font-bold border-t border-slate-300">
-                    <td className="p-2 text-center" colSpan={5}>TOTAL KABUPATEN BEKASI</td>
+                    <td className="p-2 text-center" colSpan={5}>TOTAL PROVINSI NTB</td>
                     <td className="p-2 text-right font-mono">
                       {partai.reduce((acc, p) => acc + p.jumlahSuaraSah, 0).toLocaleString('id-ID')}
                     </td>

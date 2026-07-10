@@ -159,9 +159,9 @@ export default function DocumentViewerModal({
               {/* Official governmental letterhead */}
               <div className="text-center border-b-2 border-slate-800 pb-3">
                 <span className="text-xl">🏛️</span>
-                <h4 className="text-[13px] font-extrabold tracking-wide uppercase mt-1 leading-none text-slate-800">PEMERINTAH KABUPATEN BEKASI</h4>
+                <h4 className="text-[13px] font-extrabold tracking-wide uppercase mt-1 leading-none text-slate-800">PEMERINTAH PROVINSI NUSA TENGGARA BARAT</h4>
                 <h5 className="text-[11px] font-bold tracking-wide uppercase mt-0.5 leading-none text-slate-700">BADAN KESATUAN BANGSA DAN POLITIK</h5>
-                <p className="text-[8px] text-slate-400 mt-1 font-mono font-medium">Komp. Perkantoran Pemda No. 1, Sukamahi, Cikarang Pusat &bull; kesbangpol@bekasikab.go.id</p>
+                <p className="text-[8px] text-slate-400 mt-1 font-mono font-medium">Jl. Pejanggik No. 12, Mataram &bull; kesbangpol@ntbprov.go.id</p>
               </div>
 
               {/* Document Meta / Code */}

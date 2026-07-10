@@ -475,7 +475,7 @@ export default function PartaiForm({
                   type="text" 
                   value={atasNamaRekening} 
                   onChange={(e) => setAtasNamaRekening(e.target.value)}
-                  placeholder="DPC PARPOL KAB BEKASI"
+                  placeholder="DPD PARPOL PROV NTB"
                   className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold uppercase"
                 />
               </div>
