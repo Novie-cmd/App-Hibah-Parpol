@@ -213,11 +213,13 @@ export default function PartaiDetailModal({
                       <span className="font-bold text-slate-400 block text-[8px] uppercase tracking-wider">1. Dokumen NPHD</span>
                       <span className="text-slate-800 font-extrabold text-[10px] block mt-1 leading-snug">
                         Nomor:<br />
-                        <span className="font-mono text-slate-600 break-all">{hibah?.nomorNphd || `900/${partai.nomorUrut + 20}/NPHD-KESBANGPOL/${pengaturan.tahunAnggaranAktif}`}</span>
+                        <span className="font-mono text-slate-600 break-all">
+                          {partai.nomorNphd || hibah?.nomorNphd || `900/${partai.nomorUrut + 20}/NPHD-KESBANGPOL/${pengaturan.tahunAnggaranAktif}`}
+                        </span>
                       </span>
                     </div>
                     <span className="text-[9px] text-slate-500 block mt-2 border-t pt-1.5 border-slate-200/60">
-                      Tanggal: <strong className="text-emerald-700 font-semibold">{hibah?.tanggalPenandatanganan || 'Belum Diisi'}</strong>
+                      Tanggal: <strong className="text-emerald-700 font-semibold">{partai.tanggalNphd || hibah?.tanggalPenandatanganan || 'Belum Diisi'}</strong>
                     </span>
                   </div>
 
@@ -227,11 +229,13 @@ export default function PartaiDetailModal({
                       <span className="font-bold text-slate-400 block text-[8px] uppercase tracking-wider">2. Dokumen SPTJM</span>
                       <span className="text-slate-800 font-extrabold text-[10px] block mt-1 leading-snug">
                         Nomor:<br />
-                        <span className="font-mono text-slate-600 break-all">{`${partai.nomorUrut + 10}/SPTJM/${partai.singkatan}/${pengaturan.tahunAnggaranAktif}`}</span>
+                        <span className="font-mono text-slate-600 break-all">
+                          {partai.nomorSptjm || `${partai.nomorUrut + 10}/SPTJM/${partai.singkatan}/${pengaturan.tahunAnggaranAktif}`}
+                        </span>
                       </span>
                     </div>
                     <span className="text-[9px] text-slate-500 block mt-2 border-t pt-1.5 border-slate-200/60">
-                      Tanggal: <strong className="text-emerald-700 font-semibold">{hibah?.tanggalPenandatanganan || 'Belum Diisi'}</strong>
+                      Tanggal: <strong className="text-emerald-700 font-semibold">{partai.tanggalSptjm || 'Belum Diisi'}</strong>
                     </span>
                   </div>
 
@@ -241,11 +245,13 @@ export default function PartaiDetailModal({
                       <span className="font-bold text-slate-400 block text-[8px] uppercase tracking-wider">3. Dokumen BAP</span>
                       <span className="text-slate-800 font-extrabold text-[10px] block mt-1 leading-snug">
                         Nomor:<br />
-                        <span className="font-mono text-slate-600 break-all">{`900/${partai.nomorUrut + 10}/BAP-KESBANGPOL/${pengaturan.tahunAnggaranAktif}`}</span>
+                        <span className="font-mono text-slate-600 break-all">
+                          {partai.nomorBap || `900/${partai.nomorUrut + 10}/BAP-KESBANGPOL/${pengaturan.tahunAnggaranAktif}`}
+                        </span>
                       </span>
                     </div>
                     <span className="text-[9px] text-slate-500 block mt-2 border-t pt-1.5 border-slate-200/60">
-                      Tanggal: <strong className="text-emerald-700 font-semibold">{hibah?.tanggalPenandatanganan || 'Belum Diisi'}</strong>
+                      Tanggal: <strong className="text-emerald-700 font-semibold">{partai.tanggalBap || 'Belum Diisi'}</strong>
                     </span>
                   </div>
                 </div>

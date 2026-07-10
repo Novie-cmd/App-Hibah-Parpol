@@ -47,6 +47,14 @@ export interface Partai {
   daerahPemilihan: string;
   nilaiBantuanPerSuara: number;
   totalHakBantuan: number;
+
+  // No. 5 Data Bantuan Hibah
+  nomorNphd?: string;
+  tanggalNphd?: string;
+  nomorSptjm?: string;
+  tanggalSptjm?: string;
+  nomorBap?: string;
+  tanggalBap?: string;
 }
 
 export type StatusVerifikasi = 'Lengkap' | 'Belum Lengkap' | 'Perbaikan' | 'Menunggu Verifikasi';

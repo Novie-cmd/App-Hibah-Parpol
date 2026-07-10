@@ -13,7 +13,8 @@ import {
   Save, 
   X,
   Plus,
-  Trash2
+  Trash2,
+  FileText
 } from 'lucide-react';
 import { Partai, PengaturanSistem } from '../types';
 
@@ -83,6 +84,14 @@ export default function PartaiForm({
   const [daerahPemilihan, setDaerahPemilihan] = useState('Dapil 1, Dapil 2');
   const [nilaiBantuanPerSuara, setNilaiBantuanPerSuara] = useState(pengaturan.nilaiBantuanPerSuara);
 
+  // No. 5 Data Bantuan Hibah
+  const [nomorNphd, setNomorNphd] = useState('');
+  const [tanggalNphd, setTanggalNphd] = useState('');
+  const [nomorSptjm, setNomorSptjm] = useState('');
+  const [tanggalSptjm, setTanggalSptjm] = useState('');
+  const [nomorBap, setNomorBap] = useState('');
+  const [tanggalBap, setTanggalBap] = useState('');
+
   useEffect(() => {
     if (partai) {
       setId(partai.id);
@@ -126,6 +135,13 @@ export default function PartaiForm({
       setJumlahKursiDprd(partai.jumlahKursiDprd);
       setDaerahPemilihan(partai.daerahPemilihan);
       setNilaiBantuanPerSuara(partai.nilaiBantuanPerSuara);
+
+      setNomorNphd(partai.nomorNphd || '');
+      setTanggalNphd(partai.tanggalNphd || '');
+      setNomorSptjm(partai.nomorSptjm || '');
+      setTanggalSptjm(partai.tanggalSptjm || '');
+      setNomorBap(partai.nomorBap || '');
+      setTanggalBap(partai.tanggalBap || '');
     } else {
       setId(`p_${Date.now()}`);
       setKecamatan('');
@@ -204,7 +220,15 @@ export default function PartaiForm({
       jumlahKursiDprd: Number(jumlahKursiDprd),
       daerahPemilihan,
       nilaiBantuanPerSuara: Number(nilaiBantuanPerSuara),
-      totalHakBantuan: calculatedTotal
+      totalHakBantuan: calculatedTotal,
+
+      // No. 5 Data Bantuan Hibah
+      nomorNphd,
+      tanggalNphd,
+      nomorSptjm,
+      tanggalSptjm,
+      nomorBap,
+      tanggalBap
     });
   };
 
@@ -613,6 +637,96 @@ export default function PartaiForm({
                 <label className="block text-emerald-700 font-bold mb-1">Total Hak Bantuan Hibah (Auto)</label>
                 <div className="w-full p-2 bg-emerald-100/60 border border-emerald-200 rounded-lg font-extrabold text-emerald-800 text-sm">
                   Rp {statusAktif ? (jumlahSuaraSah * nilaiBantuanPerSuara).toLocaleString('id-ID') : '0'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* SECTION 5: DATA BANTUAN HIBAH */}
+          <div className="space-y-4">
+            <h4 className="text-xs font-extrabold uppercase tracking-wider text-emerald-600 flex items-center gap-2 border-b border-emerald-100 pb-1.5 select-none">
+              <FileText className="h-4 w-4" />
+              5. Data Bantuan Hibah ({pengaturan.tahunAnggaranAktif})
+            </h4>
+
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/60 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* NPHD */}
+                <div className="space-y-3 p-3 bg-white rounded-lg border border-slate-200">
+                  <span className="font-extrabold text-slate-700 text-[10px] uppercase block border-b pb-1">1. DOKUMEN NPHD</span>
+                  <div className="space-y-2">
+                    <div>
+                      <label className="block text-slate-500 font-bold mb-1">Nomor NPHD</label>
+                      <input 
+                        type="text" 
+                        value={nomorNphd} 
+                        onChange={(e) => setNomorNphd(e.target.value)}
+                        placeholder={`Contoh: 900/${partai ? partai.nomorUrut + 20 : 21}/NPHD-KESBANGPOL/${pengaturan.tahunAnggaranAktif}`}
+                        className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-500 font-bold mb-1">Tanggal NPHD</label>
+                      <input 
+                        type="date" 
+                        value={tanggalNphd} 
+                        onChange={(e) => setTanggalNphd(e.target.value)}
+                        className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-emerald-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* SPTJM */}
+                <div className="space-y-3 p-3 bg-white rounded-lg border border-slate-200">
+                  <span className="font-extrabold text-slate-700 text-[10px] uppercase block border-b pb-1">2. DOKUMEN SPTJM</span>
+                  <div className="space-y-2">
+                    <div>
+                      <label className="block text-slate-500 font-bold mb-1">Nomor SPTJM</label>
+                      <input 
+                        type="text" 
+                        value={nomorSptjm} 
+                        onChange={(e) => setNomorSptjm(e.target.value)}
+                        placeholder={`Contoh: ${partai ? partai.nomorUrut + 10 : 11}/SPTJM/${partai?.singkatan || 'PARPOL'}/${pengaturan.tahunAnggaranAktif}`}
+                        className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-500 font-bold mb-1">Tanggal SPTJM</label>
+                      <input 
+                        type="date" 
+                        value={tanggalSptjm} 
+                        onChange={(e) => setTanggalSptjm(e.target.value)}
+                        className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-emerald-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* BAP */}
+                <div className="space-y-3 p-3 bg-white rounded-lg border border-slate-200 md:col-span-2">
+                  <span className="font-extrabold text-slate-700 text-[10px] uppercase block border-b pb-1">3. DOKUMEN BAP (Berita Acara Pembayaran)</span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-slate-500 font-bold mb-1">Nomor BAP</label>
+                      <input 
+                        type="text" 
+                        value={nomorBap} 
+                        onChange={(e) => setNomorBap(e.target.value)}
+                        placeholder={`Contoh: 900/${partai ? partai.nomorUrut + 10 : 11}/BAP-KESBANGPOL/${pengaturan.tahunAnggaranAktif}`}
+                        className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-500 font-bold mb-1">Tanggal BAP</label>
+                      <input 
+                        type="date" 
+                        value={tanggalBap} 
+                        onChange={(e) => setTanggalBap(e.target.value)}
+                        className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-emerald-500"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
