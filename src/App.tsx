@@ -34,7 +34,10 @@ import {
   RefreshCw,
   FolderOpen,
   X,
-  Printer
+  Printer,
+  Shield,
+  Lock,
+  User
 } from 'lucide-react';
 
 // Types
@@ -95,6 +98,165 @@ export default function App() {
   // Active User session state
   const [currentUser, setCurrentUser] = useState<Pengguna | null>(null);
 
+  // Login & Registration state variables
+  const [loginTab, setLoginTab] = useState<'login' | 'register'>('login');
+  const [loginUsername, setLoginUsername] = useState('admin_kesbang');
+  const [loginRole, setLoginRole] = useState<'Admin Kesbangpol' | 'Operator Partai'>('Admin Kesbangpol');
+  const [loginError, setLoginError] = useState('');
+  
+  const [regNamaLengkap, setRegNamaLengkap] = useState('');
+  const [regUsername, setRegUsername] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPartaiId, setRegPartaiId] = useState('');
+  const [regAvatar, setRegAvatar] = useState('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&q=80');
+  const [regSuccessMsg, setRegSuccessMsg] = useState('');
+  const [regErrorMsg, setRegErrorMsg] = useState('');
+  
+  const [inlineDocType, setInlineDocType] = useState('SK Kepengurusan');
+
+  const AVATAR_PRESETS = [
+    'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&h=150&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1628157582853-a796fa650a6a?w=150&h=150&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&q=80'
+  ];
+
+  const handleLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    setRegSuccessMsg('');
+    
+    const userObj = pengguna.find(
+      u => u.username.toLowerCase().trim() === loginUsername.toLowerCase().trim()
+    );
+    
+    if (!userObj) {
+      setLoginError('Username tidak ditemukan dalam sistem. Silakan hubungi admin atau daftarkan akun baru.');
+      return;
+    }
+    
+    if (userObj.role !== loginRole && !(loginRole === 'Admin Kesbangpol' && (userObj.role === 'Super Admin' || userObj.role === 'Verifikator' || userObj.role === 'Pimpinan'))) {
+      setLoginError(`Akun ini tidak memiliki akses sebagai ${loginRole}.`);
+      return;
+    }
+    
+    if (userObj.status === 'Menunggu Persetujuan') {
+      setLoginError('Akun Anda sedang menunggu persetujuan dari Admin Kesbangpol. Silakan hubungi admin.');
+      return;
+    }
+    
+    if (userObj.status === 'Nonaktif') {
+      setLoginError('Akun Anda dinonaktifkan. Silakan hubungi administrator.');
+      return;
+    }
+    
+    // Success Login
+    setCurrentUser(userObj);
+    localStorage.setItem('kesbangpol_session', JSON.stringify(userObj));
+    logAktivitas('Login', 'Sesi Pengguna', `Pengguna [${userObj.namaLengkap}] berhasil masuk ke sistem.`);
+    alert(`Selamat datang kembali, ${userObj.namaLengkap}!`);
+  };
+
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setRegErrorMsg('');
+    setRegSuccessMsg('');
+    
+    if (!regNamaLengkap.trim() || !regUsername.trim() || !regEmail.trim() || !regPartaiId) {
+      setRegErrorMsg('Harap lengkapi semua bidang isian formulir.');
+      return;
+    }
+    
+    const cleanUsername = regUsername.toLowerCase().trim().replace(/\s+/g, '_');
+    
+    // Check if username already exists
+    const exists = pengguna.some(u => u.username.toLowerCase() === cleanUsername);
+    if (exists) {
+      setRegErrorMsg(`Username "@${cleanUsername}" sudah digunakan. Silakan pilih username lain.`);
+      return;
+    }
+    
+    const matchedP = partai.find(p => p.id === regPartaiId);
+    
+    const newUser: Pengguna = {
+      id: `u_reg_${Date.now()}`,
+      username: cleanUsername,
+      namaLengkap: regNamaLengkap.trim(),
+      email: regEmail.trim(),
+      role: 'Operator Partai',
+      status: 'Menunggu Persetujuan',
+      partaiId: regPartaiId,
+      avatar: regAvatar
+    };
+    
+    try {
+      const res = await fetch('/api/pengguna', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newUser)
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setPengguna(prev => [...prev, saved.data]);
+        logAktivitas('Registrasi', `Pengguna ${newUser.namaLengkap}`, `Mengajukan pendaftaran akun Operator Partai untuk partai ${matchedP?.singkatan}.`);
+        
+        // Add a notification for admin
+        setNotifikasi(prev => [
+          {
+            id: `n_reg_${Date.now()}`,
+            partaiId: regPartaiId,
+            partaiNama: matchedP?.singkatan,
+            tipe: 'peringatan',
+            pesan: `Pendaftaran akun baru oleh ${newUser.namaLengkap} (${matchedP?.singkatan}) memerlukan persetujuan.`,
+            tanggal: new Date().toISOString(),
+            dibaca: false
+          },
+          ...prev
+        ]);
+        
+        // Clear reg states
+        setRegNamaLengkap('');
+        setRegUsername('');
+        setRegEmail('');
+        setRegPartaiId('');
+        
+        // Success feedback
+        setRegSuccessMsg(`Registrasi Berhasil! Akun Admin Partai untuk "${matchedP?.singkatan}" telah diajukan dan sedang Menunggu Persetujuan dari Kesbangpol.`);
+        setLoginTab('login');
+      } else {
+        throw new Error("Server error");
+      }
+    } catch (err) {
+      // Offline fallback
+      setPengguna(prev => [...prev, newUser]);
+      logAktivitas('Registrasi', `Pengguna ${newUser.namaLengkap}`, `Mengajukan pendaftaran akun Operator Partai untuk partai ${matchedP?.singkatan} (Offline).`);
+      
+      setNotifikasi(prev => [
+        {
+          id: `n_reg_${Date.now()}`,
+          partaiId: regPartaiId,
+          partaiNama: matchedP?.singkatan,
+          tipe: 'peringatan',
+          pesan: `Pendaftaran akun baru oleh ${newUser.namaLengkap} (${matchedP?.singkatan}) memerlukan persetujuan.`,
+          tanggal: new Date().toISOString(),
+          dibaca: false
+        },
+        ...prev
+      ]);
+      
+      // Clear reg states
+      setRegNamaLengkap('');
+      setRegUsername('');
+      setRegEmail('');
+      setRegPartaiId('');
+      
+      setRegSuccessMsg(`[Offline] Registrasi Akun "${newUser.namaLengkap}" tersimpan lokal. Menunggu Persetujuan dari Kesbangpol.`);
+      setLoginTab('login');
+    }
+  };
+
   // Modal control states
   const [selectedPartai, setSelectedPartai] = useState<Partai | null>(null);
   const [detailPartaiOpen, setDetailPartaiOpen] = useState<Partai | null>(null);
@@ -148,9 +310,23 @@ export default function App() {
         // Save copy to local storage
         localStorage.setItem('kesbangpol_db', JSON.stringify(data));
         
-        // Default session as Super Admin
-        if (data.pengguna && data.pengguna.length > 0) {
-          setCurrentUser(data.pengguna.find((u: any) => u.username === 'admin_kesbang') || data.pengguna[0]);
+        // Check local storage for existing session
+        const savedSession = localStorage.getItem('kesbangpol_session');
+        if (savedSession) {
+          try {
+            const parsed = JSON.parse(savedSession);
+            const matchedUser = (data.pengguna || []).find((u: any) => u.id === parsed.id);
+            if (matchedUser && matchedUser.status === 'Aktif') {
+              setCurrentUser(matchedUser);
+            } else {
+              localStorage.removeItem('kesbangpol_session');
+              setCurrentUser(null);
+            }
+          } catch (e) {
+            setCurrentUser(null);
+          }
+        } else {
+          setCurrentUser(null);
         }
       } else {
         throw new Error("Server returned non-ok status: " + res.status);
@@ -193,8 +369,22 @@ export default function App() {
       setNotifikasi(localDb.notifikasi || []);
       setPengaturan(localDb.pengaturan || null);
       
-      if (localDb.pengguna && localDb.pengguna.length > 0) {
-        setCurrentUser(localDb.pengguna.find((u: any) => u.username === 'admin_kesbang') || localDb.pengguna[0]);
+      const savedSession = localStorage.getItem('kesbangpol_session');
+      if (savedSession) {
+        try {
+          const parsed = JSON.parse(savedSession);
+          const matchedUser = (localDb.pengguna || []).find((u: any) => u.id === parsed.id);
+          if (matchedUser && matchedUser.status === 'Aktif') {
+            setCurrentUser(matchedUser);
+          } else {
+            localStorage.removeItem('kesbangpol_session');
+            setCurrentUser(null);
+          }
+        } catch (e) {
+          setCurrentUser(null);
+        }
+      } else {
+        setCurrentUser(null);
       }
     } finally {
       setIsLoading(false);
@@ -243,6 +433,34 @@ export default function App() {
     } catch (e) {
       // Fallback
       setAudit(prev => [{ ...newLog, id: `a_${Date.now()}`, ipAddress: '127.0.0.1' }, ...prev]);
+    }
+  };
+
+  const handleApprovePengguna = async (pId: string, action: 'setujui' | 'tolak') => {
+    const statusVal = action === 'setujui' ? 'Aktif' : 'Nonaktif';
+    const targetUser = pengguna.find(u => u.id === pId);
+    if (!targetUser) return;
+    
+    const updatedUser = { ...targetUser, status: statusVal };
+    
+    try {
+      const res = await fetch(`/api/pengguna/${pId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedUser)
+      });
+      if (res.ok) {
+        setPengguna(prev => prev.map(u => u.id === pId ? { ...u, status: statusVal } : u));
+        logAktivitas('Persetujuan Pengguna', `Pengguna ${targetUser.namaLengkap}`, `${action === 'setujui' ? 'Menyetujui' : 'Menolak'} pendaftaran akun.`);
+        alert(`Akun ${targetUser.namaLengkap} berhasil ${action === 'setujui' ? 'disetujui (aktif)' : 'ditolak (nonaktif)'}!`);
+      } else {
+        throw new Error("Server error");
+      }
+    } catch (err) {
+      // Offline fallback
+      setPengguna(prev => prev.map(u => u.id === pId ? { ...u, status: statusVal } : u));
+      logAktivitas('Persetujuan Pengguna', `Pengguna ${targetUser.namaLengkap}`, `${action === 'setujui' ? 'Menyetujui' : 'Menolak'} pendaftaran akun (Offline).`);
+      alert(`[Offline] Akun ${targetUser.namaLengkap} berhasil ${action === 'setujui' ? 'disetujui (aktif)' : 'ditolak (nonaktif)'}.`);
     }
   };
 
@@ -904,9 +1122,15 @@ export default function App() {
     );
   }
 
+  const isOperator = currentUser?.role === 'Operator Partai';
+
   // Filter out search elements
   const getFilteredPartai = () => {
-    return partai.filter(p => {
+    let list = partai;
+    if (isOperator && currentUser?.partaiId) {
+      list = partai.filter(p => p.id === currentUser.partaiId);
+    }
+    return list.filter(p => {
       const matchesSearch = 
         p.nama.toLowerCase().includes(searchGlobal.toLowerCase()) ||
         p.singkatan.toLowerCase().includes(searchGlobal.toLowerCase()) ||
@@ -917,7 +1141,11 @@ export default function App() {
   };
 
   const getFilteredDocuments = () => {
-    return dokumen.filter(d => {
+    let list = dokumen;
+    if (isOperator && currentUser?.partaiId) {
+      list = dokumen.filter(d => d.partaiId === currentUser.partaiId);
+    }
+    return list.filter(d => {
       const p = partai.find(party => party.id === d.partaiId);
       const matchesSearch = 
         d.tipeDokumen.toLowerCase().includes(searchGlobal.toLowerCase()) ||
@@ -928,7 +1156,299 @@ export default function App() {
     });
   };
 
-  const isOperator = currentUser?.role === 'Operator Partai';
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center p-4 relative overflow-hidden font-sans select-none">
+        
+        {/* Background Decorative Rings */}
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div className="w-full max-w-md bg-slate-900/80 border border-slate-800 rounded-2xl shadow-2xl p-6 backdrop-blur-md relative z-10 space-y-6">
+          
+          {/* Logo & Header */}
+          <div className="text-center space-y-2">
+            <div className="inline-flex p-3 bg-emerald-950/80 border border-emerald-900 rounded-2xl shadow-inner text-emerald-400 text-3xl">
+              🏛️
+            </div>
+            <div>
+              <h2 className="text-white text-base font-black uppercase tracking-wider">SI-HIBAH PARPOL</h2>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">
+                Badan Kesatuan Bangsa dan Politik <br />
+                <span className="text-emerald-400 font-extrabold">Provinsi Nusa Tenggara Barat</span>
+              </p>
+            </div>
+          </div>
+
+          {/* Tab Selection: Login vs Register */}
+          <div className="grid grid-cols-2 p-1 bg-slate-950 rounded-xl border border-slate-800">
+            <button
+              onClick={() => {
+                setLoginTab('login');
+                setRegSuccessMsg('');
+                setRegErrorMsg('');
+              }}
+              className={`py-2 text-xs font-bold rounded-lg transition-all ${
+                loginTab === 'login' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              Masuk (Login)
+            </button>
+            <button
+              onClick={() => {
+                setLoginTab('register');
+                setRegSuccessMsg('');
+                setRegErrorMsg('');
+              }}
+              className={`py-2 text-xs font-bold rounded-lg transition-all ${
+                loginTab === 'register' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              Registrasi Admin Partai
+            </button>
+          </div>
+
+          {loginTab === 'login' ? (
+            /* LOGIN FORM */
+            <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs text-slate-300">
+              
+              {/* Role Filter Selector */}
+              <div>
+                <label className="block text-slate-400 font-bold mb-1.5 uppercase tracking-wide text-[9px]">
+                  Tipe Akun Pengguna
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLoginRole('Admin Kesbangpol');
+                      // set default username for convenience
+                      setLoginUsername('admin_kesbang');
+                    }}
+                    className={`py-2 px-3 border rounded-xl font-bold flex items-center justify-center gap-1.5 transition ${
+                      loginRole === 'Admin Kesbangpol'
+                        ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-400 shadow-xs'
+                        : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-850'
+                    }`}
+                  >
+                    <Shield className="h-3.5 w-3.5" />
+                    Kesbangpol
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLoginRole('Operator Partai');
+                      // set default username for convenience
+                      setLoginUsername('operator_gerindra');
+                    }}
+                    className={`py-2 px-3 border rounded-xl font-bold flex items-center justify-center gap-1.5 transition ${
+                      loginRole === 'Operator Partai'
+                        ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-400 shadow-xs'
+                        : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-850'
+                    }`}
+                  >
+                    <Users className="h-3.5 w-3.5" />
+                    Admin Partai
+                  </button>
+                </div>
+              </div>
+
+              {/* Username Input */}
+              <div className="space-y-1.5">
+                <label className="block text-slate-400 font-bold uppercase tracking-wide text-[9px]">
+                  Username Akun
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500">
+                    <User className="h-4 w-4" />
+                  </span>
+                  <input
+                    type="text"
+                    required
+                    value={loginUsername}
+                    onChange={(e) => setLoginUsername(e.target.value)}
+                    placeholder={loginRole === 'Admin Kesbangpol' ? 'admin_kesbang' : 'operator_gerindra'}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 p-3 font-bold text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition"
+                  />
+                </div>
+              </div>
+
+              {/* Error warning display */}
+              {loginError && (
+                <div className="bg-rose-950/40 border border-rose-900/60 p-3 rounded-xl flex items-start gap-2.5 text-rose-400 text-[11px] leading-relaxed">
+                  <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+                  <span>{loginError}</span>
+                </div>
+              )}
+
+              {/* Success registration notification message if just completed registration */}
+              {regSuccessMsg && (
+                <div className="bg-emerald-950/40 border border-emerald-900/60 p-3 rounded-xl flex items-start gap-2.5 text-emerald-400 text-[11px] leading-relaxed">
+                  <CheckCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                  <span>{regSuccessMsg}</span>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-xl shadow-lg shadow-emerald-950/50 transition transform active:scale-98 flex items-center justify-center gap-1.5 text-xs uppercase tracking-wider"
+              >
+                Masuk ke Aplikasi
+              </button>
+
+              {/* Conveniences: One-Click Demo Logins for easy testing */}
+              <div className="pt-3 border-t border-slate-800 space-y-2">
+                <span className="text-[10px] text-slate-500 font-extrabold uppercase tracking-wide block text-center">
+                  Uji Coba Akun Demo Cepat
+                </span>
+                <div className="grid grid-cols-2 gap-2 text-[10px]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLoginRole('Admin Kesbangpol');
+                      setLoginUsername('admin_kesbang');
+                      setLoginError('');
+                    }}
+                    className="bg-slate-900 hover:bg-slate-850 p-2 border border-slate-800 rounded-lg text-slate-300 font-bold text-center block"
+                  >
+                    👑 Kesbangpol (Juhanda)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLoginRole('Operator Partai');
+                      setLoginUsername('operator_gerindra');
+                      setLoginError('');
+                    }}
+                    className="bg-slate-900 hover:bg-slate-850 p-2 border border-slate-800 rounded-lg text-slate-300 font-bold text-center block"
+                  >
+                    🗳️ Admin Gerindra (Helmi)
+                  </button>
+                </div>
+              </div>
+
+            </form>
+          ) : (
+            /* REGISTER FORM */
+            <form onSubmit={handleRegisterSubmit} className="space-y-4 text-xs text-slate-300">
+              
+              <p className="text-[10px] text-slate-400 font-medium leading-relaxed bg-slate-950 p-2.5 rounded-xl border border-slate-850">
+                Pendaftaran ini ditujukan untuk Admin Partai Politik yang ingin melacak dan mengunggah dokumen kearsipan hibah. Setelah mendaftar, akun Anda harus disetujui oleh Kesbangpol terlebih dahulu untuk dapat masuk.
+              </p>
+
+              {/* Nama Lengkap */}
+              <div className="space-y-1">
+                <label className="block text-slate-400 font-bold uppercase tracking-wide text-[9px]">
+                  Nama Lengkap Pendaftar
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={regNamaLengkap}
+                  onChange={(e) => setRegNamaLengkap(e.target.value)}
+                  placeholder="Contoh: Muhammad Syafe'i, S.E."
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 font-bold text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                />
+              </div>
+
+              {/* Username & Email */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="block text-slate-400 font-bold uppercase tracking-wide text-[9px]">
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={regUsername}
+                    onChange={(e) => setRegUsername(e.target.value)}
+                    placeholder="operator_pkb"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 font-bold text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-slate-400 font-bold uppercase tracking-wide text-[9px]">
+                    Alamat Email
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={regEmail}
+                    onChange={(e) => setRegEmail(e.target.value)}
+                    placeholder="pkb@ntbprov.or.id"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 font-bold text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+
+              {/* Afiliasi Partai Politik */}
+              <div className="space-y-1">
+                <label className="block text-slate-400 font-bold uppercase tracking-wide text-[9px]">
+                  Afiliasi Partai Politik
+                </label>
+                <select
+                  required
+                  value={regPartaiId}
+                  onChange={(e) => setRegPartaiId(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 font-bold text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                >
+                  <option value="">-- Pilih Partai Politik --</option>
+                  {partai.map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.nama} ({p.singkatan})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Avatar Preset Selector */}
+              <div className="space-y-2 bg-slate-950 p-2.5 rounded-xl border border-slate-850">
+                <span className="block text-slate-400 font-bold uppercase tracking-wide text-[9px]">
+                  Pilih Foto Profil
+                </span>
+                <div className="flex gap-2 justify-center">
+                  {AVATAR_PRESETS.map((preset, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setRegAvatar(preset)}
+                      className={`w-8 h-8 rounded-full overflow-hidden border-2 transition transform hover:scale-110 ${
+                        regAvatar === preset ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-transparent'
+                      }`}
+                    >
+                      <img src={preset} alt={`preset ${idx}`} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Error during registration */}
+              {regErrorMsg && (
+                <div className="bg-rose-950/40 border border-rose-900/60 p-2.5 rounded-xl text-rose-400 text-[10px] leading-relaxed">
+                  {regErrorMsg}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-xl shadow-lg transition transform active:scale-98 flex items-center justify-center gap-1.5 text-xs uppercase tracking-wider"
+              >
+                Daftarkan Akun Baru
+              </button>
+
+            </form>
+          )}
+
+          <div className="text-center">
+            <span className="text-[9px] text-slate-600 font-bold uppercase tracking-widest block">
+              Sistem Kearsipan & Verifikasi Bantuan Hibah NTB &bull; 2026
+            </span>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col font-sans select-none antialiased">
@@ -968,27 +1488,33 @@ export default function App() {
             TA {pengaturan.tahunAnggaranAktif}
           </span>
 
-          {/* Test Session Switcher for testing all requested roles */}
-          <div className="flex items-center gap-1.5 bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-lg">
-            <span className="text-[10px] text-slate-400 font-bold">Role:</span>
-            <select
-              value={currentUser?.id}
-              onChange={(e) => {
-                const userObj = pengguna.find(u => u.id === e.target.value);
-                if (userObj) {
-                  setCurrentUser(userObj);
-                  logAktivitas('Login', 'Sesi Pengguna', `Berganti peran pengguna menjadi [${userObj.role}]`);
-                }
-              }}
-              className="bg-transparent text-[10px] font-extrabold text-emerald-400 focus:outline-none cursor-pointer"
-            >
-              {pengguna.map(u => (
-                <option key={u.id} value={u.id} className="text-slate-900 font-sans font-medium">
-                  {u.namaLengkap} ({u.role})
-                </option>
-              ))}
-            </select>
+          {/* Logged in User Profile Info */}
+          <div className="flex items-center gap-2">
+            <img 
+              src={currentUser?.avatar} 
+              alt={currentUser?.namaLengkap} 
+              className="w-7 h-7 rounded-full object-cover border border-slate-700 shadow-2xs" 
+            />
+            <div className="hidden sm:block text-left">
+              <span className="text-[10px] font-extrabold text-slate-200 block max-w-[120px] truncate">{currentUser?.namaLengkap}</span>
+              <span className="text-[9px] text-emerald-400 font-bold block truncate">{currentUser?.role}</span>
+            </div>
           </div>
+
+          {/* Logout Button */}
+          <button
+            onClick={() => {
+              if (confirm('Apakah Anda yakin ingin keluar dari aplikasi?')) {
+                localStorage.removeItem('kesbangpol_session');
+                setCurrentUser(null);
+              }
+            }}
+            className="flex items-center gap-1 px-2.5 py-1 bg-rose-950/60 hover:bg-rose-900 border border-rose-900/40 hover:border-rose-700 text-rose-300 hover:text-white rounded-lg text-[10px] font-extrabold transition cursor-pointer"
+            title="Keluar"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            Keluar
+          </button>
 
           {/* Notification bell */}
           <div className="relative">
@@ -1081,38 +1607,42 @@ export default function App() {
               }`}
             >
               <Users className="h-4 w-4" />
-              <span>Master Data Parpol</span>
+              <span>{isOperator ? 'Master Data' : 'Master Data Parpol'}</span>
             </button>
 
-            <button
-              onClick={() => setActiveMenu('verifikasi')}
-              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
-                activeMenu === 'verifikasi' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
-            >
-              <FileCheck className="h-4 w-4" />
-              <span>Verifikasi Berkas</span>
-            </button>
+            {!isOperator && (
+              <>
+                <button
+                  onClick={() => setActiveMenu('verifikasi')}
+                  className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
+                    activeMenu === 'verifikasi' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  <FileCheck className="h-4 w-4" />
+                  <span>Verifikasi Berkas</span>
+                </button>
 
-            <button
-              onClick={() => setActiveMenu('hibah')}
-              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
-                activeMenu === 'hibah' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
-            >
-              <Wallet className="h-4 w-4" />
-              <span>Penyaluran Hibah</span>
-            </button>
+                <button
+                  onClick={() => setActiveMenu('hibah')}
+                  className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
+                    activeMenu === 'hibah' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  <Wallet className="h-4 w-4" />
+                  <span>Penyaluran Hibah</span>
+                </button>
 
-            <button
-              onClick={() => setActiveMenu('lpj')}
-              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
-                activeMenu === 'lpj' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
-            >
-              <FileText className="h-4 w-4" />
-              <span>Evaluasi LPJ</span>
-            </button>
+                <button
+                  onClick={() => setActiveMenu('lpj')}
+                  className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
+                    activeMenu === 'lpj' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  <FileText className="h-4 w-4" />
+                  <span>Evaluasi LPJ</span>
+                </button>
+              </>
+            )}
 
             <button
               onClick={() => setActiveMenu('arsip')}
@@ -1124,76 +1654,94 @@ export default function App() {
               <span>Arsip Dokumen</span>
             </button>
 
-            <button
-              onClick={() => setActiveMenu('spreadsheet')}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
-                activeMenu === 'spreadsheet' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Table className="h-4 w-4" />
-                <span>Spreadsheet Database</span>
-              </div>
-              <span className="bg-emerald-900 text-emerald-400 text-[9px] px-1.5 py-0.5 rounded font-mono font-bold">GRID</span>
-            </button>
+            {!isOperator && (
+              <>
+                <button
+                  onClick={() => setActiveMenu('spreadsheet')}
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
+                    activeMenu === 'spreadsheet' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Table className="h-4 w-4" />
+                    <span>Spreadsheet Database</span>
+                  </div>
+                  <span className="bg-emerald-900 text-emerald-400 text-[9px] px-1.5 py-0.5 rounded font-mono font-bold">GRID</span>
+                </button>
 
-            <button
-              onClick={() => setActiveMenu('laporan')}
-              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
-                activeMenu === 'laporan' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
-            >
-              <FileBarChart className="h-4 w-4" />
-              <span>Rekap & Laporan</span>
-            </button>
+                <button
+                  onClick={() => setActiveMenu('laporan')}
+                  className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
+                    activeMenu === 'laporan' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  <FileBarChart className="h-4 w-4" />
+                  <span>Rekap & Laporan</span>
+                </button>
 
-            <button
-              onClick={() => setActiveMenu('pengguna')}
-              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
-                activeMenu === 'pengguna' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
-            >
-              <UserCheck className="h-4 w-4" />
-              <span>Manajemen Pengguna</span>
-            </button>
+                <button
+                  onClick={() => setActiveMenu('pengguna')}
+                  className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
+                    activeMenu === 'pengguna' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  <UserCheck className="h-4 w-4" />
+                  <span>Manajemen Pengguna</span>
+                </button>
 
-            <button
-              onClick={() => setActiveMenu('audit')}
-              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
-                activeMenu === 'audit' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
-            >
-              <History className="h-4 w-4" />
-              <span>Audit Trail Logs</span>
-            </button>
+                <button
+                  onClick={() => setActiveMenu('audit')}
+                  className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
+                    activeMenu === 'audit' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  <History className="h-4 w-4" />
+                  <span>Audit Trail Logs</span>
+                </button>
 
-            <button
-              onClick={() => setActiveMenu('pengaturan')}
-              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
-                activeMenu === 'pengaturan' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
-            >
-              <Settings className="h-4 w-4" />
-              <span>Pengaturan Sistem</span>
-            </button>
+                <button
+                  onClick={() => setActiveMenu('pengaturan')}
+                  className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition ${
+                    activeMenu === 'pengaturan' ? 'bg-emerald-650 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  <Settings className="h-4 w-4" />
+                  <span>Pengaturan Sistem</span>
+                </button>
+              </>
+            )}
           </nav>
 
           {/* User profile card in footer */}
-          <div className="p-4 border-t border-slate-800 bg-slate-950/40">
-            <div className="flex items-center gap-3">
-              <img 
-                src={currentUser?.avatar} 
-                alt="Profile avatar" 
-                className="w-9 h-9 rounded-full object-cover border border-slate-700 shadow-2xs"
-              />
-              <div className="overflow-hidden">
-                <span className="font-bold text-slate-200 block truncate">{currentUser?.namaLengkap}</span>
-                <span className="text-[10px] text-slate-500 font-bold block truncate uppercase tracking-wider">{currentUser?.role}</span>
+          <div className="p-4 border-t border-slate-800 bg-slate-950/40 space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-3 overflow-hidden">
+                <img 
+                  src={currentUser?.avatar} 
+                  alt="Profile avatar" 
+                  className="w-9 h-9 rounded-full object-cover border border-slate-700 shadow-2xs"
+                />
+                <div className="overflow-hidden">
+                  <span className="font-bold text-slate-200 block truncate">{currentUser?.namaLengkap}</span>
+                  <span className="text-[10px] text-slate-500 font-bold block truncate uppercase tracking-wider">{currentUser?.role}</span>
+                </div>
               </div>
+              <button
+                onClick={() => {
+                  if (confirm('Apakah Anda yakin ingin keluar dari aplikasi?')) {
+                    localStorage.removeItem('kesbangpol_session');
+                    setCurrentUser(null);
+                  }
+                }}
+                className="p-1.5 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-900/30 hover:border-rose-700 text-rose-300 hover:text-white rounded-lg transition cursor-pointer shrink-0"
+                title="Keluar dari Sistem"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
             </div>
             
             {isOperator && currentUser?.partaiId && (
-              <div className="mt-3 bg-emerald-950/60 border border-emerald-900/60 px-2 py-1.5 rounded text-emerald-400 font-bold text-[9px] uppercase tracking-wide text-center">
+              <div className="bg-emerald-950/60 border border-emerald-900/60 px-2 py-1.5 rounded text-emerald-400 font-bold text-[9px] uppercase tracking-wide text-center">
                 Operator: {partai.find(p => p.id === currentUser.partaiId)?.singkatan}
               </div>
             )}
@@ -1207,12 +1755,12 @@ export default function App() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-5 no-print">
             <div>
               <h2 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2">
-                {activeMenu === 'dashboard' && 'Dashboard Analitis Hibah'}
-                {activeMenu === 'parpol' && 'Pusat Profil Partai Politik'}
+                {activeMenu === 'dashboard' && (isOperator ? 'Dashboard Utama Partai Politik' : 'Dashboard Analitis Hibah')}
+                {activeMenu === 'parpol' && (isOperator ? 'Master Data Administrasi Partai' : 'Pusat Profil Partai Politik')}
                 {activeMenu === 'verifikasi' && 'Validasi Berkas Persyaratan Administrasi'}
                 {activeMenu === 'hibah' && 'Manajemen Milestones Penyaluran Hibah'}
                 {activeMenu === 'lpj' && 'Evaluasi Laporan Pertanggungjawaban (LPJ)'}
-                {activeMenu === 'arsip' && 'Kearsipan Dokumen & Berkas Digital'}
+                {activeMenu === 'arsip' && (isOperator ? 'Arsip Digital Berkas Persyaratan' : 'Kearsipan Dokumen & Berkas Digital')}
                 {activeMenu === 'spreadsheet' && 'Sistem Kearsipan Lembar Kerja'}
                 {activeMenu === 'laporan' && 'Laporan Komparatif & Rekapitulasi'}
                 {activeMenu === 'pengguna' && 'Otorisasi Pengguna Sistem'}
@@ -1220,12 +1768,12 @@ export default function App() {
                 {activeMenu === 'pengaturan' && 'Sistem Konfigurasi & Kearsipan Backup'}
               </h2>
               <p className="text-xs text-slate-500 mt-1">
-                {activeMenu === 'dashboard' && 'Sistem kearsipan digital, verifikasi dokumen, dan monitoring hibah bantuan partai politik Provinsi Nusa Tenggara Barat.'}
-                {activeMenu === 'parpol' && 'Mengelola data partai politik aktif dprd daerah, pengurus, domisili, dan nomor rekening.'}
+                {activeMenu === 'dashboard' && (isOperator ? 'Selamat datang! Pantau status kelengkapan berkas, alokasi dana bantuan hibah, serta progres pencairan secara real-time.' : 'Sistem kearsipan digital, verifikasi dokumen, dan monitoring hibah bantuan partai politik Provinsi Nusa Tenggara Barat.')}
+                {activeMenu === 'parpol' && (isOperator ? 'Kelola dan perbarui seluruh informasi identitas partai, struktur kepengurusan DPC/DPD, rekening bank resmi, dan perolehan suara sah.' : 'Mengelola data partai politik aktif dprd daerah, pengurus, domisili, dan nomor rekening.')}
                 {activeMenu === 'verifikasi' && 'Verifikasi, validasi berkas fisik, pencatatan checklist, revisi, dan approve.'}
                 {activeMenu === 'hibah' && 'Tracking tahapan pencairan, penetapan SK bupati, penandatanganan NPHD, hingga penerbitan SP2D.'}
                 {activeMenu === 'lpj' && 'Mengevaluasi pelaporan LPJ hibah tahun berjalan dari partai penerima bantuan.'}
-                {activeMenu === 'arsip' && 'Arsip digital terpusat seluruh dokumen persyaratan hibah lengkap dengan versi kearsipan.'}
+                {activeMenu === 'arsip' && (isOperator ? 'Koleksi digital seluruh dokumen administrasi resmi partai politik yang telah berhasil diunggah dan diverifikasi.' : 'Arsip digital terpusat seluruh dokumen persyaratan hibah lengkap dengan versi kearsipan.')}
                 {activeMenu === 'spreadsheet' && 'Sistem lembar kerja spreadsheet virtual untuk pengeditan raw database langsung.'}
                 {activeMenu === 'laporan' && 'Unduh berkas laporan resmi pemerintah, rekap tahunan, dan pencetakan PDF.'}
                 {activeMenu === 'pengguna' && 'Mengelola otorisasi hak akses pengguna admin kesbangpol, verifikator, pimpinan, operator parpol.'}
@@ -1244,7 +1792,7 @@ export default function App() {
                 <RefreshCw className="h-4 w-4" />
               </button>
 
-              {currentUser?.role !== 'Pimpinan' && currentUser?.role !== 'Verifikator' && activeMenu === 'parpol' && (
+              {!isOperator && currentUser?.role !== 'Pimpinan' && currentUser?.role !== 'Verifikator' && activeMenu === 'parpol' && (
                 <button
                   onClick={() => {
                     setSelectedPartai(null);
@@ -1970,7 +2518,66 @@ export default function App() {
 
           {/* I. USER AUDITING PROFILE */}
           {activeMenu === 'pengguna' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="space-y-6">
+              
+              {/* PANEL PERSETUJUAN PENDAFTARAN OPERATOR PARTAI */}
+              {(currentUser?.role === 'Super Admin' || currentUser?.role === 'Admin Kesbangpol') && (
+                (() => {
+                  const pendingUsers = pengguna.filter(u => u.status === 'Menunggu Persetujuan');
+                  if (pendingUsers.length === 0) return null;
+                  
+                  return (
+                    <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-5 shadow-sm space-y-4">
+                      <div className="flex items-center gap-2.5">
+                        <span className="p-1.5 bg-amber-100 rounded-lg text-amber-700 text-lg">⏳</span>
+                        <div>
+                          <h3 className="font-extrabold text-amber-900 text-sm">Persetujuan Pendaftaran Admin Partai Baru</h3>
+                          <p className="text-[10px] text-amber-600 font-bold">Terdapat {pendingUsers.length} permohonan pendaftaran akun operator partai politik baru yang perlu ditinjau</p>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {pendingUsers.map(u => {
+                          const p = partai.find(party => party.id === u.partaiId);
+                          return (
+                            <div key={u.id} className="bg-white border border-amber-150 rounded-xl p-4 flex items-start gap-3 shadow-xs">
+                              <img src={u.avatar} alt={u.namaLengkap} className="w-10 h-10 rounded-full object-cover border border-slate-200" />
+                              <div className="flex-1 space-y-1 text-xs">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-extrabold text-xs text-slate-800 block">{u.namaLengkap}</span>
+                                  <span className="text-[9px] text-amber-600 font-extrabold uppercase bg-amber-100 px-2 py-0.5 rounded-md">Menunggu Persetujuan</span>
+                                </div>
+                                <span className="text-[10px] text-slate-500 font-bold block">@{u.username} &bull; {u.email}</span>
+                                <div className="flex items-center gap-1.5 pt-1">
+                                  <span className="text-[10px] text-emerald-700 font-extrabold bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100 flex items-center gap-1">
+                                    🏛️ {p ? `${p.nama} (${p.singkatan})` : 'Afiliasi Tidak Diketahui'}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2 pt-2">
+                                  <button
+                                    onClick={() => handleApprovePengguna(u.id, 'setujui')}
+                                    className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-extrabold rounded-md shadow-xs transition cursor-pointer"
+                                  >
+                                    Setujui Akun
+                                  </button>
+                                  <button
+                                    onClick={() => handleApprovePengguna(u.id, 'tolak')}
+                                    className="px-3 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[10px] font-extrabold rounded-md border border-rose-200 transition cursor-pointer"
+                                  >
+                                    Tolak
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()
+              )}
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               
               <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden h-fit">
                 <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
@@ -2128,6 +2735,7 @@ export default function App() {
                 )}
               </div>
 
+            </div>
             </div>
           )}
 

@@ -140,7 +140,7 @@ export interface Pengguna {
   namaLengkap: string;
   email: string;
   role: 'Super Admin' | 'Admin Kesbangpol' | 'Verifikator' | 'Operator Partai' | 'Pimpinan';
-  status: 'Aktif' | 'Nonaktif';
+  status: 'Aktif' | 'Nonaktif' | 'Menunggu Persetujuan';
   partaiId?: string; // Hanya diisi jika role 'Operator Partai'
   avatar: string;
 }

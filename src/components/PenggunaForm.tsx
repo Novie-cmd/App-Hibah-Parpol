@@ -260,6 +260,7 @@ export default function PenggunaForm({
                 >
                   <option value="Aktif">Aktif</option>
                   <option value="Nonaktif">Nonaktif</option>
+                  <option value="Menunggu Persetujuan">Menunggu Persetujuan</option>
                 </select>
               </div>
             </div>

@@ -23,6 +23,7 @@ interface PartaiFormProps {
   pengaturan: PengaturanSistem;
   onSave: (p: Partai) => void;
   onClose: () => void;
+  isInline?: boolean;
 }
 
 const BANK_PRESETS = [
@@ -38,7 +39,8 @@ export default function PartaiForm({
   partai,
   pengaturan,
   onSave,
-  onClose
+  onClose,
+  isInline = false
 }: PartaiFormProps) {
   const [id, setId] = useState('');
   const [nama, setNama] = useState('');
@@ -232,27 +234,28 @@ export default function PartaiForm({
     });
   };
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-xl border border-slate-100 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="p-5 border-b border-slate-150 flex items-center justify-between bg-slate-50">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-emerald-50 text-emerald-700 rounded-lg">
-              <Building2 className="h-5 w-5" />
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-800">{partai ? 'Edit Profil Partai Politik' : 'Pendaftaran Partai Politik Baru'}</h3>
-              <p className="text-xs text-slate-500">Isi lengkap seluruh identitas, pengurus, rekening bank, dan perolehan suara pemilu daerah.</p>
-            </div>
+  const formContent = (
+    <div className={`bg-white rounded-xl ${isInline ? 'border border-slate-200/60 shadow-xs' : 'shadow-xl border border-slate-100 max-w-4xl w-full max-h-[90vh] overflow-y-auto'}`}>
+      {/* Header */}
+      <div className="p-5 border-b border-slate-150 flex items-center justify-between bg-slate-50">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 bg-emerald-50 text-emerald-700 rounded-lg">
+            <Building2 className="h-5 w-5" />
           </div>
-          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition">
+          <div>
+            <h3 className="font-bold text-slate-800">{partai ? 'Edit Profil Partai Politik' : 'Pendaftaran Partai Politik Baru'}</h3>
+            <p className="text-xs text-slate-500">Isi lengkap seluruh identitas, pengurus, rekening bank, dan perolehan suara pemilu daerah.</p>
+          </div>
+        </div>
+        {!isInline && (
+          <button onClick={onClose} type="button" className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition">
             <X className="h-5 w-5" />
           </button>
-        </div>
+        )}
+      </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-8 text-xs">
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="p-6 space-y-8 text-xs">
           
           {/* SECTION 1: IDENTITAS PARTAI */}
           <div className="space-y-4">
@@ -734,13 +737,15 @@ export default function PartaiForm({
 
           {/* Form Actions */}
           <div className="pt-5 border-t border-slate-150 flex items-center justify-end gap-3 bg-slate-50 -mx-6 -mb-6 p-5 rounded-b-xl">
-            <button 
-              type="button" 
-              onClick={onClose} 
-              className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold rounded-lg shadow-2xs transition"
-            >
-              Batal
-            </button>
+            {!isInline && (
+              <button 
+                type="button" 
+                onClick={onClose} 
+                className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold rounded-lg shadow-2xs transition"
+              >
+                Batal
+              </button>
+            )}
             <button 
               type="submit" 
               className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-xs flex items-center gap-1.5 transition"
@@ -751,6 +756,15 @@ export default function PartaiForm({
           </div>
         </form>
       </div>
+  );
+
+  if (isInline) {
+    return formContent;
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+      {formContent}
     </div>
   );
 }
