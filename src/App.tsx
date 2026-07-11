@@ -2076,6 +2076,17 @@ export default function App() {
                       onSave={handleSavePartai}
                       onClose={() => {}}
                       isInline={true}
+                      onImportClick={() => {
+                        setSelectedUploadPartaiId(operatorParty.id);
+                        setUploadDocOpen(pengaturan?.tipeDokumenDaftar[0] || 'SK Kepengurusan');
+                        setImportNomorDokumen(`DOC/${operatorParty.singkatan}/${Date.now().toString().slice(-4)}/2026`);
+                        setImportTanggal(new Date().toISOString().split('T')[0]);
+                        setImportMasaBerlaku("2027-02-15");
+                        setImportFileData("");
+                        setImportFileName("");
+                        setImportFileSize("");
+                        setImportFileType("pdf");
+                      }}
                     />
                   );
                 })()
