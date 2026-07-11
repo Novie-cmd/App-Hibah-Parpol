@@ -483,9 +483,10 @@ export default function App() {
           }
           return [...prev, saved.data];
         });
-        logAktivitas(selectedPartai ? 'Edit' : 'Tambah Data', `Partai ${p.singkatan}`, `Profil partai dan kursi DPRD berhasil dimutakhirkan.`);
+        logAktivitas((selectedPartai || isOperator) ? 'Edit' : 'Tambah Data', `Partai ${p.singkatan}`, `Profil partai dan kursi DPRD berhasil dimutakhirkan.`);
         setPartaiFormOpen(false);
         setSelectedPartai(null);
+        alert(`Profil partai ${p.singkatan} berhasil dimutakhirkan!`);
       } else {
         throw new Error("Server returned non-ok status");
       }
@@ -500,9 +501,10 @@ export default function App() {
         }
         return [...prev, p];
       });
-      logAktivitas(selectedPartai ? 'Edit' : 'Tambah Data', `Partai ${p.singkatan}`, `Profil partai dan kursi DPRD berhasil dimutakhirkan (Offline).`);
+      logAktivitas((selectedPartai || isOperator) ? 'Edit' : 'Tambah Data', `Partai ${p.singkatan}`, `Profil partai dan kursi DPRD berhasil dimutakhirkan (Offline).`);
       setPartaiFormOpen(false);
       setSelectedPartai(null);
+      alert(`Profil partai ${p.singkatan} berhasil dimutakhirkan (Offline)!`);
     }
   };
 
@@ -2003,145 +2005,167 @@ export default function App() {
           {/* B. MASTER DATA PARTAI */}
           {activeMenu === 'parpol' && (
             <div className="space-y-6">
-              
-              {/* Search filter bar specific to parpol tab */}
-              <div className="bg-white p-4 rounded-xl shadow-2xs border border-slate-200/60 flex items-center justify-between">
-                <div className="relative w-full max-w-sm">
-                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                  <input 
-                    type="text" 
-                    placeholder="Cari berdasarkan nama, singkatan, ketua..."
-                    value={searchGlobal}
-                    onChange={(e) => setSearchGlobal(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:bg-white"
-                  />
-                </div>
-              </div>
-
-              {/* Grid layout of political party profiles */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {getFilteredPartai().map(p => {
-                  const partyDocs = dokumen.filter(d => d.partaiId === p.id);
-                  const completeDocs = partyDocs.filter(d => d.statusVerifikasi === 'Lengkap').length;
-                  const totalReqDocs = pengaturan.tipeDokumenDaftar.length;
-                  const completenessPercent = Math.round((completeDocs / totalReqDocs) * 100);
-                  
+              {isOperator ? (
+                (() => {
+                  const operatorParty = partai.find(p => p.id === currentUser?.partaiId);
+                  if (!operatorParty) {
+                    return (
+                      <div className="bg-white rounded-xl shadow-xs border border-slate-200/60 p-8 text-center text-slate-500">
+                        Partai politik untuk akun Anda tidak ditemukan atau belum diset.
+                      </div>
+                    );
+                  }
                   return (
-                    <div key={p.id} className="bg-white rounded-xl shadow-xs border border-slate-200/60 p-5 flex flex-col justify-between hover:shadow-md transition">
-                      <div className="space-y-4">
-                        {/* Header card */}
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2.5">
-                            <span className="text-3xl w-12 h-12 p-1 bg-slate-50 border border-slate-150 rounded-lg shadow-2xs select-none flex items-center justify-center overflow-hidden shrink-0">
-                              {p.logo && (p.logo.startsWith('data:image') || p.logo.startsWith('http') || p.logo.startsWith('/')) ? (
-                                <img src={p.logo} alt={p.singkatan} className="w-10 h-10 object-contain rounded" referrerPolicy="no-referrer" />
-                              ) : (
-                                p.logo || '🔴'
-                              )}
-                            </span>
-                            <div>
-                              <h3 className="font-extrabold text-slate-800 text-sm">{p.nama}</h3>
-                              <span className="text-[10px] text-slate-400 font-extrabold font-mono uppercase">
-                                {p.singkatan} &bull; Urut {p.nomorUrut}
+                    <PartaiForm
+                      partai={operatorParty}
+                      pengaturan={pengaturan!}
+                      onSave={handleSavePartai}
+                      onClose={() => {}}
+                      isInline={true}
+                    />
+                  );
+                })()
+              ) : (
+                <>
+                  {/* Search filter bar specific to parpol tab */}
+                  <div className="bg-white p-4 rounded-xl shadow-2xs border border-slate-200/60 flex items-center justify-between">
+                    <div className="relative w-full max-w-sm">
+                      <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                      <input 
+                        type="text" 
+                        placeholder="Cari berdasarkan nama, singkatan, ketua..."
+                        value={searchGlobal}
+                        onChange={(e) => setSearchGlobal(e.target.value)}
+                        className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Grid layout of political party profiles */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {getFilteredPartai().map(p => {
+                      const partyDocs = dokumen.filter(d => d.partaiId === p.id);
+                      const completeDocs = partyDocs.filter(d => d.statusVerifikasi === 'Lengkap').length;
+                      const totalReqDocs = pengaturan.tipeDokumenDaftar.length;
+                      const completenessPercent = Math.round((completeDocs / totalReqDocs) * 100);
+                      
+                      return (
+                        <div key={p.id} className="bg-white rounded-xl shadow-xs border border-slate-200/60 p-5 flex flex-col justify-between hover:shadow-md transition">
+                          <div className="space-y-4">
+                            {/* Header card */}
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2.5">
+                                <span className="text-3xl w-12 h-12 p-1 bg-slate-50 border border-slate-150 rounded-lg shadow-2xs select-none flex items-center justify-center overflow-hidden shrink-0">
+                                  {p.logo && (p.logo.startsWith('data:image') || p.logo.startsWith('http') || p.logo.startsWith('/')) ? (
+                                    <img src={p.logo} alt={p.singkatan} className="w-10 h-10 object-contain rounded" referrerPolicy="no-referrer" />
+                                  ) : (
+                                    p.logo || '🔴'
+                                  )}
+                                </span>
+                                <div>
+                                  <h3 className="font-extrabold text-slate-800 text-sm">{p.nama}</h3>
+                                  <span className="text-[10px] text-slate-400 font-extrabold font-mono uppercase">
+                                    {p.singkatan} &bull; Urut {p.nomorUrut}
+                                  </span>
+                                </div>
+                              </div>
+                              
+                              <span className={`px-2 py-0.5 text-[8px] font-extrabold rounded ${p.statusAktif ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                                {p.statusAktif ? 'AKTIF' : 'NONAKTIF'}
                               </span>
                             </div>
+
+                            {/* Mid content info */}
+                            <div className="space-y-2 text-slate-600 leading-relaxed border-t border-b border-slate-100 py-3 font-medium">
+                              <div>
+                                <span className="text-[10px] text-slate-400 font-bold uppercase block">Ketua DPC/DPD</span>
+                                <span className="text-slate-800 font-bold">{p.ketua}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <div>
+                                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Jumlah Kursi DPRD</span>
+                                  <span className="text-slate-800 font-bold font-mono">{p.jumlahKursiDprd} Kursi</span>
+                                </div>
+                                <div className="text-right">
+                                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Hak Dana Bantuan</span>
+                                  <span className="text-emerald-700 font-bold font-mono">Rp {p.totalHakBantuan.toLocaleString('id-ID')}</span>
+                                </div>
+                              </div>
+
+                              {/* Completeness Bar */}
+                              <div className="space-y-1 pt-1.5">
+                                <div className="flex justify-between text-[10px] font-bold">
+                                  <span>Kepatuhan Dokumen Persyaratan</span>
+                                  <span className="font-mono text-slate-800">{completeDocs}/{totalReqDocs} ({completenessPercent}%)</span>
+                                </div>
+                                <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                                  <div className="bg-emerald-500 h-full" style={{ width: `${completenessPercent}%` }}></div>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                          
-                          <span className={`px-2 py-0.5 text-[8px] font-extrabold rounded ${p.statusAktif ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
-                            {p.statusAktif ? 'AKTIF' : 'NONAKTIF'}
-                          </span>
+
+                          {/* Card actions */}
+                          <div className="flex items-center justify-between gap-2 pt-4">
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                onClick={() => setDetailPartaiOpen(p)}
+                                className="flex items-center gap-1 text-[10px] font-extrabold text-slate-600 hover:text-emerald-700 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg shadow-2xs transition"
+                              >
+                                <FolderOpen className="h-3.5 w-3.5" />
+                                Lembar Profil
+                              </button>
+
+                              {currentUser?.role !== 'Pimpinan' && (
+                                <button
+                                  onClick={() => {
+                                    setSelectedUploadPartaiId(p.id);
+                                    setUploadDocOpen(pengaturan?.tipeDokumenDaftar[0] || 'SK Kepengurusan');
+                                    setImportNomorDokumen(`DOC/${p.singkatan}/${Date.now().toString().slice(-4)}/2026`);
+                                    setImportTanggal(new Date().toISOString().split('T')[0]);
+                                    setImportMasaBerlaku("2027-02-15");
+                                    setImportFileData("");
+                                    setImportFileName("");
+                                    setImportFileSize("");
+                                    setImportFileType("pdf");
+                                  }}
+                                  className="flex items-center gap-1 text-[10px] font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg shadow-xs transition"
+                                  title="Import Berkas Persyaratan"
+                                >
+                                  <Upload className="h-3.5 w-3.5" />
+                                  Import Berkas
+                                </button>
+                              )}
+                            </div>
+
+                            {!isOperator && currentUser?.role !== 'Pimpinan' && currentUser?.role !== 'Verifikator' && (
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  onClick={() => {
+                                    setSelectedPartai(p);
+                                    setPartaiFormOpen(true);
+                                  }}
+                                  className="p-1.5 hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-500 hover:text-emerald-700 transition"
+                                  title="Edit Profil"
+                                >
+                                  <Edit className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeletePartai(p.id, p.singkatan)}
+                                  className="p-1.5 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 rounded-lg text-slate-400 hover:text-rose-600 transition"
+                                  title="Hapus Parpol"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
-
-                        {/* Mid content info */}
-                        <div className="space-y-2 text-slate-600 leading-relaxed border-t border-b border-slate-100 py-3 font-medium">
-                          <div>
-                            <span className="text-[10px] text-slate-400 font-bold uppercase block">Ketua DPC/DPD</span>
-                            <span className="text-slate-800 font-bold">{p.ketua}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <div>
-                              <span className="text-[10px] text-slate-400 font-bold uppercase block">Jumlah Kursi DPRD</span>
-                              <span className="text-slate-800 font-bold font-mono">{p.jumlahKursiDprd} Kursi</span>
-                            </div>
-                            <div className="text-right">
-                              <span className="text-[10px] text-slate-400 font-bold uppercase block">Hak Dana Bantuan</span>
-                              <span className="text-emerald-700 font-bold font-mono">Rp {p.totalHakBantuan.toLocaleString('id-ID')}</span>
-                            </div>
-                          </div>
-
-                          {/* Completeness Bar */}
-                          <div className="space-y-1 pt-1.5">
-                            <div className="flex justify-between text-[10px] font-bold">
-                              <span>Kepatuhan Dokumen Persyaratan</span>
-                              <span className="font-mono text-slate-800">{completeDocs}/{totalReqDocs} ({completenessPercent}%)</span>
-                            </div>
-                            <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                              <div className="bg-emerald-500 h-full" style={{ width: `${completenessPercent}%` }}></div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Card actions */}
-                      <div className="flex items-center justify-between gap-2 pt-4">
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            onClick={() => setDetailPartaiOpen(p)}
-                            className="flex items-center gap-1 text-[10px] font-extrabold text-slate-600 hover:text-emerald-700 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg shadow-2xs transition"
-                          >
-                            <FolderOpen className="h-3.5 w-3.5" />
-                            Lembar Profil
-                          </button>
-
-                          {currentUser?.role !== 'Pimpinan' && (
-                            <button
-                              onClick={() => {
-                                setSelectedUploadPartaiId(p.id);
-                                setUploadDocOpen(pengaturan?.tipeDokumenDaftar[0] || 'SK Kepengurusan');
-                                setImportNomorDokumen(`DOC/${p.singkatan}/${Date.now().toString().slice(-4)}/2026`);
-                                setImportTanggal(new Date().toISOString().split('T')[0]);
-                                setImportMasaBerlaku("2027-02-15");
-                                setImportFileData("");
-                                setImportFileName("");
-                                setImportFileSize("");
-                                setImportFileType("pdf");
-                              }}
-                              className="flex items-center gap-1 text-[10px] font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg shadow-xs transition"
-                              title="Import Berkas Persyaratan"
-                            >
-                              <Upload className="h-3.5 w-3.5" />
-                              Import Berkas
-                            </button>
-                          )}
-                        </div>
-
-                        {!isOperator && currentUser?.role !== 'Pimpinan' && currentUser?.role !== 'Verifikator' && (
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              onClick={() => {
-                                setSelectedPartai(p);
-                                setPartaiFormOpen(true);
-                              }}
-                              className="p-1.5 hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-500 hover:text-emerald-700 transition"
-                              title="Edit Profil"
-                            >
-                              <Edit className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                              onClick={() => handleDeletePartai(p.id, p.singkatan)}
-                              className="p-1.5 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 rounded-lg text-slate-400 hover:text-rose-600 transition"
-                              title="Hapus Parpol"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
+                      );
+                    })}
+                  </div>
+                </>
+              )}
             </div>
           )}
 
