@@ -156,7 +156,7 @@ export default function App() {
     }
     
     if (userObj.status === 'Menunggu Persetujuan') {
-      setLoginError('Akun Anda sedang menunggu persetujuan dari Admin Kesbangpol. Silakan hubungi admin.');
+      setLoginError('akun anda sedang menunggu persetujuan dari Kesbangpol');
       return;
     }
     
@@ -243,7 +243,7 @@ export default function App() {
         setRegPartaiId('');
         
         // Success feedback
-        setRegSuccessMsg(`Registrasi Berhasil! Akun Admin Partai untuk "${matchedP?.singkatan}" telah diajukan dan sedang Menunggu Persetujuan dari Kesbangpol.`);
+        setRegSuccessMsg(`Registrasi Berhasil! Akun Anda sedang menunggu persetujuan dari Kesbangpol.`);
         setLoginTab('login');
       } else {
         throw new Error("Server error");
@@ -272,7 +272,7 @@ export default function App() {
       setRegEmail('');
       setRegPartaiId('');
       
-      setRegSuccessMsg(`[Offline] Registrasi Akun "${newUser.namaLengkap}" tersimpan lokal. Menunggu Persetujuan dari Kesbangpol.`);
+      setRegSuccessMsg(`[Offline] Registrasi Akun "${newUser.namaLengkap}" tersimpan lokal. Akun Anda sedang menunggu persetujuan dari Kesbangpol.`);
       setLoginTab('login');
     }
   };
