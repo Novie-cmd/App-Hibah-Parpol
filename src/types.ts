@@ -143,6 +143,7 @@ export interface Pengguna {
   status: 'Aktif' | 'Nonaktif' | 'Menunggu Persetujuan';
   partaiId?: string; // Hanya diisi jika role 'Operator Partai'
   avatar: string;
+  password?: string;
 }
 
 export interface Notifikasi {

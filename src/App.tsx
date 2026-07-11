@@ -101,11 +101,13 @@ export default function App() {
   // Login & Registration state variables
   const [loginTab, setLoginTab] = useState<'login' | 'register'>('login');
   const [loginUsername, setLoginUsername] = useState('admin_kesbang');
+  const [loginPassword, setLoginPassword] = useState('admin123');
   const [loginRole, setLoginRole] = useState<'Admin Kesbangpol' | 'Operator Partai'>('Admin Kesbangpol');
   const [loginError, setLoginError] = useState('');
   
   const [regNamaLengkap, setRegNamaLengkap] = useState('');
   const [regUsername, setRegUsername] = useState('');
+  const [regPassword, setRegPassword] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPartaiId, setRegPartaiId] = useState('');
   const [regAvatar, setRegAvatar] = useState('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&q=80');
@@ -137,6 +139,16 @@ export default function App() {
       return;
     }
     
+    if (!loginPassword || loginPassword.trim().length < 4) {
+      setLoginError('Kata sandi harus terdiri dari minimal 4 karakter.');
+      return;
+    }
+
+    if (userObj.password && userObj.password !== loginPassword) {
+      setLoginError('Kata sandi salah. Harap coba lagi.');
+      return;
+    }
+    
     if (userObj.role !== loginRole && !(loginRole === 'Admin Kesbangpol' && (userObj.role === 'Super Admin' || userObj.role === 'Verifikator' || userObj.role === 'Pimpinan'))) {
       setLoginError(`Akun ini tidak memiliki akses sebagai ${loginRole}.`);
       return;
@@ -164,8 +176,13 @@ export default function App() {
     setRegErrorMsg('');
     setRegSuccessMsg('');
     
-    if (!regNamaLengkap.trim() || !regUsername.trim() || !regEmail.trim() || !regPartaiId) {
+    if (!regNamaLengkap.trim() || !regUsername.trim() || !regPassword.trim() || !regEmail.trim() || !regPartaiId) {
       setRegErrorMsg('Harap lengkapi semua bidang isian formulir.');
+      return;
+    }
+
+    if (regPassword.trim().length < 4) {
+      setRegErrorMsg('Kata sandi harus terdiri dari minimal 4 karakter.');
       return;
     }
     
@@ -188,7 +205,8 @@ export default function App() {
       role: 'Operator Partai',
       status: 'Menunggu Persetujuan',
       partaiId: regPartaiId,
-      avatar: regAvatar
+      avatar: regAvatar,
+      password: regPassword
     };
     
     try {
@@ -219,6 +237,7 @@ export default function App() {
         // Clear reg states
         setRegNamaLengkap('');
         setRegUsername('');
+        setRegPassword('');
         setRegEmail('');
         setRegPartaiId('');
         
@@ -1275,6 +1294,26 @@ export default function App() {
                 </div>
               </div>
 
+              {/* Password Input */}
+              <div className="space-y-1.5">
+                <label className="block text-slate-400 font-bold uppercase tracking-wide text-[9px]">
+                  Kata Sandi / Password
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500">
+                    <Lock className="h-4 w-4" />
+                  </span>
+                  <input
+                    type="password"
+                    required
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 p-3 font-bold text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition"
+                  />
+                </div>
+              </div>
+
               {/* Error warning display */}
               {loginError && (
                 <div className="bg-rose-950/40 border border-rose-900/60 p-3 rounded-xl flex items-start gap-2.5 text-rose-400 text-[11px] leading-relaxed">
@@ -1383,7 +1422,7 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Afiliasi Partai Politik */}
+               {/* Afiliasi Partai Politik */}
               <div className="space-y-1">
                 <label className="block text-slate-400 font-bold uppercase tracking-wide text-[9px]">
                   Afiliasi Partai Politik
@@ -1401,6 +1440,21 @@ export default function App() {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              {/* Kata Sandi */}
+              <div className="space-y-1">
+                <label className="block text-slate-400 font-bold uppercase tracking-wide text-[9px]">
+                  Kata Sandi / Password
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={regPassword}
+                  onChange={(e) => setRegPassword(e.target.value)}
+                  placeholder="Masukkan kata sandi baru (minimal 4 karakter)"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 font-bold text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                />
               </div>
 
               {/* Avatar Preset Selector */}

@@ -14,7 +14,8 @@ import {
   X,
   Plus,
   Trash2,
-  FileText
+  FileText,
+  Upload
 } from 'lucide-react';
 import { Partai, PengaturanSistem } from '../types';
 
@@ -24,6 +25,7 @@ interface PartaiFormProps {
   onSave: (p: Partai) => void;
   onClose: () => void;
   isInline?: boolean;
+  onImportClick?: () => void;
 }
 
 const BANK_PRESETS = [
@@ -40,7 +42,8 @@ export default function PartaiForm({
   pengaturan,
   onSave,
   onClose,
-  isInline = false
+  isInline = false,
+  onImportClick
 }: PartaiFormProps) {
   const [id, setId] = useState('');
   const [nama, setNama] = useState('');
@@ -250,6 +253,16 @@ export default function PartaiForm({
         {!isInline && (
           <button onClick={onClose} type="button" className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition">
             <X className="h-5 w-5" />
+          </button>
+        )}
+        {isInline && onImportClick && (
+          <button
+            type="button"
+            onClick={onImportClick}
+            className="flex items-center gap-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-3.5 py-2 rounded-lg shadow-sm transition"
+          >
+            <Upload className="h-4 w-4" />
+            Import Berkas Persyaratan
           </button>
         )}
       </div>
