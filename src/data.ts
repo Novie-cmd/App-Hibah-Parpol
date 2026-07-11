@@ -778,7 +778,8 @@ export const INITIAL_PENGGUNA: Pengguna[] = [
     email: "bambang.admin@ntbprov.go.id",
     role: "Super Admin",
     status: "Aktif",
-    avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&h=100&fit=crop&q=80"
+    avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&h=100&fit=crop&q=80",
+    password: "admin123"
   },
   {
     id: "u1",
@@ -787,7 +788,8 @@ export const INITIAL_PENGGUNA: Pengguna[] = [
     email: "juhanda.kesbang@ntbprov.go.id",
     role: "Admin Kesbangpol",
     status: "Aktif",
-    avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop&q=80"
+    avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop&q=80",
+    password: "admin123"
   },
   {
     id: "u2",
@@ -796,7 +798,8 @@ export const INITIAL_PENGGUNA: Pengguna[] = [
     email: "randi.hermawan@ntbprov.go.id",
     role: "Verifikator",
     status: "Aktif",
-    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&h=100&fit=crop&q=80"
+    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&h=100&fit=crop&q=80",
+    password: "admin123"
   },
   {
     id: "u3",
@@ -806,7 +809,8 @@ export const INITIAL_PENGGUNA: Pengguna[] = [
     role: "Operator Partai",
     status: "Aktif",
     partaiId: "p2",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&q=80"
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&q=80",
+    password: "admin123"
   },
   {
     id: "u4",
@@ -815,7 +819,8 @@ export const INITIAL_PENGGUNA: Pengguna[] = [
     email: "enunsarji@ntbprov.go.id",
     role: "Pimpinan",
     status: "Aktif",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&q=80"
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&q=80",
+    password: "admin123"
   }
 ];
 

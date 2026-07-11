@@ -2711,7 +2711,7 @@ export default function App() {
                               )}
                             </div>
                             <span className="text-[10px] text-slate-400 font-bold block mt-0.5">
-                              Username: <span className="font-mono text-slate-600 font-extrabold bg-slate-100 px-1 py-0.2 rounded">{u.username}</span> &bull; Email: <span className="font-mono text-slate-500">{u.email}</span>
+                              Username: <span className="font-mono text-slate-600 font-extrabold bg-slate-100 px-1 py-0.2 rounded">{u.username}</span> &bull; Email: <span className="font-mono text-slate-500">{u.email}</span> &bull; Kata Sandi: <span className="font-mono text-emerald-700 font-extrabold bg-emerald-50 border border-emerald-100 px-1.5 py-0.2 rounded">{u.password || 'admin123'}</span>
                             </span>
                           </div>
                         </div>
@@ -2738,6 +2738,26 @@ export default function App() {
                           {/* Actions: Edit & Hapus */}
                           {(currentUser?.role === 'Super Admin' || currentUser?.role === 'Admin Kesbangpol') && (
                             <div className="flex items-center gap-1.5 border-l pl-4 border-slate-150">
+                              {u.status === 'Menunggu Persetujuan' && (
+                                <>
+                                  <button
+                                    onClick={() => handleApprovePengguna(u.id, 'setujui')}
+                                    className="p-1.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 rounded-lg shadow-2xs transition cursor-pointer flex items-center gap-1 font-bold text-[9px]"
+                                    title="Setujui Pendaftaran Akun"
+                                  >
+                                    <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
+                                    <span>Setujui</span>
+                                  </button>
+                                  <button
+                                    onClick={() => handleApprovePengguna(u.id, 'tolak')}
+                                    className="p-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 rounded-lg shadow-2xs transition cursor-pointer flex items-center gap-1 font-bold text-[9px]"
+                                    title="Tolak Pendaftaran Akun"
+                                  >
+                                    <XCircle className="h-3.5 w-3.5 text-rose-600" />
+                                    <span>Tolak</span>
+                                  </button>
+                                </>
+                              )}
                               <button
                                 onClick={() => {
                                   setSelectedPengguna(u);

@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { X, Save, User, Mail, Shield, Landmark, UserCheck } from 'lucide-react';
+import { X, Save, User, Mail, Shield, Landmark, UserCheck, Lock } from 'lucide-react';
 import { Pengguna, Partai } from '../types';
 
 interface PenggunaFormProps {
@@ -32,6 +32,7 @@ export default function PenggunaForm({
   const [namaLengkap, setNamaLengkap] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [role, setRole] = useState<Pengguna['role']>('Operator Partai');
   const [status, setStatus] = useState<Pengguna['status']>('Aktif');
   const [partaiId, setPartaiId] = useState('');
@@ -42,6 +43,7 @@ export default function PenggunaForm({
       setNamaLengkap(pengguna.namaLengkap);
       setUsername(pengguna.username);
       setEmail(pengguna.email);
+      setPassword(pengguna.password || 'admin123');
       setRole(pengguna.role);
       setStatus(pengguna.status);
       setPartaiId(pengguna.partaiId || '');
@@ -50,6 +52,7 @@ export default function PenggunaForm({
       setNamaLengkap('');
       setUsername('');
       setEmail('');
+      setPassword('admin123');
       setRole('Operator Partai');
       setStatus('Aktif');
       // Default to first party if available
@@ -107,7 +110,8 @@ export default function PenggunaForm({
       role,
       status,
       partaiId: role === 'Operator Partai' ? partaiId : undefined,
-      avatar: avatar || AVATAR_PRESETS[0]
+      avatar: avatar || AVATAR_PRESETS[0],
+      password: password.trim() || 'admin123'
     });
   };
 
@@ -222,6 +226,24 @@ export default function PenggunaForm({
                   className="w-full pl-9 p-2.5 bg-slate-50 border border-slate-200 rounded-lg font-bold text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500"
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="block text-slate-500 font-bold mb-1">Kata Sandi / Password</label>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                <Lock className="h-3.5 w-3.5" />
+              </span>
+              <input
+                type="text"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Masukkan kata sandi baru"
+                className="w-full pl-9 p-2.5 bg-slate-50 border border-slate-200 rounded-lg font-bold text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500"
+              />
             </div>
           </div>
 
