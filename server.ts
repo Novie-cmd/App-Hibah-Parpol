@@ -9,18 +9,6 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
 
-// Firebase Web SDK imports
-import { initializeApp } from 'firebase/app';
-import { 
-  getFirestore, 
-  doc, 
-  getDoc, 
-  getDocs, 
-  setDoc, 
-  deleteDoc, 
-  collection 
-} from 'firebase/firestore';
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -41,130 +29,8 @@ import {
 
 const dbPath = path.resolve(process.cwd(), 'database.json');
 
-// Initialize Firebase Web SDK
-const firebaseConfigPath = path.resolve(process.cwd(), 'firebase-applet-config.json');
-let firestoreDb: any = null;
-
-if (fs.existsSync(firebaseConfigPath)) {
-  try {
-    const config = JSON.parse(fs.readFileSync(firebaseConfigPath, 'utf-8'));
-    const app = initializeApp({
-      apiKey: config.apiKey,
-      authDomain: config.authDomain,
-      projectId: config.projectId,
-      storageBucket: config.storageBucket,
-      messagingSenderId: config.messagingSenderId,
-      appId: config.appId
-    });
-    firestoreDb = getFirestore(app, config.firestoreDatabaseId || undefined);
-    console.log('Firebase Web SDK initialized successfully on server-side.');
-  } catch (err) {
-    console.error('Failed to initialize Firebase Web SDK on server-side:', err);
-  }
-}
-
-// Helper functions for Firestore using Web SDK
-async function getCollectionDocs(collectionName: string) {
-  if (!firestoreDb) return [];
-  try {
-    const colRef = collection(firestoreDb, collectionName);
-    const snapshot = await getDocs(colRef);
-    const list: any[] = [];
-    snapshot.forEach((docSnapshot) => {
-      list.push(docSnapshot.data());
-    });
-    return list;
-  } catch (err) {
-    console.error(`Error loading collection ${collectionName}:`, err);
-    return [];
-  }
-}
-
-async function getSingleDoc(collectionName: string, docId: string) {
-  if (!firestoreDb) return null;
-  try {
-    const docRef = doc(firestoreDb, collectionName, docId);
-    const snapshot = await getDoc(docRef);
-    if (snapshot.exists()) {
-      return snapshot.data();
-    }
-    return null;
-  } catch (err) {
-    console.error(`Error loading single doc ${collectionName}/${docId}:`, err);
-    return null;
-  }
-}
-
-async function saveSingleDoc(collectionName: string, docId: string, data: any) {
-  if (!firestoreDb) return;
-  try {
-    const docRef = doc(firestoreDb, collectionName, docId);
-    await setDoc(docRef, data);
-  } catch (err) {
-    console.error(`Error saving doc ${collectionName}/${docId}:`, err);
-  }
-}
-
-async function deleteSingleDoc(collectionName: string, docId: string) {
-  if (!firestoreDb) return;
-  try {
-    const docRef = doc(firestoreDb, collectionName, docId);
-    await deleteDoc(docRef);
-  } catch (err) {
-    console.error(`Error deleting doc ${collectionName}/${docId}:`, err);
-  }
-}
-
-async function checkAndSeedDatabase() {
-  if (!firestoreDb) return;
-  try {
-    const pengaturanDoc = await getSingleDoc('pengaturan', 'default');
-    if (!pengaturanDoc) {
-      console.log('Firestore is empty. Seeding initial data...');
-      
-      const defaultDb = {
-        partai: INITIAL_PARTAI,
-        dokumen: generateInitialDokumen(INITIAL_PARTAI),
-        hibah: INITIAL_HIBAH,
-        lpj: INITIAL_LPJ,
-        audit: INITIAL_AUDIT,
-        pengguna: INITIAL_PENGGUNA,
-        notifikasi: INITIAL_NOTIFIKASI,
-        pengaturan: INITIAL_PENGATURAN
-      };
-      
-      // Save pengaturan
-      await saveSingleDoc('pengaturan', 'default', defaultDb.pengaturan);
-      
-      // Save all lists
-      for (const p of defaultDb.partai) {
-        await saveSingleDoc('partai', p.id, p);
-      }
-      for (const d of defaultDb.dokumen) {
-        await saveSingleDoc('dokumen', d.id, d);
-      }
-      for (const h of defaultDb.hibah) {
-        await saveSingleDoc('hibah', h.id, h);
-      }
-      for (const l of defaultDb.lpj) {
-        await saveSingleDoc('lpj', l.id, l);
-      }
-      for (const a of defaultDb.audit) {
-        await saveSingleDoc('audit', a.id, a);
-      }
-      for (const u of defaultDb.pengguna) {
-        await saveSingleDoc('pengguna', u.id, u);
-      }
-      for (const n of defaultDb.notifikasi) {
-        await saveSingleDoc('notifikasi', n.id, n);
-      }
-      
-      console.log('Firestore seeding completed successfully.');
-    }
-  } catch (err) {
-    console.error('Error seeding Firestore:', err);
-  }
-}
+// Firebase integration is disabled per user request to always use the local database
+const firestoreDb = null;
 
 // Initialize Database File if not exists (Local backup)
 function getDatabase() {
@@ -207,44 +73,12 @@ function getDatabase() {
 }
 
 async function getDatabaseMerged() {
-  if (firestoreDb) {
-    try {
-      const fetchPromise = (async () => {
-        await checkAndSeedDatabase();
-        const [partai, dokumen, hibah, lpj, audit, pengguna, notifikasi, pengaturan] = await Promise.all([
-          getCollectionDocs('partai'),
-          getCollectionDocs('dokumen'),
-          getCollectionDocs('hibah'),
-          getCollectionDocs('lpj'),
-          getCollectionDocs('audit'),
-          getCollectionDocs('pengguna'),
-          getCollectionDocs('notifikasi'),
-          getSingleDoc('pengaturan', 'default')
-        ]);
-        
-        return {
-          partai,
-          dokumen,
-          hibah,
-          lpj,
-          audit,
-          pengguna,
-          notifikasi,
-          pengaturan: pengaturan ? { ...INITIAL_PENGATURAN, ...pengaturan } : INITIAL_PENGATURAN
-        };
-      })();
-
-      const timeoutPromise = new Promise<any>((_, reject) => 
-        setTimeout(() => reject(new Error('Firestore operation timed out')), 1500)
-      );
-
-      return await Promise.race([fetchPromise, timeoutPromise]);
-    } catch (err) {
-      console.error('Failed to fetch from Firestore, falling back to database.json:', err);
-    }
-  }
   return getDatabase();
 }
+
+const getCollectionDocs = async (...args: any[]) => [] as any[];
+const saveSingleDoc = async (...args: any[]) => {};
+const deleteSingleDoc = async (...args: any[]) => {};
 
 function saveDatabase(db: any) {
   fs.writeFileSync(dbPath, JSON.stringify(db, null, 2), 'utf-8');
