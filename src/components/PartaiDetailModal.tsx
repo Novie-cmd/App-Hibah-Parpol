@@ -284,7 +284,7 @@ export default function PartaiDetailModal({
                     className="w-12 h-12 rounded-full border border-slate-200 object-cover shadow-2xs"
                   />
                   <div>
-                    <span className="text-[10px] font-extrabold text-emerald-600 uppercase block">Ketua DPC/DPD</span>
+                    <span className="text-[10px] font-extrabold text-emerald-600 uppercase block">Ketua DPW/DPD</span>
                     <span className="text-slate-800 font-bold leading-tight block">{partai.ketua}</span>
                   </div>
                 </div>

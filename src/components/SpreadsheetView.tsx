@@ -990,7 +990,7 @@ export default function SpreadsheetView({
           <span>Status Sinkronisasi: Aktif & Terhubung ke database.json</span>
         </div>
         <div>
-          <span>DPC/DPD DPRD Provinsi Nusa Tenggara Barat &bull; TA {new Date().getFullYear()}</span>
+          <span>DPW/DPD DPRD Provinsi Nusa Tenggara Barat &bull; TA {new Date().getFullYear()}</span>
         </div>
       </div>
     </div>

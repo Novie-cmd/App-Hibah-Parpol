@@ -361,7 +361,7 @@ export default function PartaiForm({
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="md:col-span-2">
-                <label className="block text-slate-500 font-bold mb-1">Alamat Kantor Sekretariat DPC/DPD</label>
+                <label className="block text-slate-500 font-bold mb-1">Alamat Kantor Sekretariat DPW/DPD</label>
                 <input 
                   type="text" 
                   value={alamatKantor} 

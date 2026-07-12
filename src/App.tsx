@@ -878,7 +878,7 @@ export default function App() {
         isMasaBerlakuAktif = docDate >= today;
       }
 
-      // 2. Berkas ber-stempel basah DPC/DPD Partai Politik asli check
+      // 2. Berkas ber-stempel basah DPW/DPD Partai Politik asli check
       const hasStempel = true; // Simulated high-accuracy computer vision check
 
       // 3. Nama Ketua Umum, Sekretaris & Bendahara cocok dengan SK Kemenkumham
@@ -904,7 +904,7 @@ export default function App() {
 
       let notes = `[INTELLIGENT AUTO-CHECK SYSTEM]\n`;
       notes += `Pengecekan otomatis berkas selesai pada ${tglPengecekan}.\n\n`;
-      notes += `• Stempel Basah DPC/DPD: ${hasStempel ? 'VALID (Stempel & Tanda Tangan terdeteksi asli)' : 'TIDAK VALID'}\n`;
+      notes += `• Stempel Basah DPW/DPD: ${hasStempel ? 'VALID (Stempel & Tanda Tangan terdeteksi asli)' : 'TIDAK VALID'}\n`;
       notes += `• Masa Berlaku SK Pengurus/Domisili: ${isMasaBerlakuAktif ? `AKTIF (Berlaku s.d. ${dateStr})` : `KEDALUWARSA / EXPIRED (Habis sejak ${dateStr})`}\n`;
       notes += `• Kesesuaian Pengurus (KSB): ${isKSBValid ? 'SESUAI (Terverifikasi sinkron dengan SK DPP & Kemenkumham)' : 'TIDAK COCOK'}\n`;
       notes += `• Resolusi Berkas Scan: ${isResolusiValid ? 'SANGAT JELAS (Resolusi 300 DPI, OCR terbaca sempurna)' : 'RESOLUSI RENDAH'}\n\n`;
@@ -1890,7 +1890,7 @@ export default function App() {
               </h2>
               <p className="text-xs text-slate-500 mt-1">
                 {activeMenu === 'dashboard' && (isOperator ? 'Selamat datang! Pantau status kelengkapan berkas, alokasi dana bantuan hibah, serta progres pencairan secara real-time.' : 'Sistem kearsipan digital, verifikasi dokumen, dan monitoring hibah bantuan partai politik Provinsi Nusa Tenggara Barat.')}
-                {activeMenu === 'parpol' && (isOperator ? 'Kelola dan perbarui seluruh informasi identitas partai, struktur kepengurusan DPC/DPD, rekening bank resmi, dan perolehan suara sah.' : 'Mengelola data partai politik aktif dprd daerah, pengurus, domisili, dan nomor rekening.')}
+                {activeMenu === 'parpol' && (isOperator ? 'Kelola dan perbarui seluruh informasi identitas partai, struktur kepengurusan DPW/DPD, rekening bank resmi, dan perolehan suara sah.' : 'Mengelola data partai politik aktif dprd daerah, pengurus, domisili, dan nomor rekening.')}
                 {activeMenu === 'verifikasi' && 'Verifikasi, validasi berkas fisik, pencatatan checklist, revisi, dan approve.'}
                 {activeMenu === 'hibah' && 'Tracking tahapan pencairan, penetapan SK bupati, penandatanganan NPHD, hingga penerbitan SP2D.'}
                 {activeMenu === 'lpj' && 'Mengevaluasi pelaporan LPJ hibah tahun berjalan dari partai penerima bantuan.'}
@@ -1940,7 +1940,7 @@ export default function App() {
                   <div>
                     <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">Jumlah Partai Politik</span>
                     <span className="text-xl font-extrabold text-slate-800 block mt-1">{totalPartaiCount} Parpol</span>
-                    <span className="text-[10px] text-emerald-600 font-bold block mt-1">DPC/DPD Provinsi NTB</span>
+                    <span className="text-[10px] text-emerald-600 font-bold block mt-1">DPW/DPD Provinsi NTB</span>
                   </div>
                   <div className="p-3 bg-slate-100 rounded-lg text-slate-600"><Users className="h-6 w-6" /></div>
                 </div>
@@ -2208,7 +2208,7 @@ export default function App() {
                             {/* Mid content info */}
                             <div className="space-y-2 text-slate-600 leading-relaxed border-t border-b border-slate-100 py-3 font-medium">
                               <div>
-                                <span className="text-[10px] text-slate-400 font-bold uppercase block">Ketua DPC/DPD</span>
+                                <span className="text-[10px] text-slate-400 font-bold uppercase block">Ketua DPW/DPD</span>
                                 <span className="text-slate-800 font-bold">{p.ketua}</span>
                               </div>
                               <div className="flex justify-between">
@@ -3133,7 +3133,7 @@ export default function App() {
                       onChange={(e) => setVerifCheck1(e.target.checked)} 
                       className="w-3.5 h-3.5 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer" 
                     />
-                    <span>Berkas ber-stempel basah DPC/DPD Partai Politik asli</span>
+                    <span>Berkas ber-stempel basah DPW/DPD Partai Politik asli</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer font-medium">
                     <input 
