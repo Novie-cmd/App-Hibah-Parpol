@@ -9,19 +9,9 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
 
-// Firebase imports
-import { initializeApp } from 'firebase/app';
-import { 
-  getFirestore, 
-  doc, 
-  getDoc, 
-  getDocs, 
-  setDoc, 
-  deleteDoc, 
-  collection, 
-  query, 
-  where 
-} from 'firebase/firestore';
+// Firebase Admin SDK imports
+import admin from 'firebase-admin';
+import { getFirestore } from 'firebase-admin/firestore';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -43,25 +33,24 @@ import {
 
 const dbPath = path.resolve(__dirname, 'database.json');
 
-// Initialize Firebase
+// Initialize Firebase Admin
 const firebaseConfigPath = path.resolve(__dirname, 'firebase-applet-config.json');
 let firestoreDb: any = null;
 
 if (fs.existsSync(firebaseConfigPath)) {
   try {
     const config = JSON.parse(fs.readFileSync(firebaseConfigPath, 'utf-8'));
-    const app = initializeApp({
-      apiKey: config.apiKey,
-      authDomain: config.authDomain,
+    const app = admin.initializeApp({
       projectId: config.projectId,
-      storageBucket: config.storageBucket,
-      messagingSenderId: config.messagingSenderId,
-      appId: config.appId
     });
-    firestoreDb = getFirestore(app, config.firestoreDatabaseId || undefined);
-    console.log('Firebase initialized successfully on server-side.');
+    if (config.firestoreDatabaseId) {
+      firestoreDb = getFirestore(app, config.firestoreDatabaseId);
+    } else {
+      firestoreDb = getFirestore(app);
+    }
+    console.log('Firebase Admin initialized successfully on server-side.');
   } catch (err) {
-    console.error('Failed to initialize Firebase on server-side:', err);
+    console.error('Failed to initialize Firebase Admin on server-side:', err);
   }
 }
 
@@ -69,10 +58,10 @@ if (fs.existsSync(firebaseConfigPath)) {
 async function getCollectionDocs(collectionName: string) {
   if (!firestoreDb) return [];
   try {
-    const colRef = collection(firestoreDb, collectionName);
-    const snapshot = await getDocs(colRef);
+    const colRef = firestoreDb.collection(collectionName);
+    const snapshot = await colRef.get();
     const list: any[] = [];
-    snapshot.forEach((docSnapshot) => {
+    snapshot.forEach((docSnapshot: any) => {
       list.push(docSnapshot.data());
     });
     return list;
@@ -85,9 +74,9 @@ async function getCollectionDocs(collectionName: string) {
 async function getSingleDoc(collectionName: string, docId: string) {
   if (!firestoreDb) return null;
   try {
-    const docRef = doc(firestoreDb, collectionName, docId);
-    const snapshot = await getDoc(docRef);
-    if (snapshot.exists()) {
+    const docRef = firestoreDb.collection(collectionName).doc(docId);
+    const snapshot = await docRef.get();
+    if (snapshot.exists) {
       return snapshot.data();
     }
     return null;
@@ -100,8 +89,8 @@ async function getSingleDoc(collectionName: string, docId: string) {
 async function saveSingleDoc(collectionName: string, docId: string, data: any) {
   if (!firestoreDb) return;
   try {
-    const docRef = doc(firestoreDb, collectionName, docId);
-    await setDoc(docRef, data);
+    const docRef = firestoreDb.collection(collectionName).doc(docId);
+    await docRef.set(data);
   } catch (err) {
     console.error(`Error saving doc ${collectionName}/${docId}:`, err);
   }
@@ -110,8 +99,8 @@ async function saveSingleDoc(collectionName: string, docId: string, data: any) {
 async function deleteSingleDoc(collectionName: string, docId: string) {
   if (!firestoreDb) return;
   try {
-    const docRef = doc(firestoreDb, collectionName, docId);
-    await deleteDoc(docRef);
+    const docRef = firestoreDb.collection(collectionName).doc(docId);
+    await docRef.delete();
   } catch (err) {
     console.error(`Error deleting doc ${collectionName}/${docId}:`, err);
   }
