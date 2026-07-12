@@ -205,28 +205,36 @@ function getDatabase() {
 async function getDatabaseMerged() {
   if (firestoreDb) {
     try {
-      await checkAndSeedDatabase();
-      const [partai, dokumen, hibah, lpj, audit, pengguna, notifikasi, pengaturan] = await Promise.all([
-        getCollectionDocs('partai'),
-        getCollectionDocs('dokumen'),
-        getCollectionDocs('hibah'),
-        getCollectionDocs('lpj'),
-        getCollectionDocs('audit'),
-        getCollectionDocs('pengguna'),
-        getCollectionDocs('notifikasi'),
-        getSingleDoc('pengaturan', 'default')
-      ]);
-      
-      return {
-        partai,
-        dokumen,
-        hibah,
-        lpj,
-        audit,
-        pengguna,
-        notifikasi,
-        pengaturan: pengaturan || INITIAL_PENGATURAN
-      };
+      const fetchPromise = (async () => {
+        await checkAndSeedDatabase();
+        const [partai, dokumen, hibah, lpj, audit, pengguna, notifikasi, pengaturan] = await Promise.all([
+          getCollectionDocs('partai'),
+          getCollectionDocs('dokumen'),
+          getCollectionDocs('hibah'),
+          getCollectionDocs('lpj'),
+          getCollectionDocs('audit'),
+          getCollectionDocs('pengguna'),
+          getCollectionDocs('notifikasi'),
+          getSingleDoc('pengaturan', 'default')
+        ]);
+        
+        return {
+          partai,
+          dokumen,
+          hibah,
+          lpj,
+          audit,
+          pengguna,
+          notifikasi,
+          pengaturan: pengaturan || INITIAL_PENGATURAN
+        };
+      })();
+
+      const timeoutPromise = new Promise<any>((_, reject) => 
+        setTimeout(() => reject(new Error('Firestore operation timed out')), 1500)
+      );
+
+      return await Promise.race([fetchPromise, timeoutPromise]);
     } catch (err) {
       console.error('Failed to fetch from Firestore, falling back to database.json:', err);
     }
@@ -266,7 +274,7 @@ async function startServer() {
       saveDatabase(db);
       
       if (firestoreDb) {
-        await saveSingleDoc('partai', p.id, p);
+        saveSingleDoc('partai', p.id, p).catch(err => console.error('Error saving partai to Firestore:', err));
       }
       
       res.json({ success: true, data: p });
@@ -286,20 +294,22 @@ async function startServer() {
       saveDatabase(db);
       
       if (firestoreDb) {
-        await deleteSingleDoc('partai', id);
-        // Delete related documents
-        const docs = await getCollectionDocs('dokumen');
-        for (const d of docs) {
-          if (d.partaiId === id) await deleteSingleDoc('dokumen', d.id);
-        }
-        const hibahs = await getCollectionDocs('hibah');
-        for (const h of hibahs) {
-          if (h.partaiId === id) await deleteSingleDoc('hibah', h.id);
-        }
-        const lpjs = await getCollectionDocs('lpj');
-        for (const l of lpjs) {
-          if (l.partaiId === id) await deleteSingleDoc('lpj', l.id);
-        }
+        (async () => {
+          await deleteSingleDoc('partai', id);
+          // Delete related documents
+          const docs = await getCollectionDocs('dokumen');
+          for (const d of docs) {
+            if (d.partaiId === id) await deleteSingleDoc('dokumen', d.id);
+          }
+          const hibahs = await getCollectionDocs('hibah');
+          for (const h of hibahs) {
+            if (h.partaiId === id) await deleteSingleDoc('hibah', h.id);
+          }
+          const lpjs = await getCollectionDocs('lpj');
+          for (const l of lpjs) {
+            if (l.partaiId === id) await deleteSingleDoc('lpj', l.id);
+          }
+        })().catch(err => console.error('Error cascade deleting from Firestore:', err));
       }
       
       res.json({ success: true });
@@ -322,7 +332,7 @@ async function startServer() {
       saveDatabase(db);
       
       if (firestoreDb) {
-        await saveSingleDoc('dokumen', d.id, d);
+        saveSingleDoc('dokumen', d.id, d).catch(err => console.error('Error saving dokumen to Firestore:', err));
       }
       
       res.json({ success: true, data: d });
@@ -373,9 +383,9 @@ async function startServer() {
         saveDatabase(db);
         
         if (firestoreDb) {
-          await saveSingleDoc('dokumen', id, db.dokumen[idx]);
-          await saveSingleDoc('audit', auditLog.id, auditLog);
-          await saveSingleDoc('notifikasi', notif.id, notif);
+          saveSingleDoc('dokumen', id, db.dokumen[idx]).catch(err => console.error(err));
+          saveSingleDoc('audit', auditLog.id, auditLog).catch(err => console.error(err));
+          saveSingleDoc('notifikasi', notif.id, notif).catch(err => console.error(err));
         }
         
         res.json({ success: true, data: db.dokumen[idx] });
@@ -418,9 +428,9 @@ async function startServer() {
       saveDatabase(db);
       
       if (firestoreDb) {
-        await saveSingleDoc('hibah', h.id, h);
+        saveSingleDoc('hibah', h.id, h).catch(err => console.error('Error saving hibah:', err));
         if (notif) {
-          await saveSingleDoc('notifikasi', notif.id, notif);
+          saveSingleDoc('notifikasi', notif.id, notif).catch(err => console.error('Error saving notification:', err));
         }
       }
       
@@ -444,7 +454,7 @@ async function startServer() {
       saveDatabase(db);
       
       if (firestoreDb) {
-        await saveSingleDoc('lpj', l.id, l);
+        saveSingleDoc('lpj', l.id, l).catch(err => console.error('Error saving lpj:', err));
       }
       
       res.json({ success: true, data: l });
@@ -461,7 +471,7 @@ async function startServer() {
       saveDatabase(db);
       
       if (firestoreDb) {
-        await saveSingleDoc('pengaturan', 'default', db.pengaturan);
+        saveSingleDoc('pengaturan', 'default', db.pengaturan).catch(err => console.error('Error saving settings:', err));
       }
       
       res.json({ success: true, data: db.pengaturan });
@@ -482,7 +492,7 @@ async function startServer() {
       saveDatabase(db);
       
       if (firestoreDb) {
-        await saveSingleDoc('audit', log.id, log);
+        saveSingleDoc('audit', log.id, log).catch(err => console.error('Error saving audit log:', err));
       }
       
       res.json({ success: true, data: log });
@@ -504,7 +514,7 @@ async function startServer() {
       }
       saveDatabase(db);
       if (firestoreDb) {
-        await saveSingleDoc('notifikasi', n.id, n);
+        saveSingleDoc('notifikasi', n.id, n).catch(err => console.error('Error saving notification:', err));
       }
       res.json({ success: true, data: n });
     } catch (e: any) {
@@ -520,7 +530,7 @@ async function startServer() {
       if (idx > -1) {
         db.notifikasi[idx].dibaca = true;
         if (firestoreDb) {
-          await saveSingleDoc('notifikasi', id, db.notifikasi[idx]);
+          saveSingleDoc('notifikasi', id, db.notifikasi[idx]).catch(err => console.error(err));
         }
       } else if (id === 'all') {
         db.notifikasi.forEach((n: any) => {
@@ -528,9 +538,11 @@ async function startServer() {
         });
         saveDatabase(db);
         if (firestoreDb) {
-          for (const n of db.notifikasi) {
-            await saveSingleDoc('notifikasi', n.id, n);
-          }
+          (async () => {
+            for (const n of db.notifikasi) {
+              await saveSingleDoc('notifikasi', n.id, n);
+            }
+          })().catch(err => console.error(err));
         }
       } else {
         saveDatabase(db);
@@ -571,9 +583,9 @@ async function startServer() {
       saveDatabase(db);
       
       if (firestoreDb) {
-        await saveSingleDoc('pengguna', u.id, u);
+        saveSingleDoc('pengguna', u.id, u).catch(err => console.error('Error saving pengguna to Firestore:', err));
         if (notif) {
-          await saveSingleDoc('notifikasi', notif.id, notif);
+          saveSingleDoc('notifikasi', notif.id, notif).catch(err => console.error('Error saving notification to Firestore:', err));
         }
       }
       
@@ -597,7 +609,7 @@ async function startServer() {
       saveDatabase(db);
       
       if (firestoreDb) {
-        await saveSingleDoc('pengguna', u.id, u);
+        saveSingleDoc('pengguna', u.id, u).catch(err => console.error('Error saving updated pengguna:', err));
       }
       
       res.json({ success: true, data: u });
@@ -614,7 +626,7 @@ async function startServer() {
       saveDatabase(db);
       
       if (firestoreDb) {
-        await deleteSingleDoc('pengguna', id);
+        deleteSingleDoc('pengguna', id).catch(err => console.error('Error deleting pengguna:', err));
       }
       
       res.json({ success: true });
