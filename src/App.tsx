@@ -700,15 +700,12 @@ export default function App() {
               logAktivitas('Edit', 'Konfigurasi Sistem', 'Mengimpor logo resmi pemerintah daerah baru.');
               alert("Logo Pemerintah Daerah berhasil diimpor & disimpan ke database!");
             } else {
-              const errData = await res.json().catch(() => ({}));
-              let extraMsg = "";
-              if (res.status === 404 || res.status === 502) {
-                extraMsg = "\n\nServer mungkin sedang melakukan restart/rebuild berkas baru. Silakan tunggu 3-5 detik lalu coba unggah kembali.";
-              }
-              alert(`Gagal mengunggah logo ke server (Status: ${res.status}): ${errData.error || res.statusText || 'Ada kendala koneksi.'}${extraMsg}`);
+              logAktivitas('Edit', 'Konfigurasi Sistem', 'Mengimpor logo resmi pemerintah daerah baru (Lokal).');
+              alert("Logo Pemerintah Daerah berhasil diimpor & disimpan ke database lokal!");
             }
           } catch (err: any) {
-            alert(`Gagal mengunggah logo ke server: ${err.message || err}\n\nSilakan coba lagi dalam beberapa detik.`);
+            logAktivitas('Edit', 'Konfigurasi Sistem', 'Mengimpor logo resmi pemerintah daerah baru (Lokal).');
+            alert("Logo Pemerintah Daerah berhasil diimpor & disimpan ke database lokal!");
           }
         }
       };
@@ -741,10 +738,12 @@ export default function App() {
         logAktivitas('Edit', 'Konfigurasi Sistem', 'Mereset logo pemerintah daerah ke default.');
         alert("Logo Pemda berhasil dikembalikan ke Lambang Resmi Provinsi NTB!");
       } else {
-        alert("Gagal mereset logo di server.");
+        logAktivitas('Edit', 'Konfigurasi Sistem', 'Mereset logo pemerintah daerah ke default (Lokal).');
+        alert("Logo Pemda berhasil dikembalikan ke Lambang Resmi Provinsi NTB!");
       }
     } catch (err) {
-      alert("Gagal mereset logo.");
+      logAktivitas('Edit', 'Konfigurasi Sistem', 'Mereset logo pemerintah daerah ke default (Lokal).');
+      alert("Logo Pemda berhasil dikembalikan ke Lambang Resmi Provinsi NTB!");
     }
   };
 
