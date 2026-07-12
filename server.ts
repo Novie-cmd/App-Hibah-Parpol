@@ -39,10 +39,10 @@ import {
   INITIAL_PENGATURAN 
 } from './src/data';
 
-const dbPath = path.resolve(__dirname, 'database.json');
+const dbPath = path.resolve(process.cwd(), 'database.json');
 
 // Initialize Firebase Web SDK
-const firebaseConfigPath = path.resolve(__dirname, 'firebase-applet-config.json');
+const firebaseConfigPath = path.resolve(process.cwd(), 'firebase-applet-config.json');
 let firestoreDb: any = null;
 
 if (fs.existsSync(firebaseConfigPath)) {
@@ -700,9 +700,10 @@ async function startServer() {
   // Serving Web Content
   if (isProd) {
     // Serve Static Production Files
-    app.use(express.static(path.join(__dirname, 'dist')));
+    const distPath = path.join(process.cwd(), 'dist');
+    app.use(express.static(distPath));
     app.get('*', (req, res) => {
-      res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+      res.sendFile(path.join(distPath, 'index.html'));
     });
   } else {
     // Vite Dev Integration Middleware
