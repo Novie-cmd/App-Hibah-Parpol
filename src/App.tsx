@@ -1938,6 +1938,26 @@ export default function App() {
           {activeMenu === 'dashboard' && (
             <div className="space-y-6">
               
+              {/* Persetujuan Operator Partai Baru Alert Banner */}
+              {(currentUser?.role === 'Super Admin' || currentUser?.role === 'Admin Kesbangpol') && 
+                pengguna.filter(u => u.status === 'Menunggu Persetujuan').length > 0 && (
+                  <div className="bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-xl p-4 shadow-md flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl shrink-0">⏳</span>
+                      <div>
+                        <h4 className="font-extrabold text-sm">Permohonan Calon Admin Partai Menunggu Persetujuan!</h4>
+                        <p className="text-xs text-amber-50 font-semibold mt-0.5">Terdapat {pengguna.filter(u => u.status === 'Menunggu Persetujuan').length} permohonan pendaftaran operator partai baru yang memerlukan tinjauan.</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setActiveMenu('pengguna')}
+                      className="px-4 py-2 bg-slate-900/90 hover:bg-slate-950 text-white text-xs font-black rounded-lg transition transform active:scale-95 cursor-pointer self-start sm:self-center shrink-0 uppercase tracking-wider"
+                    >
+                      Buka Menu Persetujuan &rarr;
+                    </button>
+                  </div>
+              )}
+              
               {/* Stat Summary Row */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-white p-5 rounded-xl shadow-xs border border-slate-200/60 flex items-center justify-between">

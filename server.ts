@@ -492,6 +492,26 @@ async function startServer() {
   });
 
   // Notifications
+  app.post('/api/notifikasi', async (req, res) => {
+    try {
+      const db = getDatabase();
+      const n = req.body;
+      const idx = db.notifikasi.findIndex((item: any) => item.id === n.id);
+      if (idx > -1) {
+        db.notifikasi[idx] = n;
+      } else {
+        db.notifikasi.push(n);
+      }
+      saveDatabase(db);
+      if (firestoreDb) {
+        await saveSingleDoc('notifikasi', n.id, n);
+      }
+      res.json({ success: true, data: n });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
   app.post('/api/notifikasi/read', async (req, res) => {
     try {
       const db = getDatabase();
@@ -527,6 +547,48 @@ async function startServer() {
       const db = getDatabase();
       const u = req.body;
       const idx = db.pengguna.findIndex((item: any) => item.id === u.id);
+      
+      let notif: any = null;
+      if (idx === -1 && u.status === 'Menunggu Persetujuan') {
+        const partaiObj = db.partai.find((p: any) => p.id === u.partaiId);
+        notif = {
+          id: `n_reg_${Date.now()}`,
+          partaiId: u.partaiId,
+          partaiNama: partaiObj ? partaiObj.singkatan : 'Parpol',
+          tipe: 'peringatan',
+          pesan: `Pendaftaran akun baru oleh ${u.namaLengkap} (${partaiObj ? partaiObj.singkatan : 'Parpol'}) memerlukan persetujuan.`,
+          tanggal: new Date().toISOString(),
+          dibaca: false
+        };
+        db.notifikasi.push(notif);
+      }
+
+      if (idx > -1) {
+        db.pengguna[idx] = u;
+      } else {
+        db.pengguna.push(u);
+      }
+      saveDatabase(db);
+      
+      if (firestoreDb) {
+        await saveSingleDoc('pengguna', u.id, u);
+        if (notif) {
+          await saveSingleDoc('notifikasi', notif.id, notif);
+        }
+      }
+      
+      res.json({ success: true, data: u });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.put('/api/pengguna/:id', async (req, res) => {
+    try {
+      const db = getDatabase();
+      const { id } = req.params;
+      const u = req.body;
+      const idx = db.pengguna.findIndex((item: any) => item.id === id);
       if (idx > -1) {
         db.pengguna[idx] = u;
       } else {
