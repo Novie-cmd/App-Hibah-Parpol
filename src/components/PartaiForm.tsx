@@ -153,21 +153,52 @@ export default function PartaiForm({
     }
   }, [partai, pengaturan]);
 
-  // Handle Logo file import and convert to Base64 string
+  // Handle Logo file import and convert to Base64 string with optimization (Max 150px, PNG)
   const handleLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      alert("Ukuran berkas logo gambar maksimal 2 MB.");
-      return;
-    }
-
     const reader = new FileReader();
     reader.onload = (event) => {
-      if (event.target?.result) {
-        setLogo(event.target.result as string);
-      }
+      const originalBase64 = event.target?.result as string;
+      if (!originalBase64) return;
+
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // Resize down if it's larger than 150px (extremely optimized for high-performance and database efficiency)
+        const MAX_DIM = 150;
+        if (width > MAX_DIM || height > MAX_DIM) {
+          if (width > height) {
+            height = Math.round((height * MAX_DIM) / width);
+            width = MAX_DIM;
+          } else {
+            width = Math.round((width * MAX_DIM) / height);
+            height = MAX_DIM;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          alert("Gagal memproses gambar logo.");
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+        // Use PNG to maintain transparency for logos, since max dim is 150px, size is extremely small (typically <15KB)
+        const compressedBase64 = canvas.toDataURL('image/png');
+        setLogo(compressedBase64);
+      };
+      img.onerror = () => {
+        alert("Berkas yang dipilih bukan gambar yang valid.");
+      };
+      img.src = originalBase64;
     };
     reader.onerror = () => {
       alert("Gagal membaca file gambar.");
