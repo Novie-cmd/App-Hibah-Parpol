@@ -251,7 +251,7 @@ export default function App() {
     } catch (err) {
       // Offline fallback
       setPengguna(prev => [...prev, newUser]);
-      logAktivitas('Registrasi', `Pengguna ${newUser.namaLengkap}`, `Mengajukan pendaftaran akun Operator Partai untuk partai ${matchedP?.singkatan} (Offline).`);
+      logAktivitas('Registrasi', `Pengguna ${newUser.namaLengkap}`, `Mengajukan pendaftaran akun Operator Partai untuk partai ${matchedP?.singkatan}.`);
       
       setNotifikasi(prev => [
         {
@@ -272,7 +272,7 @@ export default function App() {
       setRegEmail('');
       setRegPartaiId('');
       
-      setRegSuccessMsg(`[Offline] Registrasi Akun "${newUser.namaLengkap}" tersimpan lokal. Akun Anda sedang menunggu persetujuan dari Kesbangpol.`);
+      setRegSuccessMsg(`Registrasi Akun "${newUser.namaLengkap}" berhasil diajukan! Akun Anda sedang menunggu persetujuan dari Kesbangpol.`);
       setLoginTab('login');
     }
   };
@@ -490,8 +490,8 @@ export default function App() {
     } catch (err) {
       // Offline fallback
       setPengguna(prev => prev.map(u => u.id === pId ? { ...u, status: statusVal } : u));
-      logAktivitas('Persetujuan Pengguna', `Pengguna ${targetUser.namaLengkap}`, `${action === 'setujui' ? 'Menyetujui' : 'Menolak'} pendaftaran akun (Offline).`);
-      alert(`[Offline] Akun ${targetUser.namaLengkap} berhasil ${action === 'setujui' ? 'disetujui (aktif)' : 'ditolak (nonaktif)'}.`);
+      logAktivitas('Persetujuan Pengguna', `Pengguna ${targetUser.namaLengkap}`, `${action === 'setujui' ? 'Menyetujui' : 'Menolak'} pendaftaran akun.`);
+      alert(`Akun ${targetUser.namaLengkap} berhasil ${action === 'setujui' ? 'disetujui (aktif)' : 'ditolak (nonaktif)'}.`);
     }
   };
 
@@ -532,10 +532,10 @@ export default function App() {
         }
         return [...prev, p];
       });
-      logAktivitas((selectedPartai || isOperator) ? 'Edit' : 'Tambah Data', `Partai ${p.singkatan}`, `Profil partai dan kursi DPRD berhasil dimutakhirkan (Offline).`);
+      logAktivitas((selectedPartai || isOperator) ? 'Edit' : 'Tambah Data', `Partai ${p.singkatan}`, `Profil partai dan kursi DPRD berhasil dimutakhirkan.`);
       setPartaiFormOpen(false);
       setSelectedPartai(null);
-      alert(`Profil partai ${p.singkatan} berhasil dimutakhirkan (Offline)!`);
+      alert(`Profil partai ${p.singkatan} berhasil dimutakhirkan!`);
     }
   };
 
@@ -558,7 +558,7 @@ export default function App() {
       setDokumen(prev => prev.filter(d => d.partaiId !== id));
       setHibah(prev => prev.filter(h => h.partaiId !== id));
       setLpj(prev => prev.filter(l => l.partaiId !== id));
-      logAktivitas('Hapus', `Partai ${singkatan}`, `Menghapus entitas partai politik dan berkas penunjang (Offline).`);
+      logAktivitas('Hapus', `Partai ${singkatan}`, `Menghapus entitas partai politik dan berkas penunjang.`);
     }
   };
 
@@ -598,7 +598,7 @@ export default function App() {
         }
         return [...prev, u];
       });
-      logAktivitas(selectedPengguna ? 'Edit' : 'Tambah Data', `Pengguna ${u.namaLengkap}`, `Data pengguna berhasil dimutakhirkan (Offline).`);
+      logAktivitas(selectedPengguna ? 'Edit' : 'Tambah Data', `Pengguna ${u.namaLengkap}`, `Data pengguna berhasil dimutakhirkan.`);
       setPenggunaFormOpen(false);
       setSelectedPengguna(null);
     }
@@ -687,7 +687,7 @@ export default function App() {
     } catch (e) {
       // Offline fallback
       setPengguna(prev => prev.filter(p => p.id !== id));
-      logAktivitas('Hapus', `Pengguna ${namaLengkap}`, `Menghapus akun pengguna dari sistem (Offline).`);
+      logAktivitas('Hapus', `Pengguna ${namaLengkap}`, `Menghapus akun pengguna dari sistem.`);
     }
   };
 
@@ -845,7 +845,7 @@ export default function App() {
       });
       
       // Add default log
-      logAktivitas('Import Dokumen', uploadDocOpen, `Berhasil mengimpor berkas kearsipan partai ${partaiObj?.singkatan} (Offline).`);
+      logAktivitas('Import Dokumen', uploadDocOpen, `Berhasil mengimpor berkas kearsipan partai ${partaiObj?.singkatan}.`);
       
       // Add Notification
       setNotifikasi(prev => [
@@ -854,7 +854,7 @@ export default function App() {
           partaiId: targetPartaiId,
           partaiNama: partaiObj?.singkatan,
           tipe: 'pengingat',
-          pesan: `Berkas "${uploadDocOpen}" untuk ${partaiObj?.singkatan} berhasil diimpor (Offline).`,
+          pesan: `Berkas "${uploadDocOpen}" untuk ${partaiObj?.singkatan} berhasil diimpor.`,
           tanggal: new Date().toISOString(),
           dibaca: false
         },
@@ -863,7 +863,7 @@ export default function App() {
 
       setUploadDocOpen(null);
       setSelectedUploadPartaiId(null);
-      alert(`Dokumen "${uploadDocOpen}" untuk partai ${partaiObj?.singkatan} berhasil diimpor (Offline)!`);
+      alert(`Dokumen "${uploadDocOpen}" untuk partai ${partaiObj?.singkatan} berhasil diimpor!`);
     }
   };
 
@@ -974,7 +974,7 @@ export default function App() {
         role: currentUser.role,
         aktivitas: 'Verifikasi',
         objek: verificationModalOpen.tipeDokumen,
-        detail: `Verifikasi dokumen partai (ID: ${verificationModalOpen.partaiId}) menjadi ${verifStatus}. Catatan: ${verifNotes} (Offline)`,
+        detail: `Verifikasi dokumen partai (ID: ${verificationModalOpen.partaiId}) menjadi ${verifStatus}. Catatan: ${verifNotes}`,
         timestamp: new Date().toISOString(),
         ipAddress: '127.0.0.1'
       }, ...prev]);
@@ -995,7 +995,7 @@ export default function App() {
       ]);
 
       setVerificationModalOpen(null);
-      alert("Dokumen berhasil divalidasi (Offline)!");
+      alert("Dokumen berhasil divalidasi!");
     }
   };
 
@@ -1055,9 +1055,9 @@ export default function App() {
         ]);
       }
 
-      logAktivitas('Edit', `Hibah Parpol ID: ${hibahFormOpen.partaiId}`, `Pembaruan data tahapan penyaluran hibah (Offline).`);
+      logAktivitas('Edit', `Hibah Parpol ID: ${hibahFormOpen.partaiId}`, `Pembaruan data tahapan penyaluran hibah.`);
       setHibahFormOpen(null);
-      alert("Data penyaluran hibah berhasil diperbarui (Offline)!");
+      alert("Data penyaluran hibah berhasil diperbarui!");
     }
   };
 
@@ -1083,9 +1083,9 @@ export default function App() {
     } catch (err) {
       // Offline fallback
       setLpj(prev => prev.map(l => l.id === lpjReviewOpen.id ? lpjReviewOpen : l));
-      logAktivitas('Verifikasi', `LPJ ID: ${lpjReviewOpen.id}`, `Validasi laporan evaluasi LPJ menjadi [${lpjReviewOpen.statusDiterima}] (Offline).`);
+      logAktivitas('Verifikasi', `LPJ ID: ${lpjReviewOpen.id}`, `Validasi laporan evaluasi LPJ menjadi [${lpjReviewOpen.statusDiterima}].`);
       setLpjReviewOpen(null);
-      alert("Status evaluasi LPJ berhasil diperbarui (Offline)!");
+      alert("Status evaluasi LPJ berhasil diperbarui!");
     }
   };
 
@@ -1121,7 +1121,7 @@ export default function App() {
       setPengguna(defaultDb.pengguna);
       setNotifikasi(defaultDb.notifikasi);
       setPengaturan(defaultDb.pengaturan);
-      alert("Database Kesbangpol berhasil dikembalikan ke keadaan semula (Offline).");
+      alert("Database Kesbangpol berhasil dikembalikan ke keadaan semula.");
     }
   };
 
