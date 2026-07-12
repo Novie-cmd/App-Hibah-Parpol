@@ -1335,8 +1335,13 @@ export default function App() {
           
           {/* Logo & Header */}
           <div className="text-center space-y-2">
-            <div className="inline-flex p-3 bg-emerald-950/80 border border-emerald-900 rounded-2xl shadow-inner text-emerald-400 text-3xl">
-              🏛️
+            <div className="inline-flex p-1.5 bg-white/10 border border-white/20 rounded-2xl shadow-inner">
+              <img 
+                src={pengaturan?.logoInstansi || "https://upload.wikimedia.org/wikipedia/commons/b/ad/Lambang_Nusa_Tenggara_Barat.png"} 
+                alt="Logo Pemprov NTB" 
+                className="w-14 h-14 object-contain"
+                referrerPolicy="no-referrer"
+              />
             </div>
             <div>
               <h2 className="text-white text-base font-black uppercase tracking-wider">SI-HIBAH PARPOL</h2>
@@ -1658,7 +1663,12 @@ export default function App() {
       {/* 1. APP BAR HEADER */}
       <header className="bg-slate-900 text-white h-16 px-6 border-b border-slate-800 flex items-center justify-between shadow-md select-none no-print sticky top-0 z-40">
         <div className="flex items-center gap-3">
-          <span className="text-2xl">🏛️</span>
+          <img 
+            src={pengaturan?.logoInstansi || "https://upload.wikimedia.org/wikipedia/commons/b/ad/Lambang_Nusa_Tenggara_Barat.png"} 
+            alt="Logo Pemprov" 
+            className="w-10 h-10 object-contain p-0.5 bg-white rounded-md"
+            referrerPolicy="no-referrer"
+          />
           <div>
             <h1 className="text-xs font-extrabold tracking-wide text-slate-100 uppercase">Sistem Informasi Data Hibah Parpol</h1>
             <p className="text-[10px] text-slate-400 font-bold tracking-wide mt-0.5 uppercase">Badan Kesatuan Bangsa dan Politik (Kesbangpol)</p>
