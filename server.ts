@@ -9,6 +9,20 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
 
+// Firebase imports
+import { initializeApp } from 'firebase/app';
+import { 
+  getFirestore, 
+  doc, 
+  getDoc, 
+  getDocs, 
+  setDoc, 
+  deleteDoc, 
+  collection, 
+  query, 
+  where 
+} from 'firebase/firestore';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -29,7 +43,132 @@ import {
 
 const dbPath = path.resolve(__dirname, 'database.json');
 
-// Initialize Database File if not exists
+// Initialize Firebase
+const firebaseConfigPath = path.resolve(__dirname, 'firebase-applet-config.json');
+let firestoreDb: any = null;
+
+if (fs.existsSync(firebaseConfigPath)) {
+  try {
+    const config = JSON.parse(fs.readFileSync(firebaseConfigPath, 'utf-8'));
+    const app = initializeApp({
+      apiKey: config.apiKey,
+      authDomain: config.authDomain,
+      projectId: config.projectId,
+      storageBucket: config.storageBucket,
+      messagingSenderId: config.messagingSenderId,
+      appId: config.appId
+    });
+    firestoreDb = getFirestore(app, config.firestoreDatabaseId || undefined);
+    console.log('Firebase initialized successfully on server-side.');
+  } catch (err) {
+    console.error('Failed to initialize Firebase on server-side:', err);
+  }
+}
+
+// Helper functions for Firestore
+async function getCollectionDocs(collectionName: string) {
+  if (!firestoreDb) return [];
+  try {
+    const colRef = collection(firestoreDb, collectionName);
+    const snapshot = await getDocs(colRef);
+    const list: any[] = [];
+    snapshot.forEach((docSnapshot) => {
+      list.push(docSnapshot.data());
+    });
+    return list;
+  } catch (err) {
+    console.error(`Error loading collection ${collectionName}:`, err);
+    return [];
+  }
+}
+
+async function getSingleDoc(collectionName: string, docId: string) {
+  if (!firestoreDb) return null;
+  try {
+    const docRef = doc(firestoreDb, collectionName, docId);
+    const snapshot = await getDoc(docRef);
+    if (snapshot.exists()) {
+      return snapshot.data();
+    }
+    return null;
+  } catch (err) {
+    console.error(`Error loading single doc ${collectionName}/${docId}:`, err);
+    return null;
+  }
+}
+
+async function saveSingleDoc(collectionName: string, docId: string, data: any) {
+  if (!firestoreDb) return;
+  try {
+    const docRef = doc(firestoreDb, collectionName, docId);
+    await setDoc(docRef, data);
+  } catch (err) {
+    console.error(`Error saving doc ${collectionName}/${docId}:`, err);
+  }
+}
+
+async function deleteSingleDoc(collectionName: string, docId: string) {
+  if (!firestoreDb) return;
+  try {
+    const docRef = doc(firestoreDb, collectionName, docId);
+    await deleteDoc(docRef);
+  } catch (err) {
+    console.error(`Error deleting doc ${collectionName}/${docId}:`, err);
+  }
+}
+
+async function checkAndSeedDatabase() {
+  if (!firestoreDb) return;
+  try {
+    const pengaturanDoc = await getSingleDoc('pengaturan', 'default');
+    if (!pengaturanDoc) {
+      console.log('Firestore is empty. Seeding initial data...');
+      
+      const defaultDb = {
+        partai: INITIAL_PARTAI,
+        dokumen: generateInitialDokumen(INITIAL_PARTAI),
+        hibah: INITIAL_HIBAH,
+        lpj: INITIAL_LPJ,
+        audit: INITIAL_AUDIT,
+        pengguna: INITIAL_PENGGUNA,
+        notifikasi: INITIAL_NOTIFIKASI,
+        pengaturan: INITIAL_PENGATURAN
+      };
+      
+      // Save pengaturan
+      await saveSingleDoc('pengaturan', 'default', defaultDb.pengaturan);
+      
+      // Save all lists
+      for (const p of defaultDb.partai) {
+        await saveSingleDoc('partai', p.id, p);
+      }
+      for (const d of defaultDb.dokumen) {
+        await saveSingleDoc('dokumen', d.id, d);
+      }
+      for (const h of defaultDb.hibah) {
+        await saveSingleDoc('hibah', h.id, h);
+      }
+      for (const l of defaultDb.lpj) {
+        await saveSingleDoc('lpj', l.id, l);
+      }
+      for (const a of defaultDb.audit) {
+        await saveSingleDoc('audit', a.id, a);
+      }
+      for (const u of defaultDb.pengguna) {
+        await saveSingleDoc('pengguna', u.id, u);
+      }
+      for (const n of defaultDb.notifikasi) {
+        await saveSingleDoc('notifikasi', n.id, n);
+      }
+      
+      console.log('Firestore seeding completed successfully.');
+    }
+  } catch (err) {
+    console.error('Error seeding Firestore:', err);
+  }
+}
+
+// Initialize Database File if not exists (Local backup)
 function getDatabase() {
   if (!fs.existsSync(dbPath)) {
     const defaultDb = {
@@ -65,6 +204,38 @@ function getDatabase() {
   }
 }
 
+async function getDatabaseMerged() {
+  if (firestoreDb) {
+    try {
+      await checkAndSeedDatabase();
+      const [partai, dokumen, hibah, lpj, audit, pengguna, notifikasi, pengaturan] = await Promise.all([
+        getCollectionDocs('partai'),
+        getCollectionDocs('dokumen'),
+        getCollectionDocs('hibah'),
+        getCollectionDocs('lpj'),
+        getCollectionDocs('audit'),
+        getCollectionDocs('pengguna'),
+        getCollectionDocs('notifikasi'),
+        getSingleDoc('pengaturan', 'default')
+      ]);
+      
+      return {
+        partai,
+        dokumen,
+        hibah,
+        lpj,
+        audit,
+        pengguna,
+        notifikasi,
+        pengaturan: pengaturan || INITIAL_PENGATURAN
+      };
+    } catch (err) {
+      console.error('Failed to fetch from Firestore, falling back to database.json:', err);
+    }
+  }
+  return getDatabase();
+}
+
 function saveDatabase(db: any) {
   fs.writeFileSync(dbPath, JSON.stringify(db, null, 2), 'utf-8');
 }
@@ -74,9 +245,9 @@ async function startServer() {
   app.use(express.json({ limit: '50mb' }));
 
   // API Routes
-  app.get('/api/data', (req, res) => {
+  app.get('/api/data', async (req, res) => {
     try {
-      const db = getDatabase();
+      const db = await getDatabaseMerged();
       res.json(db);
     } catch (e: any) {
       res.status(500).json({ error: e.message });
@@ -84,7 +255,7 @@ async function startServer() {
   });
 
   // Master Data Partai
-  app.post('/api/partai', (req, res) => {
+  app.post('/api/partai', async (req, res) => {
     try {
       const db = getDatabase();
       const p = req.body;
@@ -95,13 +266,18 @@ async function startServer() {
         db.partai.push(p);
       }
       saveDatabase(db);
+      
+      if (firestoreDb) {
+        await saveSingleDoc('partai', p.id, p);
+      }
+      
       res.json({ success: true, data: p });
     } catch (e: any) {
       res.status(500).json({ error: e.message });
     }
   });
 
-  app.delete('/api/partai/:id', (req, res) => {
+  app.delete('/api/partai/:id', async (req, res) => {
     try {
       const db = getDatabase();
       const id = req.params.id;
@@ -110,6 +286,24 @@ async function startServer() {
       db.hibah = db.hibah.filter((h: any) => h.partaiId !== id);
       db.lpj = db.lpj.filter((l: any) => l.partaiId !== id);
       saveDatabase(db);
+      
+      if (firestoreDb) {
+        await deleteSingleDoc('partai', id);
+        // Delete related documents
+        const docs = await getCollectionDocs('dokumen');
+        for (const d of docs) {
+          if (d.partaiId === id) await deleteSingleDoc('dokumen', d.id);
+        }
+        const hibahs = await getCollectionDocs('hibah');
+        for (const h of hibahs) {
+          if (h.partaiId === id) await deleteSingleDoc('hibah', h.id);
+        }
+        const lpjs = await getCollectionDocs('lpj');
+        for (const l of lpjs) {
+          if (l.partaiId === id) await deleteSingleDoc('lpj', l.id);
+        }
+      }
+      
       res.json({ success: true });
     } catch (e: any) {
       res.status(500).json({ error: e.message });
@@ -117,7 +311,7 @@ async function startServer() {
   });
 
   // Dokumen
-  app.post('/api/dokumen', (req, res) => {
+  app.post('/api/dokumen', async (req, res) => {
     try {
       const db = getDatabase();
       const d = req.body;
@@ -128,6 +322,11 @@ async function startServer() {
         db.dokumen.push(d);
       }
       saveDatabase(db);
+      
+      if (firestoreDb) {
+        await saveSingleDoc('dokumen', d.id, d);
+      }
+      
       res.json({ success: true, data: d });
     } catch (e: any) {
       res.status(500).json({ error: e.message });
@@ -135,7 +334,7 @@ async function startServer() {
   });
 
   // Verifikasi Dokumen
-  app.post('/api/dokumen/verifikasi', (req, res) => {
+  app.post('/api/dokumen/verifikasi', async (req, res) => {
     try {
       const db = getDatabase();
       const { id, statusVerifikasi, catatanVerifikator, namaVerifikator } = req.body;
@@ -147,7 +346,7 @@ async function startServer() {
         db.dokumen[idx].uploadedBy = `${namaVerifikator} (Verifikator)`;
         
         // Add log
-        db.audit.push({
+        const auditLog = {
           id: `a_${Date.now()}`,
           userId: 'v1',
           username: 'verifikator_kesbang',
@@ -157,11 +356,12 @@ async function startServer() {
           detail: `Verifikasi dokumen partai (ID: ${db.dokumen[idx].partaiId}) menjadi ${statusVerifikasi}. Catatan: ${catatanVerifikator}`,
           timestamp: new Date().toISOString(),
           ipAddress: req.ip || '127.0.0.1'
-        });
+        };
+        db.audit.push(auditLog);
 
         // Add Notification
         const partaiObj = db.partai.find((p: any) => p.id === db.dokumen[idx].partaiId);
-        db.notifikasi.push({
+        const notif = {
           id: `n_${Date.now()}`,
           partaiId: db.dokumen[idx].partaiId,
           partaiNama: partaiObj ? partaiObj.singkatan : 'Parpol',
@@ -169,9 +369,17 @@ async function startServer() {
           pesan: `Dokumen "${db.dokumen[idx].tipeDokumen}" partai ${partaiObj ? partaiObj.singkatan : ''} dinyatakan ${statusVerifikasi}. ${catatanVerifikator ? 'Catatan: ' + catatanVerifikator : ''}`,
           tanggal: new Date().toISOString(),
           dibaca: false
-        });
+        };
+        db.notifikasi.push(notif);
 
         saveDatabase(db);
+        
+        if (firestoreDb) {
+          await saveSingleDoc('dokumen', id, db.dokumen[idx]);
+          await saveSingleDoc('audit', auditLog.id, auditLog);
+          await saveSingleDoc('notifikasi', notif.id, notif);
+        }
+        
         res.json({ success: true, data: db.dokumen[idx] });
       } else {
         res.status(404).json({ error: 'Dokumen tidak ditemukan' });
@@ -182,7 +390,7 @@ async function startServer() {
   });
 
   // Data Hibah
-  app.post('/api/hibah', (req, res) => {
+  app.post('/api/hibah', async (req, res) => {
     try {
       const db = getDatabase();
       const h = req.body;
@@ -194,9 +402,10 @@ async function startServer() {
       }
 
       // If status is 'Cair', create a notification if it's new
+      let notif: any = null;
       if (h.statusPenyaluran === 'Cair') {
         const partaiObj = db.partai.find((p: any) => p.id === h.partaiId);
-        db.notifikasi.push({
+        notif = {
           id: `n_cair_${Date.now()}`,
           partaiId: h.partaiId,
           partaiNama: partaiObj ? partaiObj.singkatan : 'Parpol',
@@ -204,10 +413,19 @@ async function startServer() {
           pesan: `Dana Hibah TA ${h.tahunAnggaran} Partai ${partaiObj ? partaiObj.singkatan : ''} sebesar Rp ${h.nilaiBantuan.toLocaleString('id-ID')} telah dicairkan (SP2D: ${h.nomorSp2d}).`,
           tanggal: new Date().toISOString(),
           dibaca: false
-        });
+        };
+        db.notifikasi.push(notif);
       }
 
       saveDatabase(db);
+      
+      if (firestoreDb) {
+        await saveSingleDoc('hibah', h.id, h);
+        if (notif) {
+          await saveSingleDoc('notifikasi', notif.id, notif);
+        }
+      }
+      
       res.json({ success: true, data: h });
     } catch (e: any) {
       res.status(500).json({ error: e.message });
@@ -215,7 +433,7 @@ async function startServer() {
   });
 
   // Laporan Pertanggungjawaban (LPJ)
-  app.post('/api/lpj', (req, res) => {
+  app.post('/api/lpj', async (req, res) => {
     try {
       const db = getDatabase();
       const l = req.body;
@@ -226,6 +444,11 @@ async function startServer() {
         db.lpj.push(l);
       }
       saveDatabase(db);
+      
+      if (firestoreDb) {
+        await saveSingleDoc('lpj', l.id, l);
+      }
+      
       res.json({ success: true, data: l });
     } catch (e: any) {
       res.status(500).json({ error: e.message });
@@ -233,11 +456,16 @@ async function startServer() {
   });
 
   // Pengaturan Sistem
-  app.post('/api/settings', (req, res) => {
+  app.post('/api/settings', async (req, res) => {
     try {
       const db = getDatabase();
       db.pengaturan = req.body;
       saveDatabase(db);
+      
+      if (firestoreDb) {
+        await saveSingleDoc('pengaturan', 'default', db.pengaturan);
+      }
+      
       res.json({ success: true, data: db.pengaturan });
     } catch (e: any) {
       res.status(500).json({ error: e.message });
@@ -245,7 +473,7 @@ async function startServer() {
   });
 
   // Audit Logs
-  app.post('/api/audit', (req, res) => {
+  app.post('/api/audit', async (req, res) => {
     try {
       const db = getDatabase();
       const log = req.body;
@@ -254,6 +482,11 @@ async function startServer() {
       log.ipAddress = req.ip || '127.0.0.1';
       db.audit.push(log);
       saveDatabase(db);
+      
+      if (firestoreDb) {
+        await saveSingleDoc('audit', log.id, log);
+      }
+      
       res.json({ success: true, data: log });
     } catch (e: any) {
       res.status(500).json({ error: e.message });
@@ -261,17 +494,29 @@ async function startServer() {
   });
 
   // Notifications
-  app.post('/api/notifikasi/read', (req, res) => {
+  app.post('/api/notifikasi/read', async (req, res) => {
     try {
       const db = getDatabase();
       const { id } = req.body;
       const idx = db.notifikasi.findIndex((n: any) => n.id === id);
       if (idx > -1) {
         db.notifikasi[idx].dibaca = true;
+        if (firestoreDb) {
+          await saveSingleDoc('notifikasi', id, db.notifikasi[idx]);
+        }
       } else if (id === 'all') {
-        db.notifikasi.forEach((n: any) => n.dibaca = true);
+        db.notifikasi.forEach((n: any) => {
+          n.dibaca = true;
+        });
+        saveDatabase(db);
+        if (firestoreDb) {
+          for (const n of db.notifikasi) {
+            await saveSingleDoc('notifikasi', n.id, n);
+          }
+        }
+      } else {
+        saveDatabase(db);
       }
-      saveDatabase(db);
       res.json({ success: true });
     } catch (e: any) {
       res.status(500).json({ error: e.message });
@@ -279,7 +524,7 @@ async function startServer() {
   });
 
   // Pengguna CRUD
-  app.post('/api/pengguna', (req, res) => {
+  app.post('/api/pengguna', async (req, res) => {
     try {
       const db = getDatabase();
       const u = req.body;
@@ -290,18 +535,28 @@ async function startServer() {
         db.pengguna.push(u);
       }
       saveDatabase(db);
+      
+      if (firestoreDb) {
+        await saveSingleDoc('pengguna', u.id, u);
+      }
+      
       res.json({ success: true, data: u });
     } catch (e: any) {
       res.status(500).json({ error: e.message });
     }
   });
 
-  app.delete('/api/pengguna/:id', (req, res) => {
+  app.delete('/api/pengguna/:id', async (req, res) => {
     try {
       const db = getDatabase();
       const { id } = req.params;
       db.pengguna = db.pengguna.filter((item: any) => item.id !== id);
       saveDatabase(db);
+      
+      if (firestoreDb) {
+        await deleteSingleDoc('pengguna', id);
+      }
+      
       res.json({ success: true });
     } catch (e: any) {
       res.status(500).json({ error: e.message });
@@ -309,11 +564,31 @@ async function startServer() {
   });
 
   // Spreadsheet Database Management (Backup, Restore, Raw Edit)
-  app.post('/api/database/restore', (req, res) => {
+  app.post('/api/database/restore', async (req, res) => {
     try {
       const backupDb = req.body;
       if (backupDb.partai && backupDb.dokumen && backupDb.pengaturan) {
         saveDatabase(backupDb);
+        
+        if (firestoreDb) {
+          // Clear and restore
+          const collections = ['partai', 'dokumen', 'hibah', 'lpj', 'audit', 'pengguna', 'notifikasi'];
+          for (const col of collections) {
+            const docs = await getCollectionDocs(col);
+            for (const docObj of docs) {
+              await deleteSingleDoc(col, docObj.id);
+            }
+          }
+          await saveSingleDoc('pengaturan', 'default', backupDb.pengaturan);
+          for (const p of backupDb.partai) await saveSingleDoc('partai', p.id, p);
+          for (const d of backupDb.dokumen) await saveSingleDoc('dokumen', d.id, d);
+          for (const h of backupDb.hibah || []) await saveSingleDoc('hibah', h.id, h);
+          for (const l of backupDb.lpj || []) await saveSingleDoc('lpj', l.id, l);
+          for (const a of backupDb.audit || []) await saveSingleDoc('audit', a.id, a);
+          for (const u of backupDb.pengguna || []) await saveSingleDoc('pengguna', u.id, u);
+          for (const n of backupDb.notifikasi || []) await saveSingleDoc('notifikasi', n.id, n);
+        }
+        
         res.json({ success: true, message: 'Database restored successfully' });
       } else {
         res.status(400).json({ error: 'Format backup database tidak valid' });
@@ -323,7 +598,7 @@ async function startServer() {
     }
   });
 
-  app.post('/api/database/reset', (req, res) => {
+  app.post('/api/database/reset', async (req, res) => {
     try {
       const defaultDb = {
         partai: INITIAL_PARTAI,
@@ -336,6 +611,26 @@ async function startServer() {
         pengaturan: INITIAL_PENGATURAN
       };
       saveDatabase(defaultDb);
+      
+      if (firestoreDb) {
+        // Clear and restore default
+        const collections = ['partai', 'dokumen', 'hibah', 'lpj', 'audit', 'pengguna', 'notifikasi'];
+        for (const col of collections) {
+          const docs = await getCollectionDocs(col);
+          for (const docObj of docs) {
+            await deleteSingleDoc(col, docObj.id);
+          }
+        }
+        await saveSingleDoc('pengaturan', 'default', defaultDb.pengaturan);
+        for (const p of defaultDb.partai) await saveSingleDoc('partai', p.id, p);
+        for (const d of defaultDb.dokumen) await saveSingleDoc('dokumen', d.id, d);
+        for (const h of defaultDb.hibah) await saveSingleDoc('hibah', h.id, h);
+        for (const l of defaultDb.lpj) await saveSingleDoc('lpj', l.id, l);
+        for (const a of defaultDb.audit) await saveSingleDoc('audit', a.id, a);
+        for (const u of defaultDb.pengguna) await saveSingleDoc('pengguna', u.id, u);
+        for (const n of defaultDb.notifikasi) await saveSingleDoc('notifikasi', n.id, n);
+      }
+      
       res.json({ success: true, data: defaultDb });
     } catch (e: any) {
       res.status(500).json({ error: e.message });
@@ -366,3 +661,4 @@ async function startServer() {
 startServer().catch((err) => {
   console.error('Server startup failed:', err);
 });
+

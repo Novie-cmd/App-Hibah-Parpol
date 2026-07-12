@@ -314,12 +314,16 @@ export default function App() {
   // Fetch initial state from database.json on mount
   useEffect(() => {
     fetchData();
+    const interval = setInterval(() => {
+      fetchData(true);
+    }, 15000); // sync every 15 seconds silently in background
+    return () => clearInterval(interval);
   }, []);
 
   const [isOffline, setIsOffline] = useState(false);
 
-  const fetchData = async () => {
-    setIsLoading(true);
+  const fetchData = async (isBackground = false) => {
+    if (!isBackground) setIsLoading(true);
     try {
       const res = await fetch('/api/data');
       if (res.ok) {

@@ -1,0 +1,220 @@
+{
+  "entities": {
+    "Partai": {
+      "title": "Partai",
+      "description": "Informasi partai politik tingkat provinsi",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nama": { "type": "string" },
+        "nomorUrut": { "type": "number" },
+        "logo": { "type": "string" },
+        "singkatan": { "type": "string" },
+        "alamatKantor": { "type": "string" },
+        "provinsi": { "type": "string" },
+        "kabupatenKota": { "type": "string" },
+        "kecamatan": { "type": "string" },
+        "kelurahan": { "type": "string" },
+        "kodePos": { "type": "string" },
+        "nomorTelepon": { "type": "string" },
+        "email": { "type": "string" },
+        "website": { "type": "string" },
+        "statusAktif": { "type": "boolean" },
+        "tanggalBerdiri": { "type": "string" },
+        "nomorSkKemenkumham": { "type": "string" },
+        "tanggalSk": { "type": "string" },
+        "npwpPartai": { "type": "string" },
+        "namaBank": { "type": "string" },
+        "nomorRekening": { "type": "string" },
+        "atasNamaRekening": { "type": "string" },
+        "ketua": { "type": "string" },
+        "sekretaris": { "type": "string" },
+        "bendahara": { "type": "string" },
+        "masaJabatan": { "type": "string" },
+        "nomorHp": { "type": "string" },
+        "emailPengurus": { "type": "string" },
+        "fotoPengurus": { "type": "string" },
+        "skKepengurusan": { "type": "string" },
+        "masaBerlakuSk": { "type": "string" },
+        "tahunPemilu": { "type": "string" },
+        "jumlahSuaraSah": { "type": "number" },
+        "jumlahKursiDprd": { "type": "number" },
+        "daerahPemilihan": { "type": "string" },
+        "nilaiBantuanPerSuara": { "type": "number" },
+        "totalHakBantuan": { "type": "number" },
+        "nomorNphd": { "type": "string" },
+        "tanggalNphd": { "type": "string" },
+        "nomorSptjm": { "type": "string" },
+        "tanggalSptjm": { "type": "string" },
+        "nomorBap": { "type": "string" },
+        "tanggalBap": { "type": "string" }
+      },
+      "required": ["id", "nama", "singkatan"]
+    },
+    "DokumenHibah": {
+      "title": "DokumenHibah",
+      "description": "Dokumen kelengkapan bantuan hibah partai politik",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "partaiId": { "type": "string" },
+        "tipeDokumen": { "type": "string" },
+        "nomorDokumen": { "type": "string" },
+        "tanggal": { "type": "string" },
+        "masaBerlaku": { "type": "string" },
+        "statusVerifikasi": { "type": "string" },
+        "catatanVerifikator": { "type": "string" },
+        "fileName": { "type": "string" },
+        "fileType": { "type": "string" },
+        "fileSize": { "type": "string" },
+        "version": { "type": "number" },
+        "updatedAt": { "type": "string" },
+        "uploadedBy": { "type": "string" },
+        "fileData": { "type": "string" }
+      },
+      "required": ["id", "partaiId", "tipeDokumen", "statusVerifikasi"]
+    },
+    "DataHibah": {
+      "title": "DataHibah",
+      "description": "Pencatatan tahapan penyaluran dana hibah",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "partaiId": { "type": "string" },
+        "tahunAnggaran": { "type": "number" },
+        "nomorSk": { "type": "string" },
+        "nomorNphd": { "type": "string" },
+        "nilaiBantuan": { "type": "number" },
+        "tanggalPenetapan": { "type": "string" },
+        "tanggalPenandatanganan": { "type": "string" },
+        "statusPenyaluran": { "type": "string" },
+        "tahapPenyaluran": { "type": "string" },
+        "tanggalCair": { "type": "string" },
+        "nomorSp2d": { "type": "string" },
+        "nomorSpm": { "type": "string" },
+        "nomorSpd": { "type": "string" },
+        "keterangan": { "type": "string" }
+      },
+      "required": ["id", "partaiId", "tahunAnggaran", "nilaiBantuan", "statusPenyaluran"]
+    },
+    "LaporanPertanggungjawaban": {
+      "title": "LaporanPertanggungjawaban",
+      "description": "Laporan pertanggungjawaban penggunaan dana hibah",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "partaiId": { "type": "string" },
+        "hibahId": { "type": "string" },
+        "tahun": { "type": "number" },
+        "tanggalLaporan": { "type": "string" },
+        "nilaiPenggunaanDana": { "type": "number" },
+        "ringkasanKegiatan": { "type": "string" },
+        "fileNameLpj": { "type": "string" },
+        "hasilEvaluasi": { "type": "string" },
+        "statusDiterima": { "type": "string" },
+        "catatan": { "type": "string" }
+      },
+      "required": ["id", "partaiId", "hibahId", "tahun", "statusDiterima"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Catatan log audit aktivitas pengguna",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "username": { "type": "string" },
+        "role": { "type": "string" },
+        "aktivitas": { "type": "string" },
+        "objek": { "type": "string" },
+        "detail": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "ipAddress": { "type": "string" }
+      },
+      "required": ["id", "userId", "username", "role", "aktivitas", "timestamp"]
+    },
+    "Pengguna": {
+      "title": "Pengguna",
+      "description": "Informasi pengguna sistem",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "username": { "type": "string" },
+        "namaLengkap": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string" },
+        "status": { "type": "string" },
+        "partaiId": { "type": "string" },
+        "avatar": { "type": "string" },
+        "password": { "type": "string" }
+      },
+      "required": ["id", "username", "namaLengkap", "role", "status"]
+    },
+    "Notifikasi": {
+      "title": "Notifikasi",
+      "description": "Sistem notifikasi dalam aplikasi",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "partaiId": { "type": "string" },
+        "partaiNama": { "type": "string" },
+        "tipe": { "type": "string" },
+        "pesan": { "type": "string" },
+        "tanggal": { "type": "string" },
+        "dibaca": { "type": "boolean" }
+      },
+      "required": ["id", "pesan", "tanggal", "dibaca"]
+    },
+    "PengaturanSistem": {
+      "title": "PengaturanSistem",
+      "description": "Pengaturan parameter sistem informasi",
+      "type": "object",
+      "properties": {
+        "tahunAktif": { "type": "number" },
+        "danaPerSuara": { "type": "number" },
+        "namaKepalaKaban": { "type": "string" },
+        "nipKepalaKaban": { "type": "string" },
+        "namaKabidPoldagri": { "type": "string" },
+        "nipKabidPoldagri": { "type": "string" },
+        "namaKasiOrmas": { "type": "string" },
+        "nipKasiOrmas": { "type": "string" },
+        "sistemTerkunci": { "type": "boolean" }
+      },
+      "required": ["tahunAktif", "danaPerSuara"]
+    }
+  },
+  "firestore": {
+    "partai": {
+      "schema": "Partai",
+      "description": "Koleksi partai politik"
+    },
+    "dokumen": {
+      "schema": "DokumenHibah",
+      "description": "Koleksi dokumen kelengkapan"
+    },
+    "hibah": {
+      "schema": "DataHibah",
+      "description": "Koleksi pencairan dana hibah"
+    },
+    "lpj": {
+      "schema": "LaporanPertanggungjawaban",
+      "description": "Koleksi laporan pertanggungjawaban hibah"
+    },
+    "audit": {
+      "schema": "AuditLog",
+      "description": "Koleksi log audit aktivitas"
+    },
+    "pengguna": {
+      "schema": "Pengguna",
+      "description": "Koleksi data pengguna sistem"
+    },
+    "notifikasi": {
+      "schema": "Notifikasi",
+      "description": "Koleksi notifikasi pengguna"
+    },
+    "pengaturan": {
+      "schema": "PengaturanSistem",
+      "description": "Dokumen tunggal pengaturan sistem"
+    }
+  }
+}
