@@ -338,6 +338,46 @@ export default function App() {
         setPengaturan(data.pengaturan || null);
         setIsOffline(false);
         
+        // Auto-sync offline users to the server
+        const serverPengguna = data.pengguna || [];
+        const localDbRaw = localStorage.getItem('kesbangpol_db');
+        if (localDbRaw) {
+          try {
+            const localDb = JSON.parse(localDbRaw);
+            const localPengguna = localDb.pengguna || [];
+            const unsyncedUsers = localPengguna.filter((lu: any) => 
+              lu.id.startsWith('u_reg_') && !serverPengguna.some((su: any) => su.id === lu.id)
+            );
+            
+            if (unsyncedUsers.length > 0) {
+              for (const lu of unsyncedUsers) {
+                console.log('Syncing offline user to server:', lu);
+                await fetch('/api/pengguna', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(lu)
+                });
+              }
+              // Re-fetch to get latest state from server
+              const resRetry = await fetch('/api/data');
+              if (resRetry.ok) {
+                const dataRetry = await resRetry.json();
+                setPartai(dataRetry.partai || []);
+                setDokumen(dataRetry.dokumen || []);
+                setHibah(dataRetry.hibah || []);
+                setLpj(dataRetry.lpj || []);
+                setAudit(dataRetry.audit || []);
+                setPengguna(dataRetry.pengguna || []);
+                setNotifikasi(dataRetry.notifikasi || []);
+                setPengaturan(dataRetry.pengaturan || null);
+                localStorage.setItem('kesbangpol_db', JSON.stringify(dataRetry));
+              }
+            }
+          } catch (syncErr) {
+            console.error('Failed to auto-sync offline data:', syncErr);
+          }
+        }
+        
         // Save copy to local storage
         localStorage.setItem('kesbangpol_db', JSON.stringify(data));
         
