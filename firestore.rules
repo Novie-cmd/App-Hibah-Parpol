@@ -1,78 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Helper functions
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isValidId(id) {
-      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
-    }
-
-    // Checking if user exists and has a specific role
-    function getUserData() {
-      return get(/databases/$(database)/documents/pengguna/$(request.auth.uid)).data;
-    }
-
-    function hasRole(role) {
-      return isSignedIn() && exists(/databases/$(database)/documents/pengguna/$(request.auth.uid)) && getUserData().role == role;
-    }
-
-    function isAdminOrVerifikator() {
-      return isSignedIn() && exists(/databases/$(database)/documents/pengguna/$(request.auth.uid)) && 
-        (getUserData().role == 'Admin Kesbangpol' || getUserData().role == 'Super Admin' || getUserData().role == 'Verifikator');
-    }
-
-    // Rules for "pengguna"
-    match /pengguna/{userId} {
-      allow read: if isSignedIn();
-      allow create: if true; // Allow initial sign up or creation
-      allow update: if isSignedIn() && (userId == request.auth.uid || isAdminOrVerifikator());
-      allow delete: if isAdminOrVerifikator();
-    }
-
-    // Rules for "partai"
-    match /partai/{partaiId} {
-      allow read: if isSignedIn();
-      allow write: if isAdminOrVerifikator();
-    }
-
-    // Rules for "dokumen"
-    match /dokumen/{dokumenId} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn();
-    }
-
-    // Rules for "hibah"
-    match /hibah/{hibahId} {
-      allow read: if isSignedIn();
-      allow write: if isAdminOrVerifikator();
-    }
-
-    // Rules for "lpj"
-    match /lpj/{lpjId} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn();
-    }
-
-    // Rules for "audit"
-    match /audit/{auditId} {
-      allow read: if isAdminOrVerifikator();
-      allow write: if isSignedIn();
-    }
-
-    // Rules for "notifikasi"
-    match /notifikasi/{notifId} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn();
-    }
-
-    // Rules for "pengaturan"
-    match /pengaturan/{configId} {
-      allow read: if isSignedIn();
-      allow write: if isAdminOrVerifikator();
+    match /{document=**} {
+      allow read, write: if true;
     }
   }
 }
