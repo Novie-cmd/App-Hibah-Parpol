@@ -648,36 +648,70 @@ export default function App() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      alert("Ukuran file terlalu besar! Maksimal 2MB agar penyimpanan database tetap efisien.");
-      return;
-    }
-
     const reader = new FileReader();
     reader.onload = async (event) => {
-      const base64 = event.target?.result as string;
-      if (base64 && pengaturan) {
-        const updatedPengaturan = {
-          ...pengaturan,
-          logoInstansi: base64
-        };
-        setPengaturan(updatedPengaturan);
-        try {
-          const res = await fetch('/api/settings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updatedPengaturan)
-          });
-          if (res.ok) {
-            logAktivitas('Edit', 'Konfigurasi Sistem', 'Mengimpor logo resmi pemerintah daerah baru.');
-            alert("Logo Pemerintah Daerah berhasil diimpor & disimpan ke database!");
+      const originalBase64 = event.target?.result as string;
+      if (!originalBase64) return;
+
+      const img = new Image();
+      img.onload = async () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // Resize down if it's larger than 300px
+        const MAX_DIM = 300;
+        if (width > MAX_DIM || height > MAX_DIM) {
+          if (width > height) {
+            height = Math.round((height * MAX_DIM) / width);
+            width = MAX_DIM;
           } else {
-            alert("Gagal mengunggah logo ke server.");
+            width = Math.round((width * MAX_DIM) / height);
+            height = MAX_DIM;
           }
-        } catch (err) {
-          alert("Gagal mengunggah logo ke server.");
         }
-      }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          alert("Gagal memproses gambar.");
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+        // Use PNG to maintain transparency for logos, since max dim is 300px, size is extremely small (typically <50KB)
+        const compressedBase64 = canvas.toDataURL('image/png');
+
+        if (pengaturan) {
+          const updatedPengaturan = {
+            ...pengaturan,
+            logoInstansi: compressedBase64
+          };
+          setPengaturan(updatedPengaturan);
+          try {
+            const res = await fetch('/api/settings', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(updatedPengaturan)
+            });
+            if (res.ok) {
+              logAktivitas('Edit', 'Konfigurasi Sistem', 'Mengimpor logo resmi pemerintah daerah baru.');
+              alert("Logo Pemerintah Daerah berhasil diimpor & disimpan ke database!");
+            } else {
+              const errData = await res.json().catch(() => ({}));
+              alert(`Gagal mengunggah logo ke server: ${errData.error || res.statusText || res.status}`);
+            }
+          } catch (err: any) {
+            alert(`Gagal mengunggah logo ke server: ${err.message || err}`);
+          }
+        }
+      };
+      img.onerror = () => {
+        alert("Berkas yang dipilih bukan gambar yang valid.");
+      };
+      img.src = originalBase64;
     };
     reader.readAsDataURL(file);
   };
