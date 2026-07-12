@@ -659,8 +659,8 @@ export default function App() {
         let width = img.width;
         let height = img.height;
 
-        // Resize down if it's larger than 300px
-        const MAX_DIM = 300;
+        // Resize down if it's larger than 150px (extremely optimized for high-performance and database efficiency)
+        const MAX_DIM = 150;
         if (width > MAX_DIM || height > MAX_DIM) {
           if (width > height) {
             height = Math.round((height * MAX_DIM) / width);
@@ -681,7 +681,7 @@ export default function App() {
         }
 
         ctx.drawImage(img, 0, 0, width, height);
-        // Use PNG to maintain transparency for logos, since max dim is 300px, size is extremely small (typically <50KB)
+        // Use PNG to maintain transparency for logos, since max dim is 150px, size is extremely small (typically <15KB)
         const compressedBase64 = canvas.toDataURL('image/png');
 
         if (pengaturan) {
@@ -701,10 +701,14 @@ export default function App() {
               alert("Logo Pemerintah Daerah berhasil diimpor & disimpan ke database!");
             } else {
               const errData = await res.json().catch(() => ({}));
-              alert(`Gagal mengunggah logo ke server: ${errData.error || res.statusText || res.status}`);
+              let extraMsg = "";
+              if (res.status === 404 || res.status === 502) {
+                extraMsg = "\n\nServer mungkin sedang melakukan restart/rebuild berkas baru. Silakan tunggu 3-5 detik lalu coba unggah kembali.";
+              }
+              alert(`Gagal mengunggah logo ke server (Status: ${res.status}): ${errData.error || res.statusText || 'Ada kendala koneksi.'}${extraMsg}`);
             }
           } catch (err: any) {
-            alert(`Gagal mengunggah logo ke server: ${err.message || err}`);
+            alert(`Gagal mengunggah logo ke server: ${err.message || err}\n\nSilakan coba lagi dalam beberapa detik.`);
           }
         }
       };
@@ -1252,7 +1256,7 @@ export default function App() {
   const totalHibahNilai = partai.reduce((sum, p) => sum + p.totalHakBantuan, 0);
   
   const docsLengkapCount = dokumen.filter(d => d.statusVerifikasi === 'Lengkap').length;
-  const requiredDocsTotal = totalPartaiCount * (pengaturan?.tipeDokumenDaftar.length || 16);
+  const requiredDocsTotal = totalPartaiCount * (pengaturan?.tipeDokumenDaftar?.length || 16);
   const totalIncompleteDocs = requiredDocsTotal - docsLengkapCount;
 
   // Notification mark as read
@@ -2207,7 +2211,7 @@ export default function App() {
                       </div>
                       <div>
                         <span className="text-[10px] font-bold text-slate-400 block uppercase">Jumlah Jenis Berkas Wajib</span>
-                        <span className="font-bold text-slate-800">{pengaturan.tipeDokumenDaftar.length} Berkas Kelengkapan</span>
+                        <span className="font-bold text-slate-800">{pengaturan?.tipeDokumenDaftar?.length || 0} Berkas Kelengkapan</span>
                       </div>
                     </div>
                   </div>
@@ -2274,8 +2278,8 @@ export default function App() {
                     {getFilteredPartai().map(p => {
                       const partyDocs = dokumen.filter(d => d.partaiId === p.id);
                       const completeDocs = partyDocs.filter(d => d.statusVerifikasi === 'Lengkap').length;
-                      const totalReqDocs = pengaturan.tipeDokumenDaftar.length;
-                      const completenessPercent = Math.round((completeDocs / totalReqDocs) * 100);
+                      const totalReqDocs = pengaturan?.tipeDokumenDaftar?.length || 16;
+                      const completenessPercent = totalReqDocs > 0 ? Math.round((completeDocs / totalReqDocs) * 100) : 0;
                       
                       return (
                         <div key={p.id} className="bg-white rounded-xl shadow-xs border border-slate-200/60 p-5 flex flex-col justify-between hover:shadow-md transition">
@@ -3589,7 +3593,7 @@ export default function App() {
                     onChange={(e) => setUploadDocOpen(e.target.value)}
                     className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold focus:bg-white text-slate-800"
                   >
-                    {pengaturan?.tipeDokumenDaftar.map((td, idx) => (
+                    {pengaturan?.tipeDokumenDaftar?.map((td, idx) => (
                       <option key={idx} value={td}>{td}</option>
                     ))}
                   </select>

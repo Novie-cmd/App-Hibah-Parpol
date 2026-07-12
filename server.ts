@@ -184,7 +184,11 @@ function getDatabase() {
   }
   try {
     const raw = fs.readFileSync(dbPath, 'utf-8');
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (parsed && parsed.pengaturan) {
+      parsed.pengaturan = { ...INITIAL_PENGATURAN, ...parsed.pengaturan };
+    }
+    return parsed;
   } catch (err) {
     console.error('Failed to parse database.json, resetting...', err);
     const defaultDb = {
@@ -226,7 +230,7 @@ async function getDatabaseMerged() {
           audit,
           pengguna,
           notifikasi,
-          pengaturan: pengaturan || INITIAL_PENGATURAN
+          pengaturan: pengaturan ? { ...INITIAL_PENGATURAN, ...pengaturan } : INITIAL_PENGATURAN
         };
       })();
 
