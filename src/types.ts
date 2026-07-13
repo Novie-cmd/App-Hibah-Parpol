@@ -55,6 +55,8 @@ export interface Partai {
   tanggalSptjm?: string;
   nomorBap?: string;
   tanggalBap?: string;
+  nomorKepGub?: string;
+  tanggalKepGub?: string;
 }
 
 export type StatusVerifikasi = 'Lengkap' | 'Belum Lengkap' | 'Perbaikan' | 'Menunggu Verifikasi';

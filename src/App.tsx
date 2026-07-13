@@ -102,7 +102,7 @@ export default function App() {
   // Login & Registration state variables
   const [loginTab, setLoginTab] = useState<'login' | 'register'>('login');
   const [loginUsername, setLoginUsername] = useState('admin_kesbang');
-  const [loginPassword, setLoginPassword] = useState('admin123');
+  const [loginPassword, setLoginPassword] = useState('');
   const [loginRole, setLoginRole] = useState<'Admin Kesbangpol' | 'Operator Partai'>('Admin Kesbangpol');
   const [loginError, setLoginError] = useState('');
   
@@ -1487,38 +1487,6 @@ export default function App() {
               >
                 Masuk ke Aplikasi
               </button>
-
-              {/* Conveniences: One-Click Demo Logins for easy testing */}
-              <div className="pt-3 border-t border-slate-800 space-y-2">
-                <span className="text-[10px] text-slate-500 font-extrabold uppercase tracking-wide block text-center">
-                  Uji Coba Akun Demo Cepat
-                </span>
-                <div className="grid grid-cols-2 gap-2 text-[10px]">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setLoginRole('Admin Kesbangpol');
-                      setLoginUsername('admin_kesbang');
-                      setLoginError('');
-                    }}
-                    className="bg-slate-900 hover:bg-slate-850 p-2 border border-slate-800 rounded-lg text-slate-300 font-bold text-center block"
-                  >
-                    👑 Kesbangpol (Juhanda)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setLoginRole('Operator Partai');
-                      setLoginUsername('operator_gerindra');
-                      setLoginError('');
-                    }}
-                    className="bg-slate-900 hover:bg-slate-850 p-2 border border-slate-800 rounded-lg text-slate-300 font-bold text-center block"
-                  >
-                    🗳️ Admin Gerindra (Helmi)
-                  </button>
-                </div>
-              </div>
-
             </form>
           ) : (
             /* REGISTER FORM */
@@ -1983,7 +1951,7 @@ export default function App() {
                 {activeMenu === 'dashboard' && (isOperator ? 'Selamat datang! Pantau status kelengkapan berkas, alokasi dana bantuan hibah, serta progres pencairan secara real-time.' : 'Sistem kearsipan digital, verifikasi dokumen, dan monitoring hibah bantuan partai politik Provinsi Nusa Tenggara Barat.')}
                 {activeMenu === 'parpol' && (isOperator ? 'Kelola dan perbarui seluruh informasi identitas partai, struktur kepengurusan DPW/DPD, rekening bank resmi, dan perolehan suara sah.' : 'Mengelola data partai politik aktif dprd daerah, pengurus, domisili, dan nomor rekening.')}
                 {activeMenu === 'verifikasi' && 'Verifikasi, validasi berkas fisik, pencatatan checklist, revisi, dan approve.'}
-                {activeMenu === 'hibah' && 'Tracking tahapan pencairan, penetapan SK bupati, penandatanganan NPHD, hingga penerbitan SP2D.'}
+                {activeMenu === 'hibah' && 'Tracking tahapan pencairan, penetapan Kep Gubernur, penandatanganan NPHD, hingga penerbitan SP2D.'}
                 {activeMenu === 'lpj' && 'Mengevaluasi pelaporan LPJ hibah tahun berjalan dari partai penerima bantuan.'}
                 {activeMenu === 'arsip' && (isOperator ? 'Koleksi digital seluruh dokumen administrasi resmi partai politik yang telah berhasil diunggah dan diverifikasi.' : 'Arsip digital terpusat seluruh dokumen persyaratan hibah lengkap dengan versi kearsipan.')}
                 {activeMenu === 'spreadsheet' && 'Sistem lembar kerja spreadsheet virtual untuk pengeditan raw database langsung.'}
@@ -3366,7 +3334,7 @@ export default function App() {
             <form onSubmit={handleSaveHibah} className="p-5 space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-500 font-bold mb-1">Nomor SK Bupati Penetapan</label>
+                  <label className="block text-slate-500 font-bold mb-1">Nomor Kep Gubernur Penetapan</label>
                   <input 
                     type="text" 
                     value={hibahFormOpen.nomorSk} 
@@ -3380,6 +3348,27 @@ export default function App() {
                     type="text" 
                     value={hibahFormOpen.nomorNphd} 
                     onChange={(e) => setHibahFormOpen({ ...hibahFormOpen, nomorNphd: e.target.value })}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-500 font-bold mb-1">Tanggal Kep Gubernur</label>
+                  <input 
+                    type="date" 
+                    value={hibahFormOpen.tanggalPenetapan || ''} 
+                    onChange={(e) => setHibahFormOpen({ ...hibahFormOpen, tanggalPenetapan: e.target.value })}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-500 font-bold mb-1">Tanggal NPHD Daerah</label>
+                  <input 
+                    type="date" 
+                    value={hibahFormOpen.tanggalPenandatanganan || ''} 
+                    onChange={(e) => setHibahFormOpen({ ...hibahFormOpen, tanggalPenandatanganan: e.target.value })}
                     className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg"
                   />
                 </div>

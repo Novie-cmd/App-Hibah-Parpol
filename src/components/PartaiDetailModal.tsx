@@ -215,7 +215,7 @@ export default function PartaiDetailModal({
                   No. 5 Data Bantuan Hibah ({pengaturan.tahunAnggaranAktif})
                 </h4>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {/* NPHD Column */}
                   <div className="bg-slate-50 p-3 rounded-lg border border-slate-200/50 flex flex-col justify-between">
                     <div>
@@ -261,6 +261,22 @@ export default function PartaiDetailModal({
                     </div>
                     <span className="text-[9px] text-slate-500 block mt-2 border-t pt-1.5 border-slate-200/60">
                       Tanggal: <strong className="text-emerald-700 font-semibold">{formatIndonesianDate(partai.tanggalBap)}</strong>
+                    </span>
+                  </div>
+
+                  {/* Kep Gubernur Column */}
+                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-200/50 flex flex-col justify-between">
+                    <div>
+                      <span className="font-bold text-slate-400 block text-[8px] uppercase tracking-wider">4. Dokumen Kep Gubernur</span>
+                      <span className="text-slate-800 font-extrabold text-[10px] block mt-1 leading-snug">
+                        Nomor:<br />
+                        <span className="font-mono text-slate-600 break-all">
+                          {partai.nomorKepGub || hibah?.nomorSk || `SK-GUBERNUR/100.3.3.1-${partai.nomorUrut + 100}/${pengaturan.tahunAnggaranAktif}`}
+                        </span>
+                      </span>
+                    </div>
+                    <span className="text-[9px] text-slate-500 block mt-2 border-t pt-1.5 border-slate-200/60">
+                      Tanggal: <strong className="text-emerald-700 font-semibold">{formatIndonesianDate(partai.tanggalKepGub || hibah?.tanggalPenetapan)}</strong>
                     </span>
                   </div>
                 </div>

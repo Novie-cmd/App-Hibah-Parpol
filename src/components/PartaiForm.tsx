@@ -96,6 +96,8 @@ export default function PartaiForm({
   const [tanggalSptjm, setTanggalSptjm] = useState('');
   const [nomorBap, setNomorBap] = useState('');
   const [tanggalBap, setTanggalBap] = useState('');
+  const [nomorKepGub, setNomorKepGub] = useState('');
+  const [tanggalKepGub, setTanggalKepGub] = useState('');
 
   useEffect(() => {
     if (partai) {
@@ -147,6 +149,8 @@ export default function PartaiForm({
       setTanggalSptjm(partai.tanggalSptjm || '');
       setNomorBap(partai.nomorBap || '');
       setTanggalBap(partai.tanggalBap || '');
+      setNomorKepGub(partai.nomorKepGub || '');
+      setTanggalKepGub(partai.tanggalKepGub || '');
     } else {
       setId(`p_${Date.now()}`);
       setKecamatan('');
@@ -264,7 +268,9 @@ export default function PartaiForm({
       nomorSptjm,
       tanggalSptjm,
       nomorBap,
-      tanggalBap
+      tanggalBap,
+      nomorKepGub,
+      tanggalKepGub
     });
   };
 
@@ -751,9 +757,9 @@ export default function PartaiForm({
                 </div>
 
                 {/* BAP */}
-                <div className="space-y-3 p-3 bg-white rounded-lg border border-slate-200 md:col-span-2">
+                <div className="space-y-3 p-3 bg-white rounded-lg border border-slate-200">
                   <span className="font-extrabold text-slate-700 text-[10px] uppercase block border-b pb-1">3. DOKUMEN BAP (Berita Acara Pembayaran)</span>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
                     <div>
                       <label className="block text-slate-500 font-bold mb-1">Nomor BAP</label>
                       <input 
@@ -770,6 +776,32 @@ export default function PartaiForm({
                         type="date" 
                         value={tanggalBap} 
                         onChange={(e) => setTanggalBap(e.target.value)}
+                        className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-emerald-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Kep Gubernur */}
+                <div className="space-y-3 p-3 bg-white rounded-lg border border-slate-200">
+                  <span className="font-extrabold text-slate-700 text-[10px] uppercase block border-b pb-1">4. DOKUMEN KEP GUBERNUR (Keputusan Gubernur)</span>
+                  <div className="space-y-2">
+                    <div>
+                      <label className="block text-slate-500 font-bold mb-1">Nomor Kep Gubernur</label>
+                      <input 
+                        type="text" 
+                        value={nomorKepGub} 
+                        onChange={(e) => setNomorKepGub(e.target.value)}
+                        placeholder={`Contoh: SK-GUBERNUR/100.3.3.1-${partai ? partai.nomorUrut + 100 : 101}/${pengaturan.tahunAnggaranAktif}`}
+                        className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-500 font-bold mb-1">Tanggal Kep Gubernur</label>
+                      <input 
+                        type="date" 
+                        value={tanggalKepGub} 
+                        onChange={(e) => setTanggalKepGub(e.target.value)}
                         className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-emerald-500"
                       />
                     </div>
