@@ -101,7 +101,7 @@ export default function App() {
 
   // Login & Registration state variables
   const [loginTab, setLoginTab] = useState<'login' | 'register'>('login');
-  const [loginUsername, setLoginUsername] = useState('admin_kesbang');
+  const [loginUsername, setLoginUsername] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginRole, setLoginRole] = useState<'Admin Kesbangpol' | 'Operator Partai'>('Admin Kesbangpol');
   const [loginError, setLoginError] = useState('');
@@ -145,7 +145,8 @@ export default function App() {
       return;
     }
 
-    if (userObj.password && userObj.password !== loginPassword) {
+    const expectedPassword = userObj.password || 'admin123';
+    if (expectedPassword !== loginPassword) {
       setLoginError('Kata sandi salah. Harap coba lagi.');
       return;
     }
@@ -1394,8 +1395,6 @@ export default function App() {
                     type="button"
                     onClick={() => {
                       setLoginRole('Admin Kesbangpol');
-                      // set default username for convenience
-                      setLoginUsername('admin_kesbang');
                     }}
                     className={`py-2 px-3 border rounded-xl font-bold flex items-center justify-center gap-1.5 transition ${
                       loginRole === 'Admin Kesbangpol'
@@ -1410,8 +1409,6 @@ export default function App() {
                     type="button"
                     onClick={() => {
                       setLoginRole('Operator Partai');
-                      // set default username for convenience
-                      setLoginUsername('operator_gerindra');
                     }}
                     className={`py-2 px-3 border rounded-xl font-bold flex items-center justify-center gap-1.5 transition ${
                       loginRole === 'Operator Partai'
