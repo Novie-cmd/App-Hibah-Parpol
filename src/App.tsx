@@ -1335,7 +1335,7 @@ export default function App() {
           
           {/* Logo & Header */}
           <div className="text-center space-y-2">
-            <div className="inline-flex p-1.5 bg-white/10 border border-white/20 rounded-2xl shadow-inner">
+            <div className="inline-flex p-1.5 bg-transparent rounded-2xl">
               <img 
                 src={pengaturan?.logoInstansi || "https://upload.wikimedia.org/wikipedia/commons/b/ad/Lambang_Nusa_Tenggara_Barat.png"} 
                 alt="Logo Pemprov NTB" 
@@ -1666,7 +1666,7 @@ export default function App() {
           <img 
             src={pengaturan?.logoInstansi || "https://upload.wikimedia.org/wikipedia/commons/b/ad/Lambang_Nusa_Tenggara_Barat.png"} 
             alt="Logo Pemprov" 
-            className="w-10 h-10 object-contain p-0.5 bg-white rounded-md"
+            className="w-10 h-10 object-contain bg-transparent"
             referrerPolicy="no-referrer"
           />
           <div>
@@ -2975,12 +2975,14 @@ export default function App() {
 
                 <div className="flex flex-col items-center gap-3 py-5 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
                   <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Logo Pemerintah Saat Ini</span>
-                  <img 
-                    src={pengaturan?.logoInstansi || "https://upload.wikimedia.org/wikipedia/commons/b/ad/Lambang_Nusa_Tenggara_Barat.png"} 
-                    alt="Logo Pemprov NTB" 
-                    className="w-28 h-28 object-contain p-2 bg-white rounded-lg border border-slate-150/85 shadow-2xs"
-                    referrerPolicy="no-referrer"
-                  />
+                  <div className="relative w-28 h-28 rounded-lg border border-slate-200 overflow-hidden bg-slate-100/50 flex items-center justify-center p-2">
+                    <img 
+                      src={pengaturan?.logoInstansi || "https://upload.wikimedia.org/wikipedia/commons/b/ad/Lambang_Nusa_Tenggara_Barat.png"} 
+                      alt="Logo Pemprov NTB" 
+                      className="w-full h-full object-contain bg-transparent"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
                   <div className="text-center px-4 mt-1">
                     <span className="text-[11px] font-extrabold text-slate-700 block">Provinsi Nusa Tenggara Barat</span>
                     <span className="text-[9px] text-slate-400 font-medium block mt-0.5">Tampilan kiri atas pada NPHD & berkas kuitansi</span>
