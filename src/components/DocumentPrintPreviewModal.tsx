@@ -497,7 +497,7 @@ export default function DocumentPrintPreviewModal({
               
               {/* DOCUMENT 1: NPHD (Naskah Perjanjian Hibah Daerah) */}
               {activeDoc === 'NPHD' && (
-                <div className="space-y-8 print:space-y-0">
+                <div className="space-y-8 print:space-y-0" style={{ fontFamily: 'Tahoma, Verdana, sans-serif', fontSize: '14px' }}>
                   {/* Page 1 */}
                   <div className={a4PageClass}>
                     <div className="space-y-6">
@@ -510,8 +510,8 @@ export default function DocumentPrintPreviewModal({
                           referrerPolicy="no-referrer"
                         />
                         <div className="text-center flex-1 px-4">
-                          <h4 className="font-bold text-slate-900 uppercase text-[13px] tracking-wide leading-tight">NASKAH PERJANJIAN HIBAH DAERAH</h4>
-                          <h5 className="font-extrabold text-slate-800 uppercase text-[12px] tracking-wide mt-1 leading-tight">PEMERINTAH PROVINSI NUSA TENGGARA BARAT</h5>
+                          <h4 className="font-bold text-slate-900 uppercase text-[15px] tracking-wide leading-tight">NASKAH PERJANJIAN HIBAH DAERAH</h4>
+                          <h5 className="font-extrabold text-slate-800 uppercase text-[13px] tracking-wide mt-1 leading-tight">PEMERINTAH PROVINSI NUSA TENGGARA BARAT</h5>
                         </div>
                         <img 
                           src={partai.logo || "https://images.unsplash.com/photo-1624996379697-f01d168b1a52?w=100&h=100&fit=crop&q=80"} 
@@ -523,26 +523,26 @@ export default function DocumentPrintPreviewModal({
 
                       <div className="text-center space-y-1">
                         <p className="font-extrabold uppercase">DENGAN</p>
-                        <p className="font-bold uppercase text-[11px] tracking-wide text-slate-800">
+                        <p className="font-bold uppercase text-[13px] tracking-wide text-slate-800">
                           {designation.full.toUpperCase()} {partai.nama.toUpperCase()}
                         </p>
-                        <p className="font-bold uppercase text-[11px] text-slate-800">
+                        <p className="font-bold uppercase text-[13px] text-slate-800">
                           PROVINSI NUSA TENGGARA BARAT
                         </p>
                         <p className="font-bold uppercase mt-2">TENTANG</p>
-                        <p className="font-bold uppercase text-[10px] max-w-lg mx-auto leading-tight mt-1 text-slate-700">
+                        <p className="font-bold uppercase text-[11px] max-w-lg mx-auto leading-tight mt-1 text-slate-700">
                           PELAKSANAAN BESARAN BANTUAN KEUANGAN KEPADA PARTAI POLITIK UNTUK MENDUKUNG KEGIATAN PARTAI POLITIK DI WILAYAH PROVINSI NUSA TENGGARA BARAT
                         </p>
                         <p className="font-bold uppercase text-slate-800 mt-2">TAHUN {tahunAnggaran}</p>
                         
-                        <div className="pt-3 font-sans text-[10px] text-slate-500 font-mono">
+                        <div className="pt-3 text-[11px] text-slate-500">
                           <p>Nomor: {noNphd}</p>
                           <p>Nomor: {noSk}</p>
                         </div>
                       </div>
 
                       {/* Body Text Page 1 */}
-                      <div className="space-y-4 text-justify leading-relaxed text-[11px] pt-6">
+                      <div className="space-y-4 text-justify leading-relaxed text-[14px] pt-6">
                         <p>
                           Pada hari ini <span className="font-bold">{spelledOutDate}</span> yang bertanda tangan di bawah ini :
                         </p>
@@ -559,15 +559,15 @@ export default function DocumentPrintPreviewModal({
 
                         {/* Berdasarkan List starts on Page 1 to fill empty space */}
                         <div className="pt-2 border-t border-slate-100">
-                          <p className="font-bold uppercase text-[9.5px] text-slate-800 pb-0.5 mb-1">Berdasarkan :</p>
-                          <p className="text-[10px] text-slate-700 text-justify leading-relaxed">
+                          <p className="font-bold uppercase text-[12px] text-slate-800 pb-0.5 mb-1">Berdasarkan :</p>
+                          <p className="text-[14px] text-slate-700 text-justify leading-relaxed">
                             1. &nbsp;&nbsp;Undang-Undang Nomor 23 Tahun 2014 tentang Pemerintahan Daerah (Lembaran Negara Republik Indonesia Tahun 2014 Nomor 244, Tambahan Lembaran Negara Republik Indonesia Nomor 5587) sebagaimana telah beberapa kali diubah, terakhir dengan Undang-Undang Nomor 9 Tahun 2015 tentang Perubahan Kedua atas
                           </p>
                         </div>
                       </div>
                     </div>
                     {/* Page Footer */}
-                    <div className="flex justify-between items-center text-[9px] text-slate-400 font-sans border-t pt-2 mt-4">
+                    <div className="flex justify-between items-center text-[10px] text-slate-400 border-t pt-2 mt-4">
                       <span>Naskah Perjanjian Hibah Daerah (NPHD) &bull; {partai.singkatan} &bull; TA {tahunAnggaran}</span>
                       <span>Halaman 1 dari 8</span>
                     </div>
@@ -575,7 +575,7 @@ export default function DocumentPrintPreviewModal({
 
                   {/* Page 2 */}
                   <div className={a4PageClass}>
-                    <div className="space-y-3.5 text-justify leading-relaxed text-[10px] text-slate-700">
+                    <div className="space-y-3.5 text-justify leading-relaxed text-[14px] text-slate-700">
                       <p className="text-justify leading-relaxed">
                         Undang-Undang Nomor 23 Tahun 2014 tentang Pemerintahan Daerah (Lembaran Negara Republik Indonesia Tahun 2015 Nomor 58, Tambahan Lembaran Negara Republik Indonesia Nomor 5679);
                       </p>
@@ -608,7 +608,7 @@ export default function DocumentPrintPreviewModal({
                       </p>
                     </div>
                     {/* Page Footer */}
-                    <div className="flex justify-between items-center text-[9px] text-slate-400 font-sans border-t pt-2 mt-4">
+                    <div className="flex justify-between items-center text-[10px] text-slate-400 border-t pt-2 mt-4">
                       <span>Naskah Perjanjian Hibah Daerah (NPHD) &bull; {partai.singkatan} &bull; TA {tahunAnggaran}</span>
                       <span>Halaman 2 dari 8</span>
                     </div>
@@ -616,7 +616,7 @@ export default function DocumentPrintPreviewModal({
 
                   {/* Page 3 */}
                   <div className={a4PageClass}>
-                    <div className="space-y-4 text-[10.5px] text-slate-700 leading-relaxed text-justify">
+                    <div className="space-y-4 text-[14px] text-slate-700 leading-relaxed text-justify">
                       <p className="text-justify leading-relaxed">
                         11. &nbsp;Keputusan Gubernur Nusa Tenggara Barat Nomor : 100.3.3.1 - 124 Tahun {tahunAnggaran} tentang Besaran Bantuan Keuangan Kepada Partai Politik yang mendapatkan kursi di Dewan Perwakilan Rakyat Daerah Provinsi Nusa Tenggara Barat Hasil Pemilu Tahun 2024, Tahun Anggaran {tahunAnggaran}.
                       </p>
@@ -642,16 +642,16 @@ export default function DocumentPrintPreviewModal({
                       </p>
 
                       <div className="text-center pt-2 space-y-1">
-                        <p className="font-extrabold text-slate-900 text-[11px]">Pasal 1</p>
-                        <p className="font-bold text-[10px] uppercase text-slate-800">JUMLAH DAN SUMBER PEMBIAYAIAN HIBAH</p>
+                        <p className="font-extrabold text-slate-900 text-[15px]">Pasal 1</p>
+                        <p className="font-bold text-[12px] uppercase text-slate-800">JUMLAH DAN SUMBER PEMBIAYAIAN HIBAH</p>
                       </div>
 
                       <p className="text-justify leading-relaxed">
-                        (1) <span className="font-semibold">PIHAK KESATU</span> memberikan Bantuan Keuangan Partai Politik kepada <span className="font-semibold">PIHAK KEDUA</span>, dan <span className="font-semibold">PIHAK KEDUA</span> menerima Bantuan Keuangan bagi Partai Politik yang Mendapatkan Kursi di Dewan Perwakilan Rakyat Daerah Provinsi Nusa Tenggara Barat Hasil Pemilihan Umum Tahun {partai.tahunPemilu || 2024} Tahun Anggaran {tahunAnggaran} dari PIHAK KESATU sebesar <span className="font-bold">Rp {formattedNominal},- ({nominalTerbilang})</span>.
+                        (1) <span className="font-semibold">PIHAK KESATU</span> memberikan Bantuan Keuangan Partai Politik kepada <span className="font-semibold">PIHAK KEDUA</span>, and <span className="font-semibold">PIHAK KEDUA</span> menerima Bantuan Keuangan bagi Partai Politik yang Mendapatkan Kursi di Dewan Perwakilan Rakyat Daerah Provinsi Nusa Tenggara Barat Hasil Pemilihan Umum Tahun {partai.tahunPemilu || 2024} Tahun Anggaran {tahunAnggaran} dari PIHAK KESATU sebesar <span className="font-bold">Rp {formattedNominal},- ({nominalTerbilang})</span>.
                       </p>
                     </div>
                     {/* Page Footer */}
-                    <div className="flex justify-between items-center text-[9px] text-slate-400 font-sans border-t pt-2 mt-4">
+                    <div className="flex justify-between items-center text-[10px] text-slate-400 border-t pt-2 mt-4">
                       <span>Naskah Perjanjian Hibah Daerah (NPHD) &bull; {partai.singkatan} &bull; TA {tahunAnggaran}</span>
                       <span>Halaman 3 dari 8</span>
                     </div>
@@ -659,14 +659,14 @@ export default function DocumentPrintPreviewModal({
 
                   {/* Page 4 */}
                   <div className={a4PageClass}>
-                    <div className="space-y-4 text-[10.5px] text-slate-700 leading-relaxed text-justify">
+                    <div className="space-y-4 text-[14px] text-slate-700 leading-relaxed text-justify">
                       <p className="text-justify leading-relaxed">
                         (2) Pemberian Bantuan Keuangan Partai Politik sebagaimana dimaksud pada ayat (1), bersumber dari Anggaran Pendapatan dan Belanja Daerah Provinsi Nusa Tenggara Barat Tahun Anggaran {tahunAnggaran}.
                       </p>
 
                       <div className="text-center pt-2 space-y-1">
-                        <p className="font-extrabold text-slate-900 text-[11px]">Pasal 2</p>
-                        <p className="font-bold text-[10px] uppercase text-slate-800">PENGGUNAAN HIBAH</p>
+                        <p className="font-extrabold text-slate-900 text-[15px]">Pasal 2</p>
+                        <p className="font-bold text-[12px] uppercase text-slate-800">PENGGUNAAN HIBAH</p>
                       </div>
 
                       <p className="text-justify leading-relaxed">
@@ -678,8 +678,8 @@ export default function DocumentPrintPreviewModal({
                       </p>
 
                       <div className="text-center pt-2 space-y-1">
-                        <p className="font-extrabold text-slate-900 text-[11px]">Pasal 3</p>
-                        <p className="font-bold text-[10px] uppercase text-slate-800">HAK DAN KEWAJIBAN</p>
+                        <p className="font-extrabold text-slate-900 text-[15px]">Pasal 3</p>
+                        <p className="font-bold text-[12px] uppercase text-slate-800">HAK DAN KEWAJIBAN</p>
                       </div>
 
                       <p className="font-bold text-slate-800 text-justify mt-1.5">
@@ -691,7 +691,7 @@ export default function DocumentPrintPreviewModal({
                       </p>
                     </div>
                     {/* Page Footer */}
-                    <div className="flex justify-between items-center text-[9px] text-slate-400 font-sans border-t pt-2 mt-4">
+                    <div className="flex justify-between items-center text-[10px] text-slate-400 border-t pt-2 mt-4">
                       <span>Naskah Perjanjian Hibah Daerah (NPHD) &bull; {partai.singkatan} &bull; TA {tahunAnggaran}</span>
                       <span>Halaman 4 dari 8</span>
                     </div>
@@ -699,7 +699,7 @@ export default function DocumentPrintPreviewModal({
 
                   {/* Page 5 */}
                   <div className={a4PageClass}>
-                    <div className="space-y-3.5 text-[10px] text-slate-700 leading-relaxed text-justify">
+                    <div className="space-y-3.5 text-[14px] text-slate-700 leading-relaxed text-justify">
                       <p className="text-justify leading-relaxed pl-4">
                         b. &nbsp;&nbsp;Menerima Rincian Kebutuhan Biaya yang telah disepakati dari PIHAK KEDUA; dan
                       </p>
@@ -744,7 +744,7 @@ export default function DocumentPrintPreviewModal({
                       </p>
                     </div>
                     {/* Page Footer */}
-                    <div className="flex justify-between items-center text-[9px] text-slate-400 font-sans border-t pt-2 mt-4">
+                    <div className="flex justify-between items-center text-[10px] text-slate-400 border-t pt-2 mt-4">
                       <span>Naskah Perjanjian Hibah Daerah (NPHD) &bull; {partai.singkatan} &bull; TA {tahunAnggaran}</span>
                       <span>Halaman 5 dari 8</span>
                     </div>
@@ -752,14 +752,14 @@ export default function DocumentPrintPreviewModal({
 
                   {/* Page 6 */}
                   <div className={a4PageClass}>
-                    <div className="space-y-4 text-[10.5px] text-slate-700 leading-relaxed text-justify">
+                    <div className="space-y-4 text-[14px] text-slate-700 leading-relaxed text-justify">
                       <p className="text-justify leading-relaxed">
                         Provinsi Nusa Tenggara Barat Tahun Anggaran {tahunAnggaran} paling lambat tanggal 31 Desember {tahunAnggaran} kepada PIHAK KESATU melalui Kas Daerah Provinsi Nusa Tenggara Barat.
                       </p>
 
                       <div className="text-center pt-2 space-y-1">
-                        <p className="font-extrabold text-slate-900 text-[11px]">Pasal 4</p>
-                        <p className="font-bold text-[10px] uppercase text-slate-800">MEKANISME PENCAIRAN DANA HIBAH</p>
+                        <p className="font-extrabold text-slate-900 text-[15px]">Pasal 4</p>
+                        <p className="font-bold text-[12px] uppercase text-slate-800">MEKANISME PENCAIRAN DANA HIBAH</p>
                       </div>
 
                       <p className="text-justify leading-relaxed">
@@ -789,7 +789,7 @@ export default function DocumentPrintPreviewModal({
                       </div>
                     </div>
                     {/* Page Footer */}
-                    <div className="flex justify-between items-center text-[9px] text-slate-400 font-sans border-t pt-2 mt-4">
+                    <div className="flex justify-between items-center text-[10px] text-slate-400 border-t pt-2 mt-4">
                       <span>Naskah Perjanjian Hibah Daerah (NPHD) &bull; {partai.singkatan} &bull; TA {tahunAnggaran}</span>
                       <span>Halaman 6 dari 8</span>
                     </div>
@@ -797,10 +797,10 @@ export default function DocumentPrintPreviewModal({
 
                   {/* Page 7 */}
                   <div className={a4PageClass}>
-                    <div className="space-y-3.5 text-[10px] text-slate-700 leading-normal text-justify">
+                    <div className="space-y-3.5 text-[14px] text-slate-700 leading-normal text-justify">
                       <div className="text-center space-y-1">
-                        <p className="font-extrabold text-slate-900 text-[11px]">Pasal 5</p>
-                        <p className="font-bold text-[9px] uppercase text-slate-800">PERTANGGUNGJAWABAN DAN PELAPORAN</p>
+                        <p className="font-extrabold text-slate-900 text-[15px]">Pasal 5</p>
+                        <p className="font-bold text-[12px] uppercase text-slate-800">PERTANGGUNGJAWABAN DAN PELAPORAN</p>
                       </div>
                       <p className="text-justify leading-relaxed">
                         (1) PIHAK KEDUA bertanggungjawab sepenuhnya atas penggunaan uang yang dihibahkan oleh PIHAK KESATU melalui Kepala Badan Kesatuan Bangsa dan Politik Dalam Negeri Provinsi Nusa Tenggara Barat sebagaimana dimaksud dalam Pasal 1 dan Pasal 2.
@@ -810,19 +810,19 @@ export default function DocumentPrintPreviewModal({
                       </p>
 
                       <div className="text-center pt-1.5 space-y-1">
-                        <p className="font-extrabold text-slate-900 text-[11px]">Pasal 6</p>
-                        <p className="font-bold text-[9px] uppercase text-slate-800">JANGKA WAKTU</p>
+                        <p className="font-extrabold text-slate-900 text-[15px]">Pasal 6</p>
+                        <p className="font-bold text-[12px] uppercase text-slate-800">JANGKA WAKTU</p>
                       </div>
                       <p className="text-justify leading-relaxed">
                         Perjanjian hibah ini berlaku terhitung sejak Naskah Perjanjian Hibah Daerah ditandatangani sampai dengan Bulan Desember tahun Anggaran {tahunAnggaran}.
                       </p>
 
                       <div className="text-center pt-1.5 space-y-1">
-                        <p className="font-extrabold text-slate-900 text-[11px]">Pasal 7</p>
-                        <p className="font-bold text-[9px] uppercase text-slate-800">KEADAAN KAHAR (FORCE MAJEURE)</p>
+                        <p className="font-extrabold text-slate-900 text-[15px]">Pasal 7</p>
+                        <p className="font-bold text-[12px] uppercase text-slate-800">KEADAAN KAHAR (FORCE MAJEURE)</p>
                       </div>
                       <p className="text-justify leading-relaxed">
-                        (1) Keadaankahar (force majeure) antara lain termasuk kebakaran, ledakan, gempa bumi, topan, hujan badai, banjir, wabah dan bencana lainnya, makar, huru-hara, perang, perselisihan, buruh, pemogokan, kebijakan pemerintah (moneter) berpengaruh langsung pada pelaksanaan perjanjian ini.
+                        (1) Keadaankahar (force majeure) antara lain termasuk kebakaran, ledakan, gempa bumi, topan, hujan badai, banjir, wabah and bencana lainnya, makar, huru-hara, perang, perselisihan, buruh, pemogokan, kebijakan pemerintah (moneter) berpengaruh langsung pada pelaksanaan perjanjian ini.
                       </p>
                       <p className="text-justify leading-relaxed">
                         (2) Tidak satu pun Pihak dikenai tanggung jawab untuk memenuhi kewajiban berdasarkan perjanjian ini sepanjang hal tersebut terhalangi, tercegah atau tertunda pelaksanaannya oleh keadaan kahar (force majeure).
@@ -832,15 +832,15 @@ export default function DocumentPrintPreviewModal({
                       </p>
 
                       <div className="text-center pt-1.5 space-y-1">
-                        <p className="font-extrabold text-slate-900 text-[11px]">Pasal 8</p>
-                        <p className="font-bold text-[9px] uppercase text-slate-800">PENYELESAIAN PERSELISIHAN</p>
+                        <p className="font-extrabold text-slate-900 text-[15px]">Pasal 8</p>
+                        <p className="font-bold text-[12px] uppercase text-slate-800">PENYELESAIAN PERSELISIHAN</p>
                       </div>
                       <p className="text-justify leading-relaxed">
                         Apabila dalam pelaksanaan Perjanjian ini terjadi perselisihan atau perbedaan pendapat diantara PARA PIHAK, PARA PIHAK sepakat untuk menyelesaikan perselisihan melalui jalan musyawarah untuk mencapai mufakat.
                       </p>
                     </div>
                     {/* Page Footer */}
-                    <div className="flex justify-between items-center text-[9px] text-slate-400 font-sans border-t pt-2 mt-4">
+                    <div className="flex justify-between items-center text-[10px] text-slate-400 border-t pt-2 mt-4">
                       <span>Naskah Perjanjian Hibah Daerah (NPHD) &bull; {partai.singkatan} &bull; TA {tahunAnggaran}</span>
                       <span>Halaman 7 dari 8</span>
                     </div>
@@ -848,12 +848,12 @@ export default function DocumentPrintPreviewModal({
 
                   {/* Page 8 */}
                   <div className={a4PageClass}>
-                    <div className="space-y-3.5">
+                    <div className="space-y-3.5 text-[14px] text-slate-700">
                       <div className="text-center space-y-1">
-                        <p className="font-extrabold text-slate-900 text-[11px]">Pasal 9</p>
-                        <p className="font-bold text-[9px] uppercase text-slate-800">LAIN-LAIN</p>
+                        <p className="font-extrabold text-slate-900 text-[15px]">Pasal 9</p>
+                        <p className="font-bold text-[12px] uppercase text-slate-800">LAIN-LAIN</p>
                       </div>
-                      <div className="space-y-2 text-[9.5px] text-slate-700 leading-normal text-justify">
+                      <div className="space-y-2 text-[14px] text-slate-700 leading-normal text-justify">
                         <p className="text-justify leading-relaxed">
                           (1) Apabila sampai dengan berakhirnya kegiatan Partai Politik Pada Tahun Anggaran {tahunAnggaran} masih terdapat sisa Dana Bantuan Keuangan Bantuan Keuangan Partai Politik pada PIHAK KEDUA, PIHAK KEDUA wajib menyetorkan sepenuhnya ke Kas Umum Daerah Pemerintahan Provinsi Nusa Tenggara Barat melalui Rekening Kas Umum Daerah Nomor 001.21.05807.00-6 pada PT. Bank NTB Syariah Kantor Cabang Utama Pejanggik.
                         </p>
@@ -863,10 +863,10 @@ export default function DocumentPrintPreviewModal({
                       </div>
 
                       <div className="text-center pt-1.5 space-y-1">
-                        <p className="font-extrabold text-slate-900 text-[11px]">Pasal 10</p>
-                        <p className="font-bold text-[9px] uppercase text-slate-800">PERUBAHAN (ADDENDUM)</p>
+                        <p className="font-extrabold text-slate-900 text-[15px]">Pasal 10</p>
+                        <p className="font-bold text-[12px] uppercase text-slate-800">PERUBAHAN (ADDENDUM)</p>
                       </div>
-                      <div className="space-y-2 text-[9.5px] text-slate-700 leading-normal text-justify">
+                      <div className="space-y-2 text-[14px] text-slate-700 leading-normal text-justify">
                         <p className="text-justify leading-relaxed">
                           (1) Hal-hal yang belum diatur dalam perjanjian Hibah ini akan diatur lebih lanjut sesuai dengan kesepakatan PARA PIHAK.
                         </p>
@@ -876,34 +876,34 @@ export default function DocumentPrintPreviewModal({
                       </div>
 
                       <div className="text-center pt-1.5 space-y-1">
-                        <p className="font-extrabold text-slate-900 text-[11px]">Pasal 11</p>
-                        <p className="font-bold text-[9px] uppercase text-slate-800">PENUTUP</p>
+                        <p className="font-extrabold text-slate-900 text-[15px]">Pasal 11</p>
+                        <p className="font-bold text-[12px] uppercase text-slate-800">PENUTUP</p>
                       </div>
-                      <p className="text-[9.5px] text-slate-700 text-justify leading-relaxed">
+                      <p className="text-[14px] text-slate-700 text-justify leading-relaxed">
                         Demikian Perjanjian Hibah Daerah ini dibuat dalam rangkap 2 (dua) bermaterai cukup, ditandatangani oleh para pihak dan masing-masing mempunyai kekuatan hukum yang sama.
                       </p>
 
                       {/* Signatures Row */}
-                      <div className="grid grid-cols-2 gap-4 pt-4 text-center text-[10px] leading-snug border-t border-slate-100">
+                      <div className="grid grid-cols-2 gap-4 pt-4 text-center text-[12px] leading-snug border-t border-slate-100">
                         <div className="space-y-12">
                           <p className="font-bold uppercase text-slate-800">PIHAK KEDUA<br/>{designation.full}<br/>{partai.nama}</p>
                           <div>
-                            <p className="font-bold underline text-slate-900">{partai.ketua}</p>
-                            <p className="text-slate-500 text-[9px]">Ketua {designation.short} {partai.singkatan} Provinsi NTB</p>
+                            <p className="font-bold underline text-slate-900 text-[13px]">{partai.ketua}</p>
+                            <p className="text-slate-500 text-[11px]">Ketua {designation.short} {partai.singkatan} Provinsi NTB</p>
                           </div>
                         </div>
                         <div className="space-y-12">
                           <p className="font-bold uppercase text-slate-800">PIHAK KESATU<br/>Kepala Badan Kesatuan Bangsa dan<br/>Politik Dalam Negeri Provinsi NTB</p>
                           <div>
-                            <p className="font-bold underline text-slate-900">Drs. H. SURYA BAHARI, M.M.Pd.</p>
-                            <p className="text-slate-500 text-[9px]">Pembina Utama Madya - IV/d</p>
-                            <p className="text-slate-400 font-mono text-[8px]">NIP. 19680219 198811 1 001</p>
+                            <p className="font-bold underline text-slate-900 text-[13px]">Drs. H. SURYA BAHARI, M.M.Pd.</p>
+                            <p className="text-slate-500 text-[11px]">Pembina Utama Madya - IV/d</p>
+                            <p className="text-slate-400 font-mono text-[9px]">NIP. 19680219 198811 1 001</p>
                           </div>
                         </div>
                       </div>
                     </div>
                     {/* Page Footer */}
-                    <div className="flex justify-between items-center text-[9px] text-slate-400 font-sans border-t pt-2 mt-4">
+                    <div className="flex justify-between items-center text-[10px] text-slate-400 border-t pt-2 mt-4">
                       <span>Naskah Perjanjian Hibah Daerah (NPHD) &bull; {partai.singkatan} &bull; TA {tahunAnggaran}</span>
                       <span>Halaman 8 dari 8</span>
                     </div>
