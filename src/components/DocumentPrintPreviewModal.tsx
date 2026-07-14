@@ -581,11 +581,11 @@ export default function DocumentPrintPreviewModal({
 
                   {/* Page 2 */}
                   <div className={a4PageClass}>
-                    <div className="space-y-4">
+                    <div className="space-y-3.5">
                       <p className="font-bold uppercase text-[11px] text-slate-800 border-b pb-1">Berdasarkan :</p>
-                      <ol className="list-decimal pl-5 space-y-3 text-[10px] text-slate-700 leading-relaxed text-justify">
+                      <ol className="list-decimal pl-5 space-y-2 text-[10px] text-slate-700 leading-relaxed text-justify">
                         <li>
-                          Undang-Undang Nomor 23 Tahun 2014 tentang Pemerintahan Daerah (Lembaran Negara Republik Indonesia Tahun 2014 Nomor 244, Tambahan Lembaran Negara Republik Indonesia Nomor 5587) sebagaimana telah beberapa kali diubah, terakhir dengan Undang-Undang Nomor 9 Tahun 2015 tentang Perubahan Kedua atas Undang-Undang Nomor 23 Tahun 2014 tentang Pemerintahan Daerah (Lembaran Negara Republik Indonesia Tahun 2015 Nomor 58, Tambahan Lembaran Negara Republik Indonesia Nomor 5679).
+                          Undang-Undang Nomor 23 Tahun 2014 tentang Pemerintahan Daerah (Lembaran Negara Republik Indonesia Tahun 2014 Nomor 244, Tambahan Lembaran Negara Republik Indonesia Nomor 5587) sebagaimana telah several kali diubah, terakhir dengan Undang-Undang Nomor 9 Tahun 2015 tentang Perubahan Kedua atas Undang-Undang Nomor 23 Tahun 2014 tentang Pemerintahan Daerah (Lembaran Negara Republik Indonesia Tahun 2015 Nomor 58, Tambahan Lembaran Negara Republik Indonesia Nomor 5679).
                         </li>
                         <li>
                           Undang-Undang Nomor 20 Tahun 2022 tentang Provinsi Nusa Tenggara Barat (Lembaran Negara Republik Indonesia Tahun 2022 Nomor 163).
@@ -611,6 +611,12 @@ export default function DocumentPrintPreviewModal({
                         <li>
                           Peraturan Menteri Keuangan Nomor 201/PMK.05/2021 tentang Sistem Akuntansi Hibah (Berita Negara Republik Indonesia Tahun 2021 Nomor 1454).
                         </li>
+                        <li>
+                          Peraturan Gubernur Provinsi Nusa Tenggara Barat Nomor 50 Tahun 2024 tentang Perubahan Kedua Atas Peraturan Gubernur Nusa Tenggara Barat Nomor 18 Tahun 2021 tentang Pedoman Pengelolaan Belanja Hibah dan Bantuan Sosial yang bersumber dari Anggaran Pendapatan Belanja Daerah.
+                        </li>
+                        <li>
+                          Keputusan Gubernur Nusa Tenggara Barat Nomor : 100.3.3.1 - 124 Tahun {tahunAnggaran} tentang Besaran Bantuan Keuangan Kepada Partai Politik yang mendapatkan kursi di Dewan Perwakilan Rakyat Daerah Provinsi Nusa Tenggara Barat Hasil Pemilu Tahun 2024, Tahun Anggaran {tahunAnggaran}.
+                        </li>
                       </ol>
                     </div>
                     {/* Page Footer */}
@@ -623,19 +629,10 @@ export default function DocumentPrintPreviewModal({
                   {/* Page 3 */}
                   <div className={a4PageClass}>
                     <div className="space-y-4">
-                      <ol className="list-decimal pl-5 space-y-3 text-[10px] text-slate-700 leading-relaxed text-justify" start={10}>
-                        <li>
-                          Peraturan Gubernur Provinsi Nusa Tenggara Barat Nomor 50 Tahun 2024 tentang Perubahan Kedua Atas Peraturan Gubernur Nusa Tenggara Barat Nomor 18 Tahun 2021 tentang Pedoman Pengelolaan Belanja Hibah dan Bantuan Sosial yang bersumber dari Anggaran Pendapatan Belanja Daerah.
-                        </li>
-                        <li>
-                          Keputusan Gubernur Nusa Tenggara Barat Nomor : 100.3.3.1 - 124 Tahun {tahunAnggaran} tentang Besaran Bantuan Keuangan Kepada Partai Politik yang mendapatkan kursi di Dewan Perwakilan Rakyat Daerah Provinsi Nusa Tenggara Barat Hasil Pemilu Tahun 2024, Tahun Anggaran {tahunAnggaran}.
-                        </li>
-                      </ol>
-
-                      <p className="text-[11px] text-slate-800 leading-relaxed text-justify pt-2">
+                      <p className="text-[11px] text-slate-800 leading-relaxed text-justify">
                         PIHAK KESATU dan PIHAK KEDUA selanjutnya secara bersama-sama disebut <span className="font-bold">PARA PIHAK</span>, terlebih dahulu menerangkan hal-hal sebagai berikut:
                       </p>
-                      <ul className="list-[lower-alpha] pl-5 space-y-3 text-[10px] text-slate-700 leading-relaxed text-justify">
+                      <ul className="list-[lower-alpha] pl-5 space-y-2.5 text-[10px] text-slate-700 leading-relaxed text-justify">
                         <li>
                           Bahwa <span className="font-semibold">PIHAK KESATU</span> sebagai unsur penyelenggara urusan Pemerintah Daerah memberikan Bantuan Keuangan Partai Politik kepada <span className="font-semibold">PIHAK KEDUA</span> sebagai unsur pendukung Kegiatan Partai Politik {designation.full} {partai.nama} di Wilayah Provinsi Nusa Tenggara Barat Tahun {tahunAnggaran} yang bersumber dari Anggaran Pendapatan dan Belanja Daerah Provinsi Nusa Tenggara Barat Tahun Anggaran {tahunAnggaran};
                         </li>
@@ -644,18 +641,29 @@ export default function DocumentPrintPreviewModal({
                         </li>
                       </ul>
 
-                      <p className="text-[11px] text-slate-800 text-justify pt-2">
+                      <p className="text-[11px] text-slate-800 text-justify pt-1">
                         Berdasarkan hal-hal tersebut di atas, PARA PIHAK sepakat melakukan Perjanjian Hibah Daerah dengan ketentuan dan syarat-syarat sebagai berikut:
                       </p>
 
-                      <div className="pt-2">
+                      <div className="pt-2 border-t border-slate-100">
                         <p className="font-bold text-center text-slate-900">Pasal 1</p>
                         <p className="font-bold text-center text-[10px] uppercase text-slate-700">Jumlah dan Sumber Pembiayaan Hibah</p>
-                        <p className="text-[10px] text-slate-700 text-justify leading-relaxed mt-2">
+                        <p className="text-[10px] text-slate-700 text-justify leading-relaxed mt-1.5">
                           (1) <span className="font-semibold">PIHAK KESATU</span> memberikan Bantuan Keuangan Partai Politik kepada <span className="font-semibold">PIHAK KEDUA</span>, dan PIHAK KEDUA menerima Bantuan Keuangan bagi Partai Politik yang Mendapatkan Kursi di Dewan Perwakilan Rakyat Daerah Provinsi Nusa Tenggara Barat Hasil Pemilihan Umum Tahun {partai.tahunPemilu} Tahun Anggaran {tahunAnggaran} dari PIHAK KESATU sebesar <span className="font-bold">Rp {formattedNominal},- ({nominalTerbilang})</span>.
                         </p>
                         <p className="text-[10px] text-slate-700 text-justify leading-relaxed mt-1">
                           (2) Pemberian Bantuan Keuangan Partai Politik sebagaimana dimaksud pada ayat (1), bersumber dari Anggaran Pendapatan dan Belanja Daerah Provinsi Nusa Tenggara Barat Tahun Anggaran {tahunAnggaran}.
+                        </p>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-100">
+                        <p className="font-bold text-center text-slate-900">Pasal 2</p>
+                        <p className="font-bold text-center text-[10px] uppercase text-slate-700">Penggunaan Hibah</p>
+                        <p className="text-[10px] text-slate-700 text-justify leading-relaxed mt-1.5">
+                          (1) Bantuan Keuangan Partai Politik dari PIHAK KESATU kepada PIHAK KEDUA sebagaimana dimaksud dalam Pasal 1, dipergunakan oleh PIHAK KEDUA untuk membiayai pelaksanaan dan/atau Mendukung Kegiatan Partai Politik, Dewan Pimpinan Wilayah/Daerah {partai.nama} di Wilayah Provinsi Nusa Tenggara Barat Tahun {tahunAnggaran} yang bersumber dari Anggaran Pendapatan dan Belanja Daerah Provinsi Nusa Tenggara Barat Tahun Anggaran {tahunAnggaran}.
+                        </p>
+                        <p className="text-[10px] text-slate-700 text-justify leading-relaxed mt-1">
+                          (2) Penggunaan Bantuan Keuangan Partai Politik sebagaimana dimaksud pada ayat (1), dituangkan dalam Rincian Kebutuhan Biaya PIHAK KEDUA sebagaimana tercantum dalam Lampiran yang tidak terpisahkan dari Naskah Perjanjian Hibah Daerah ini.
                         </p>
                       </div>
                     </div>
@@ -668,23 +676,12 @@ export default function DocumentPrintPreviewModal({
 
                   {/* Page 4 */}
                   <div className={a4PageClass}>
-                    <div className="space-y-4">
+                    <div className="space-y-3.5">
                       <div>
-                        <p className="font-bold text-center text-slate-900">Pasal 2</p>
-                        <p className="font-bold text-center text-[10px] uppercase text-slate-700">Penggunaan Hibah</p>
-                        <p className="text-[10px] text-slate-700 text-justify leading-relaxed mt-2">
-                          (1) Bantuan Keuangan Partai Politik dari PIHAK KESATU kepada PIHAK KEDUA sebagaimana dimaksud dalam Pasal 1, dipergunakan oleh PIHAK KEDUA untuk membiayai pelaksanaan dan/atau Mendukung Kegiatan Partai Politik, Dewan Pimpinan Wilayah/Daerah {partai.nama} di Wilayah Provinsi Nusa Tenggara Barat Tahun {tahunAnggaran} yang bersumber dari Anggaran Pendapatan dan Belanja Daerah Provinsi Nusa Tenggara Barat Tahun Anggaran {tahunAnggaran}.
-                        </p>
-                        <p className="text-[10px] text-slate-700 text-justify leading-relaxed mt-1">
-                          (2) Penggunaan Bantuan Keuangan Partai Politik sebagaimana dimaksud pada ayat (1), dituangkan dalam Rincian Kebutuhan Biaya PIHAK KEDUA sebagaimana tercantum dalam Lampiran yang tidak terpisahkan dari Naskah Perjanjian Hibah Daerah ini.
-                        </p>
-                      </div>
-
-                      <div className="pt-2">
                         <p className="font-bold text-center text-slate-900">Pasal 3</p>
                         <p className="font-bold text-center text-[10px] uppercase text-slate-700">Hak dan Kewajiban</p>
                         
-                        <p className="text-[10px] text-slate-700 text-justify leading-relaxed mt-2">
+                        <p className="text-[10px] font-bold text-slate-800 text-justify leading-relaxed mt-2.5">
                           (1) <span className="font-semibold">Hak PIHAK KESATU</span>:
                         </p>
                         <ul className="list-disc pl-5 space-y-1 text-[10px] text-slate-600 leading-relaxed text-justify">
@@ -693,7 +690,7 @@ export default function DocumentPrintPreviewModal({
                           <li>Menerima hasil kesepakatan usulan perubahan Rincian Kebutuhan Biaya dari PIHAK KEDUA apabila terjadi perubahan Rincian Kebutuhan Biaya dari yang telah disepakati.</li>
                         </ul>
 
-                        <p className="text-[10px] text-slate-700 text-justify leading-relaxed mt-2">
+                        <p className="text-[10px] font-bold text-slate-800 text-justify leading-relaxed mt-2">
                           (2) <span className="font-semibold">Kewajiban PIHAK KESATU</span>:
                         </p>
                         <ul className="list-disc pl-5 space-y-1 text-[10px] text-slate-600 leading-relaxed text-justify">
@@ -701,9 +698,21 @@ export default function DocumentPrintPreviewModal({
                           <li>Mencairkan Dana Bantuan Keuangan Partai Politik sesuai dengan mekanisme pencairan;</li>
                         </ul>
 
-                        <p className="text-[10px] text-slate-700 text-justify leading-relaxed mt-2">
+                        <p className="text-[10px] font-bold text-slate-800 text-justify leading-relaxed mt-2">
                           (3) <span className="font-semibold">Hak PIHAK KEDUA</span> yaitu menggunakan Dana Bantuan Keuangan Partai Politik sebagaimana dimaksud dalam Pasal 2 dari PIHAK KESATU.
                         </p>
+
+                        <p className="text-[10px] font-bold text-slate-800 text-justify leading-relaxed mt-2.5">
+                          (4) <span className="font-semibold">Kewajiban PIHAK KEDUA</span>:
+                        </p>
+                        <ul className="list-[lower-alpha] pl-5 space-y-1.5 text-[10px] text-slate-600 leading-relaxed text-justify mt-1">
+                          <li>Menandatangani Pakta Integritas yang menyatakan bahwa Dana Bantuan Keuangan Partai Politik yang diterima akan digunakan sesuai dengan Naskah Perjanjian Hibah Daerah;</li>
+                          <li>Melaksanakan penatausahaan penggunaan Dana Bantuan Keuangan Partai Politik Daerah sesuai dengan ketentuan peraturan perundang-undangan;</li>
+                          <li>Dalam hal terjadinya perubahan Rincian Kebutuhan Biaya yang telah disepakati menjadi lampiran tidak terpisahkan dalam Naskah Perjanjian Hibah ini, PIHAK KEDUA wajib mengusulkan perubahan dimaksud kepada PIHAK KESATU yang Selanjutnya akan dibahas dan dituangkan dalam Berita Acara sebagaimana diatur dalam peraturan perundang-undangan;</li>
+                          <li>Melaksanakan pengadaan barang dan jasa sesuai dengan ketentuan peraturan perundang-undangan yang berlaku dan menyimpan bukti-bukti transaksi terkait dengan program dan kegiatan yang didanai dari Dana Bantuan Keuangan Partai Politik;</li>
+                          <li>Mempertanggungjawabkan atas Dana Bantuan Keuangan Partai Politik yang dikelola sebagaimana dimaksud dalam Pasal 1 dan Pasal 2; dan</li>
+                          <li>Mengembalikan sisa Dana Bantuan Keuangan Partai Politik Kegiatan Partai Politik, Dewan Pimpinan Wilayah/Daerah {partai.nama} di Wilayah Provinsi Nusa Tenggara Barat Tahun {tahunAnggaran} yang bersumber dari Anggaran Pendapatan dan Belanja Daerah Provinsi Nusa Tenggara Barat Tahun Anggaran {tahunAnggaran} paling lambat tanggal 31 Desember {tahunAnggaran} kepada PIHAK KESATU melalui Kas Daerah Provinsi Nusa Tenggara Barat.</li>
+                        </ul>
                       </div>
                     </div>
                     {/* Page Footer */}
@@ -715,25 +724,11 @@ export default function DocumentPrintPreviewModal({
 
                   {/* Page 5 */}
                   <div className={a4PageClass}>
-                    <div className="space-y-4">
+                    <div className="space-y-3.5">
                       <div>
-                        <p className="text-[10px] text-slate-700 text-justify leading-relaxed">
-                          (4) <span className="font-semibold">Kewajiban PIHAK KEDUA</span>:
-                        </p>
-                        <ul className="list-[lower-alpha] pl-5 space-y-2 text-[10px] text-slate-600 leading-relaxed text-justify mt-1">
-                          <li>Menandatangani Pakta Integritas yang menyatakan bahwa Dana Bantuan Keuangan Partai Politik yang diterima akan digunakan sesuai dengan Naskah Perjanjian Hibah Daerah;</li>
-                          <li>Melaksanakan penatausahaan penggunaan Dana Bantuan Keuangan Partai Politik Daerah sesuai dengan ketentuan peraturan perundang-undangan;</li>
-                          <li>Dalam hal terjadinya perubahan Rincian Kebutuhan Biaya yang telah disepakati menjadi lampiran tidak terpisahkan dalam Naskah Perjanjian Hibah ini, PIHAK KEDUA wajib mengusulkan perubahan dimaksud kepada PIHAK KESATU yang Selanjutnya akan dibahas dan dituangkan dalam Berita Acara sebagaimana diatur dalam peraturan perundang-undangan;</li>
-                          <li>Melaksanakan pengadaan barang dan jasa sesuai dengan ketentuan peraturan perundang-undangan yang berlaku dan menyimpan bukti-bukti transaksi terkait dengan program dan kegiatan yang didanai dari Dana Bantuan Keuangan Partai Politik;</li>
-                          <li>Mempertanggungjawabkan atas Dana Bantuan Keuangan Partai Politik yang dikelola sebagaimana dimaksud dalam Pasal 1 dan Pasal 2; dan</li>
-                          <li>Mengembalikan sisa Dana Bantuan Keuangan Partai Politik Kegiatan Partai Politik, Dewan Pimpinan Wilayah/Daerah {partai.nama} di Wilayah Provinsi Nusa Tenggara Barat Tahun {tahunAnggaran} yang bersumber dari Anggaran Pendapatan dan Belanja Daerah Provinsi Nusa Tenggara Barat Tahun Anggaran {tahunAnggaran} paling lambat tanggal 31 Desember {tahunAnggaran} kepada PIHAK KESATU melalui Kas Daerah Provinsi Nusa Tenggara Barat.</li>
-                        </ul>
-                      </div>
-
-                      <div className="pt-2">
                         <p className="font-bold text-center text-slate-900">Pasal 4</p>
                         <p className="font-bold text-center text-[10px] uppercase text-slate-700">Mekanisme Pencairan Dana Hibah</p>
-                        <p className="text-[10px] text-slate-700 text-justify leading-relaxed mt-2">
+                        <p className="text-[10px] text-slate-700 text-justify leading-relaxed mt-1.5">
                           (1) Pencairan Belanja Bantuan Keuangan Partai Politik dari PIHAK KESATU kepada PIHAK KEDUA dilakukan dengan cara ditransfer langsung dari Kas Daerah Pemerintah Provinsi Nusa Tenggara Barat ke rekening PIHAK KEDUA.
                         </p>
                         <p className="text-[10px] text-slate-700 text-justify leading-relaxed mt-1">
@@ -741,10 +736,10 @@ export default function DocumentPrintPreviewModal({
                         </p>
                       </div>
 
-                      <div className="pt-2">
+                      <div className="pt-2 border-t border-slate-100">
                         <p className="font-bold text-center text-slate-900">Pasal 5</p>
                         <p className="font-bold text-center text-[10px] uppercase text-slate-700">Pertanggungjawaban dan Pelaporan</p>
-                        <p className="text-[10px] text-slate-700 text-justify leading-relaxed mt-2">
+                        <p className="text-[10px] text-slate-700 text-justify leading-relaxed mt-1.5">
                           (1) PIHAK KEDUA bertanggungjawab sepenuhnya atas penggunaan uang yang dihibahkan oleh PIHAK KESATU melalui Kepala Badan Kesatuan Bangsa dan Politik Dalam Negeri Provinsi Nusa Tenggara Barat sebagaimana dimaksud dalam Pasal 1 dan Pasal 2.
                         </p>
                         <p className="text-[10px] text-slate-700 text-justify leading-relaxed mt-1">
@@ -752,11 +747,33 @@ export default function DocumentPrintPreviewModal({
                         </p>
                       </div>
 
-                      <div className="pt-2">
+                      <div className="pt-2 border-t border-slate-100">
                         <p className="font-bold text-center text-slate-900">Pasal 6</p>
                         <p className="font-bold text-center text-[10px] uppercase text-slate-700">Jangka Waktu</p>
-                        <p className="text-[10px] text-slate-700 text-justify leading-relaxed mt-2">
+                        <p className="text-[10px] text-slate-700 text-justify leading-relaxed mt-1.5">
                           Perjanjian hibah ini berlaku terhitung sejak Naskah Perjanjian Hibah Daerah ditandatangani sampai dengan Bulan Desember tahun Anggaran {tahunAnggaran}.
+                        </p>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-100">
+                        <p className="font-bold text-center text-slate-900">Pasal 7</p>
+                        <p className="font-bold text-center text-[10px] uppercase text-slate-700">Keadaan Kahar (Force Majeure)</p>
+                        <p className="text-[9.5px] text-slate-700 text-justify leading-relaxed mt-1.5">
+                          (1) Keadaankahar (force majeure) antara lain termasuk kebakaran, ledakan, gempa bumi, topan, hujan badai, banjir, wabah dan bencana lainnya, makar, huru-hara, perang, perselisihan, buruh, pemogokan, kebijakan pemerintah (moneter) berpengaruh langsung pada pelaksanaan perjanjian ini.
+                        </p>
+                        <p className="text-[9.5px] text-slate-700 text-justify leading-relaxed mt-1">
+                          (2) Tidak satu pun Pihak dikenai tanggung jawab untuk memenuhi kewajiban berdasarkan perjanjian ini sepanjang hal tersebut terhalangi, tercegah atau tertunda pelaksanaannya oleh keadaan kahar (force majeure).
+                        </p>
+                        <p className="text-[9.5px] text-slate-700 text-justify leading-relaxed mt-1">
+                          (3) Dalam jangka waktu paling lambat 7 (tujuh) hari sejak terjadinya keadaan kahar (force majeure), pihak yang terkena keadaan kahar (force majeure) membuat atau menyampaikan pemberitahuan tertulis kepada pihak yang tidak terkena dengan menerangkan keadaan kahar (force majeure) tersebut.
+                        </p>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-100">
+                        <p className="font-bold text-center text-slate-900">Pasal 8</p>
+                        <p className="font-bold text-center text-[10px] uppercase text-slate-700">Penyelesaian Perselisihan</p>
+                        <p className="text-[9.5px] text-slate-700 text-justify leading-relaxed mt-1.5">
+                          Apabila dalam pelaksanaan Perjanjian ini terjadi perselisihan atau perbedaan pendapat diantara PARA PIHAK, PARA PIHAK sepakat untuk menyelesaikan perselisihan melalui jalan musyawarah untuk mencapai mufakat.
                         </p>
                       </div>
                     </div>
@@ -771,57 +788,37 @@ export default function DocumentPrintPreviewModal({
                   <div className={a4PageClass}>
                     <div className="space-y-3.5">
                       <div>
-                        <p className="font-bold text-center text-slate-900 text-[11px]">Pasal 7</p>
-                        <p className="font-bold text-center text-[9px] uppercase text-slate-700">Keadaan Kahar (Force Majeure)</p>
-                        <p className="text-[9.5px] text-slate-700 text-justify leading-relaxed mt-1">
-                          (1) Keadaankahar (force majeure) antara lain termasuk kebakaran, ledakan, gempa bumi, topan, hujan badai, banjir, wabah dan bencana lainnya, makar, huru-hara, perang, perselisihan, buruh, pemogokan, kebijakan pemerintah (moneter) berpengaruh langsung pada pelaksanaan perjanjian ini.
-                        </p>
-                        <p className="text-[9.5px] text-slate-700 text-justify leading-relaxed mt-0.5">
-                          (2) Tidak satu pun Pihak dikenai tanggung jawab untuk memenuhi kewajiban berdasarkan perjanjian ini sepanjang hal tersebut terhalangi, tercegah atau tertunda pelaksanaannya oleh keadaan kahar (force majeure).
-                        </p>
-                        <p className="text-[9.5px] text-slate-700 text-justify leading-relaxed mt-0.5">
-                          (3) Dalam jangka waktu paling lambat 7 (tujuh) hari sejak terjadinya keadaan kahar (force majeure), pihak yang terkena keadaan kahar (force majeure) membuat atau menyampaikan pemberitahuan tertulis kepada pihak yang tidak terkena dengan menerangkan keadaan kahar (force majeure) tersebut.
-                        </p>
-                      </div>
-
-                      <div>
-                        <p className="font-bold text-center text-slate-900 text-[11px]">Pasal 8</p>
-                        <p className="font-bold text-center text-[9px] uppercase text-slate-700">Penyelesaian Perselisihan</p>
-                        <p className="text-[9.5px] text-slate-700 text-justify leading-relaxed mt-1">
-                          Apabila dalam pelaksanaan Perjanjian ini terjadi perselisihan atau perbedaan pendapat diantara PARA PIHAK, PARA PIHAK sepakat untuk menyelesaikan perselisihan melalui jalan musyawarah untuk mencapai mufakat.
-                        </p>
-                      </div>
-
-                      <div>
                         <p className="font-bold text-center text-slate-900 text-[11px]">Pasal 9</p>
                         <p className="font-bold text-center text-[9px] uppercase text-slate-700">Lain-Lain</p>
-                        <p className="text-[9.5px] text-slate-700 text-justify leading-relaxed mt-1">
+                        <p className="text-[9.5px] text-slate-700 text-justify leading-relaxed mt-1.5">
                           (1) Apabila sampai dengan berakhirnya kegiatan Partai Politik Pada Tahun Anggaran {tahunAnggaran} masih terdapat sisa Dana Bantuan Keuangan Partai Politik pada PIHAK KEDUA, PIHAK KEDUA wajib menyetorkan sepenuhnya ke Kas Umum Daerah Pemerintahan Provinsi Nusa Tenggara Barat melalui Rekening Kas Umum Daerah Nomor 001.21.05807.00-6 pada PT. Bank NTB Syariah Kantor Cabang Utama Pejanggik.
                         </p>
-                        <p className="text-[9.5px] text-slate-700 text-justify leading-relaxed mt-0.5">
+                        <p className="text-[9.5px] text-slate-700 text-justify leading-relaxed mt-1">
                           (2) Dalam hal pengelolaan Rekening Bantuan Keuangan Partai Politik pada PIHAK KEDUA diperoleh Jasa Giro/Bunga, PIHAK KEDUA berkewajiban menyetorkan Jasa Giro ke Kas Negara.
                         </p>
                       </div>
 
-                      <div>
+                      <div className="pt-2 border-t border-slate-100">
                         <p className="font-bold text-center text-slate-900 text-[11px]">Pasal 10</p>
                         <p className="font-bold text-center text-[9px] uppercase text-slate-700">Perubahan (Addendum)</p>
-                        <p className="text-[9.5px] text-slate-700 text-justify leading-relaxed mt-1">
+                        <p className="text-[9.5px] text-slate-700 text-justify leading-relaxed mt-1.5">
                           (1) Hal-hal yang belum diatur dalam perjanjian Hibah ini akan diatur lebih lanjut sesuai dengan kesepakatan PARA PIHAK.
+                        </p>
+                        <p className="text-[9.5px] text-slate-700 text-justify leading-relaxed mt-1">
                           (2) Apabila terjadi perubahan maupun penambahan akan diatur lebih lanjut dalam Addendum Perjanjian yang merupakan bagian tidak terpisahkan dari perjanjian ini.
                         </p>
                       </div>
 
-                      <div>
+                      <div className="pt-2 border-t border-slate-100">
                         <p className="font-bold text-center text-slate-900 text-[11px]">Pasal 11</p>
                         <p className="font-bold text-center text-[9px] uppercase text-slate-700">Penutup</p>
-                        <p className="text-[9.5px] text-slate-700 text-justify leading-relaxed mt-1">
+                        <p className="text-[9.5px] text-slate-700 text-justify leading-relaxed mt-1.5">
                           Demikian Perjanjian Hibah Daerah ini dibuat dalam rangkap 2 (dua) bermaterai cukup, ditandatangani oleh para pihak dan masing-masing mempunyai kekuatan hukum yang sama.
                         </p>
                       </div>
 
                       {/* Signatures Row */}
-                      <div className="grid grid-cols-2 gap-4 pt-4 text-center text-[10px] leading-snug">
+                      <div className="grid grid-cols-2 gap-4 pt-4 text-center text-[10px] leading-snug border-t border-slate-100">
                         <div className="space-y-12">
                           <p className="font-bold uppercase text-slate-800">PIHAK KEDUA<br/>{designation.full}<br/>{partai.nama}</p>
                           <div>
