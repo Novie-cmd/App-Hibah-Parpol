@@ -134,16 +134,39 @@ export default function DocumentPrintPreviewModal({
           #printable-document, #printable-document * {
             visibility: visible;
           }
+          body, 
+          #root, 
+          .fixed.inset-0, 
+          .bg-white.rounded-xl.shadow-2xl, 
+          .flex-1.flex, 
+          .flex-1.bg-slate-100.flex.flex-col, 
+          .flex-1.p-8.overflow-y-auto {
+            visibility: visible !important;
+            display: block !important;
+            position: static !important;
+            width: auto !important;
+            height: auto !important;
+            max-width: none !important;
+            max-height: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+            backdrop-filter: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: visible !important;
+          }
           #printable-document {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
             border: none !important;
             box-shadow: none !important;
             background: transparent !important;
+            z-index: 99999 !important;
           }
           .print-page {
             page-break-after: always;
@@ -157,6 +180,9 @@ export default function DocumentPrintPreviewModal({
             border: none !important;
             box-shadow: none !important;
             position: relative;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
           }
           .print-page:last-child {
             page-break-after: avoid;
@@ -218,10 +244,10 @@ export default function DocumentPrintPreviewModal({
         }
       `}} />
 
-      <div className="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col no-print">
+      <div className="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col">
         
         {/* Modal Header */}
-        <div className="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+        <div className="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between no-print">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-emerald-50 text-emerald-700 rounded-lg">
               <Printer className="h-5 w-5" />
@@ -245,7 +271,7 @@ export default function DocumentPrintPreviewModal({
         <div className="flex-1 flex overflow-hidden min-h-[500px]">
           
           {/* Left Sidebar Menu */}
-          <div className="w-64 bg-slate-50 border-r border-slate-200 p-4 space-y-2 select-none">
+          <div className="w-64 bg-slate-50 border-r border-slate-200 p-4 space-y-2 select-none no-print">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-3 pl-2">Pilih Dokumen</span>
             
             <button
@@ -1087,7 +1113,7 @@ export default function DocumentPrintPreviewModal({
       </div>
 
         {/* Modal Footer Controls */}
-        <div className="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+        <div className="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between no-print">
           <span className="text-[10px] font-mono text-slate-400">
             Sistem Informasi Dana Hibah Bantuan Partai Politik Provinsi NTB (SIMBAKESBANGPOL)
           </span>
