@@ -24,6 +24,24 @@ export default function DocumentPrintPreviewModal({
 }: DocumentPrintPreviewModalProps) {
   const [activeDoc, setActiveDoc] = useState<DocumentType>('NPHD');
 
+  const getPartyDesignation = (singkatan: string) => {
+    const s = singkatan.toUpperCase();
+    if (
+      s.includes('PDI') || 
+      s.includes('GERINDRA') || 
+      s.includes('GOLKAR') || 
+      s.includes('DEMOKRAT') || 
+      s.includes('HANURA') || 
+      s.includes('PSI') || 
+      s.includes('PERINDO')
+    ) {
+      return { full: "Dewan Pimpinan Daerah", short: "DPD" };
+    }
+    return { full: "Dewan Pimpinan Wilayah", short: "DPW" };
+  };
+
+  const designation = getPartyDesignation(partai.singkatan);
+
   // Convert number to Indonesian Words (Terbilang)
   function formatTerbilang(num: number): string {
     const words = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
@@ -245,7 +263,7 @@ export default function DocumentPrintPreviewModal({
                   <div className="text-center space-y-1">
                     <p className="font-extrabold uppercase">DENGAN</p>
                     <p className="font-bold uppercase text-[11px] tracking-wide text-slate-800">
-                      DEWAN PIMPINAN WILAYAH {partai.nama.toUpperCase()}
+                      {designation.full.toUpperCase()} {partai.nama.toUpperCase()}
                     </p>
                     <p className="font-bold uppercase text-[11px] text-slate-800">
                       PROVINSI NUSA TENGGARA BARAT
@@ -276,7 +294,7 @@ export default function DocumentPrintPreviewModal({
                       </li>
                       <li>
                         <p>
-                          <span className="font-bold">{partai.ketua}</span>, Jabatan Ketua Dewan Pimpinan Wilayah {partai.nama} ({partai.singkatan}) Provinsi Nusa Tenggara Barat, beralamat di {partai.alamatKantor}, bertindak dalam jabatannya untuk dan atas nama Dewan Pimpinan Wilayah {partai.nama} ({partai.singkatan}) Provinsi Nusa Tenggara Barat sebagai Penerima Dana Bantuan Keuangan Partai Politik, selanjutnya disebut <span className="font-bold">PIHAK KEDUA</span>.
+                          <span className="font-bold">{partai.ketua}</span>, Jabatan Ketua {designation.full} {partai.nama} ({partai.singkatan}) Provinsi Nusa Tenggara Barat, beralamat di {partai.alamatKantor}, bertindak dalam jabatannya untuk dan atas nama {designation.full} {partai.nama} ({partai.singkatan}) Provinsi Nusa Tenggara Barat sebagai Penerima Dana Bantuan Keuangan Partai Politik, selanjutnya disebut <span className="font-bold">PIHAK KEDUA</span>.
                         </p>
                       </li>
                     </ol>
@@ -310,7 +328,7 @@ export default function DocumentPrintPreviewModal({
                       <p className="font-bold uppercase">PIHAK KEDUA</p>
                       <div>
                         <p className="font-bold underline">{partai.ketua}</p>
-                        <p className="text-slate-500 font-sans text-[10px]">Ketua {partai.singkatan} Provinsi NTB</p>
+                        <p className="text-slate-500 font-sans text-[10px]">Ketua {designation.short} {partai.singkatan} Provinsi NTB</p>
                       </div>
                     </div>
                     <div className="space-y-16">
@@ -337,7 +355,7 @@ export default function DocumentPrintPreviewModal({
                       referrerPolicy="no-referrer"
                     />
                     <h4 className="font-extrabold uppercase text-slate-800 text-[13px] tracking-wide">
-                      DEWAN PIMPINAN WILAYAH PARTAI {partai.nama.toUpperCase()}
+                      {designation.full.toUpperCase()} {partai.nama.toUpperCase()}
                     </h4>
                     <h5 className="font-bold uppercase text-slate-700 text-xs tracking-wide">
                       PROVINSI NUSA TENGGARA BARAT
@@ -367,7 +385,7 @@ export default function DocumentPrintPreviewModal({
                         <tr>
                           <td className="font-bold py-1 text-slate-500">Jabatan</td>
                           <td>:</td>
-                          <td className="font-bold text-slate-800">Ketua DPW {partai.nama} Provinsi NTB</td>
+                          <td className="font-bold text-slate-800">Ketua {designation.short} {partai.nama} Provinsi NTB</td>
                         </tr>
                         <tr>
                           <td className="font-bold py-1 text-slate-500">Alamat Kantor</td>
@@ -378,7 +396,7 @@ export default function DocumentPrintPreviewModal({
                     </table>
 
                     <p>
-                      Bertindak sebagai Ketua Umum DPW {partai.nama} Provinsi NTB, dengan ini menyatakan dengan sesungguhnya bahwa saya bertanggungjawab penuh atas pencairan dan penggunaan Bantuan Keuangan bagi Partai Politik yang Mendapatkan Kursi di Dewan Perwakilan Rakyat Daerah Provinsi Nusa Tenggara Barat Hasil Pemilihan Umum Tahun {partai.tahunPemilu} Tahun Anggaran {tahunAnggaran} sebesar <span className="font-bold">Rp {formattedNominal},- ({nominalTerbilang})</span>.
+                      Bertindak sebagai Ketua {designation.short} {partai.nama} Provinsi NTB, dengan ini menyatakan dengan sesungguhnya bahwa saya bertanggungjawab penuh atas pencairan dan penggunaan Bantuan Keuangan bagi Partai Politik yang Mendapatkan Kursi di Dewan Perwakilan Rakyat Daerah Provinsi Nusa Tenggara Barat Hasil Pemilihan Umum Tahun {partai.tahunPemilu} Tahun Anggaran {tahunAnggaran} sebesar <span className="font-bold">Rp {formattedNominal},- ({nominalTerbilang})</span>.
                     </p>
 
                     <p>
@@ -399,7 +417,7 @@ export default function DocumentPrintPreviewModal({
                       <p>Mataram, {sptjmDate}</p>
                       <div>
                         <p className="font-bold underline">{partai.ketua}</p>
-                        <p className="font-bold font-sans text-[10px] text-slate-500 uppercase mt-0.5">Ketua DPW {partai.singkatan} NTB</p>
+                        <p className="font-bold font-sans text-[10px] text-slate-500 uppercase mt-0.5">Ketua {designation.short} {partai.singkatan} NTB</p>
                       </div>
                     </div>
                   </div>
@@ -436,7 +454,7 @@ export default function DocumentPrintPreviewModal({
                       </li>
                       <li>
                         <p>
-                          <span className="font-bold">{partai.ketua}</span>, Jabatan Ketua DPW {partai.nama} Provinsi NTB, beralamat di {partai.alamatKantor}, selanjutnya disebut sebagai <span className="font-bold">PIHAK KEDUA</span>.
+                          <span className="font-bold">{partai.ketua}</span>, Jabatan Ketua {designation.short} {partai.nama} Provinsi NTB, beralamat di {partai.alamatKantor}, selanjutnya disebut sebagai <span className="font-bold">PIHAK KEDUA</span>.
                         </p>
                       </li>
                     </ol>
@@ -455,7 +473,7 @@ export default function DocumentPrintPreviewModal({
                       <p className="font-bold uppercase">PIHAK KEDUA</p>
                       <div>
                         <p className="font-bold underline">{partai.ketua}</p>
-                        <p className="text-slate-500 font-sans text-[10px]">Ketua DPW {partai.singkatan} NTB</p>
+                        <p className="text-slate-500 font-sans text-[10px]">Ketua {designation.short} {partai.singkatan} NTB</p>
                       </div>
                     </div>
                     <div className="space-y-16">
@@ -505,7 +523,7 @@ export default function DocumentPrintPreviewModal({
                         <td className="font-bold py-2 text-slate-500">Untuk Keperluaan</td>
                         <td className="py-2">:</td>
                         <td className="py-2 text-slate-700 leading-normal">
-                          Belanja Besaran Bantuan Keuangan bagi Partai Politik yang Mendapatkan Kursi di Dewan Perwakilan Rakyat Daerah Provinsi Nusa Tenggara Barat Hasil Pemilihan Umum Tahun {partai.tahunPemilu} Tahun Anggaran {tahunAnggaran} kepada DPW/DPD {partai.nama} Provinsi Nusa Tenggara Barat dengan alamat {partai.alamatKantor}
+                          Belanja Besaran Bantuan Keuangan bagi Partai Politik yang Mendapatkan Kursi di Dewan Perwakilan Rakyat Daerah Provinsi Nusa Tenggara Barat Hasil Pemilihan Umum Tahun {partai.tahunPemilu} Tahun Anggaran {tahunAnggaran} kepada {designation.short} {partai.nama} Provinsi Nusa Tenggara Barat dengan alamat {partai.alamatKantor}
                         </td>
                       </tr>
                       <tr>
@@ -541,7 +559,7 @@ export default function DocumentPrintPreviewModal({
                       <p className="font-bold uppercase text-[9px] text-slate-500">Yang menerima uang,</p>
                       <div className="h-12"></div>
                       <p className="font-bold underline">{partai.ketua}</p>
-                      <p className="text-slate-500 font-bold uppercase text-[8px]">Ketua DPW {partai.singkatan}</p>
+                      <p className="text-slate-500 font-bold uppercase text-[8px]">Ketua {designation.short} {partai.singkatan}</p>
                     </div>
                   </div>
 

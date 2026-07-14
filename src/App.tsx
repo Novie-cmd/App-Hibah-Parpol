@@ -622,6 +622,10 @@ export default function App() {
           }
           return [...prev, saved.data];
         });
+        if (currentUser && currentUser.id === u.id) {
+          setCurrentUser(saved.data);
+          localStorage.setItem('kesbangpol_session', JSON.stringify(saved.data));
+        }
         logAktivitas(selectedPengguna ? 'Edit' : 'Tambah Data', `Pengguna ${u.namaLengkap}`, `Data pengguna berhasil dimutakhirkan.`);
         setPenggunaFormOpen(false);
         setSelectedPengguna(null);
@@ -639,6 +643,10 @@ export default function App() {
         }
         return [...prev, u];
       });
+      if (currentUser && currentUser.id === u.id) {
+        setCurrentUser(u);
+        localStorage.setItem('kesbangpol_session', JSON.stringify(u));
+      }
       logAktivitas(selectedPengguna ? 'Edit' : 'Tambah Data', `Pengguna ${u.namaLengkap}`, `Data pengguna berhasil dimutakhirkan.`);
       setPenggunaFormOpen(false);
       setSelectedPengguna(null);
@@ -749,16 +757,16 @@ export default function App() {
   };
 
   const handleDeletePengguna = async (id: string, namaLengkap: string) => {
-    if (currentUser && currentUser.id === id) {
-      alert("Anda tidak dapat menghapus akun Anda sendiri yang sedang aktif.");
-      return;
-    }
     if (!confirm(`Apakah Anda yakin ingin menghapus pengguna "${namaLengkap}"?`)) return;
     try {
       const res = await fetch(`/api/pengguna/${id}`, { method: 'DELETE' });
       if (res.ok) {
         setPengguna(prev => prev.filter(p => p.id !== id));
         logAktivitas('Hapus', `Pengguna ${namaLengkap}`, `Menghapus akun pengguna dari sistem.`);
+        if (currentUser && currentUser.id === id) {
+          localStorage.removeItem('kesbangpol_session');
+          setCurrentUser(null);
+        }
       } else {
         throw new Error("Server returned non-ok status");
       }
@@ -766,6 +774,10 @@ export default function App() {
       // Offline fallback
       setPengguna(prev => prev.filter(p => p.id !== id));
       logAktivitas('Hapus', `Pengguna ${namaLengkap}`, `Menghapus akun pengguna dari sistem.`);
+      if (currentUser && currentUser.id === id) {
+        localStorage.removeItem('kesbangpol_session');
+        setCurrentUser(null);
+      }
     }
   };
 
@@ -2916,9 +2928,8 @@ export default function App() {
                               </button>
                               <button
                                 onClick={() => handleDeletePengguna(u.id, u.namaLengkap)}
-                                disabled={currentUser?.id === u.id}
-                                className="p-1.5 bg-slate-50 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-slate-400 hover:text-rose-600 rounded-lg shadow-2xs transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-                                title={currentUser?.id === u.id ? "Tidak dapat menghapus akun sendiri" : "Hapus Akun"}
+                                className="p-1.5 bg-slate-50 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-slate-400 hover:text-rose-600 rounded-lg shadow-2xs transition cursor-pointer"
+                                title="Hapus Akun"
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
                               </button>
