@@ -181,7 +181,7 @@ export default function DocumentPrintPreviewModal({
             padding: ${marginTop}cm ${marginRight}cm ${marginBottom}cm ${marginLeft}cm !important;
             box-sizing: border-box !important;
             width: 210mm !important;
-            height: 295.5mm !important; /* Extremely robust to prevent any sub-pixel overflow onto blank pages */
+            height: 100vh !important; /* Dynamically scale to the exact printable viewport height to prevent blank pages */
             background: white !important;
             border: none !important;
             box-shadow: none !important;
@@ -576,29 +576,36 @@ export default function DocumentPrintPreviewModal({
                             </div>
                           </div>
                         </div>
+
+                        {/* Berdasarkan List starts on Page 1 to fill empty space */}
+                        <div className="pt-2 border-t border-slate-100">
+                          <p className="font-bold uppercase text-[9.5px] text-slate-800 border-b pb-0.5 mb-1">Berdasarkan :</p>
+                          <ol className="list-decimal pl-5 space-y-1 text-[9.5px] text-slate-700 leading-normal text-justify">
+                            <li>
+                              Undang-Undang Nomor 23 Tahun 2014 tentang Pemerintahan Daerah (Lembaran Negara Republik Indonesia Tahun 2014 Nomor 244, Tambahan Lembaran Negara Republik Indonesia Nomor 5587) sebagaimana telah several kali diubah, terakhir dengan Undang-Undang Nomor 9 Tahun 2015 tentang Perubahan Kedua atas Undang-Undang Nomor 23 Tahun 2014 tentang Pemerintahan Daerah (Lembaran Negara Republik Indonesia Tahun 2015 Nomor 58, Tambahan Lembaran Negara Republik Indonesia Nomor 5679).
+                            </li>
+                            <li>
+                              Undang-Undang Nomor 20 Tahun 2022 tentang Provinsi Nusa Tenggara Barat (Lembaran Negara Republik Indonesia Tahun 2022 Nomor 163).
+                            </li>
+                            <li>
+                              Peraturan Pemerintah Nomor 2 Tahun 2012 tentang Hibah Daerah (Lembaran Negara Republik Indonesia Tahun 2012 Nomor 5, Tambahan Lembaran Negara Republik Indonesia Nomor 5272).
+                            </li>
+                          </ol>
+                        </div>
                       </div>
                     </div>
                     {/* Page Footer */}
-                    <div className="flex justify-between items-center text-[9px] text-slate-400 font-sans border-t pt-2 mt-8">
+                    <div className="flex justify-between items-center text-[9px] text-slate-400 font-sans border-t pt-2 mt-4">
                       <span>Naskah Perjanjian Hibah Daerah (NPHD) &bull; {partai.singkatan} &bull; TA {tahunAnggaran}</span>
-                      <span>Halaman 1 dari 6</span>
+                      <span>Halaman 1 dari 5</span>
                     </div>
                   </div>
 
                   {/* Page 2 */}
                   <div className={a4PageClass}>
-                    <div className="space-y-3.5">
-                      <p className="font-bold uppercase text-[11px] text-slate-800 border-b pb-1">Berdasarkan :</p>
-                      <ol className="list-decimal pl-5 space-y-2 text-[10px] text-slate-700 leading-relaxed text-justify">
-                        <li>
-                          Undang-Undang Nomor 23 Tahun 2014 tentang Pemerintahan Daerah (Lembaran Negara Republik Indonesia Tahun 2014 Nomor 244, Tambahan Lembaran Negara Republik Indonesia Nomor 5587) sebagaimana telah several kali diubah, terakhir dengan Undang-Undang Nomor 9 Tahun 2015 tentang Perubahan Kedua atas Undang-Undang Nomor 23 Tahun 2014 tentang Pemerintahan Daerah (Lembaran Negara Republik Indonesia Tahun 2015 Nomor 58, Tambahan Lembaran Negara Republik Indonesia Nomor 5679).
-                        </li>
-                        <li>
-                          Undang-Undang Nomor 20 Tahun 2022 tentang Provinsi Nusa Tenggara Barat (Lembaran Negara Republik Indonesia Tahun 2022 Nomor 163).
-                        </li>
-                        <li>
-                          Peraturan Pemerintah Nomor 2 Tahun 2012 tentang Hibah Daerah (Lembaran Negara Republik Indonesia Tahun 2012 Nomor 5, Tambahan Lembaran Negara Republik Indonesia Nomor 5272).
-                        </li>
+                    <div className="space-y-3">
+                      {/* Berdasarkan continued */}
+                      <ol className="list-decimal pl-5 space-y-1 text-[9.5px] text-slate-700 leading-normal text-justify" start={4}>
                         <li>
                           Peraturan Pemerintah Nomor 12 Tahun 2019 tentang Pengelolaan Keuangan Daerah (Lembaran Negara Republik Indonesia Tahun 2019 Nomor 42, Tambahan Lembaran Negara Republik Indonesia Nomor 6322).
                         </li>
@@ -624,63 +631,58 @@ export default function DocumentPrintPreviewModal({
                           Keputusan Gubernur Nusa Tenggara Barat Nomor : 100.3.3.1 - 124 Tahun {tahunAnggaran} tentang Besaran Bantuan Keuangan Kepada Partai Politik yang mendapatkan kursi di Dewan Perwakilan Rakyat Daerah Provinsi Nusa Tenggara Barat Hasil Pemilu Tahun 2024, Tahun Anggaran {tahunAnggaran}.
                         </li>
                       </ol>
+
+                      {/* Preamble & Pasal 1, 2 moved here to maximize layout density */}
+                      <div className="space-y-2 border-t border-slate-100 pt-2.5">
+                        <p className="text-[10px] text-slate-800 leading-normal text-justify">
+                          PIHAK KESATU dan PIHAK KEDUA selanjutnya secara bersama-sama disebut <span className="font-bold">PARA PIHAK</span>, terlebih dahulu menerangkan hal-hal sebagai berikut:
+                        </p>
+                        <ul className="list-[lower-alpha] pl-5 space-y-1 text-[9.5px] text-slate-700 leading-normal text-justify">
+                          <li>
+                            Bahwa <span className="font-semibold">PIHAK KESATU</span> sebagai unsur penyelenggara urusan Pemerintah Daerah memberikan Bantuan Keuangan Partai Politik kepada <span className="font-semibold">PIHAK KEDUA</span> sebagai unsur pendukung Kegiatan Partai Politik {designation.full} {partai.nama} di Wilayah Provinsi Nusa Tenggara Barat Tahun {tahunAnggaran} yang bersumber dari Anggaran Pendapatan dan Belanja Daerah Provinsi Nusa Tenggara Barat Tahun Anggaran {tahunAnggaran};
+                          </li>
+                          <li>
+                            Bahwa Bantuan Keuangan Partai Politik dari PIHAK KESATU kepada PIHAK KEDUA sebagaimana dimaksud dalam huruf a, diberikan dalam bentuk uang yang diperuntukan dalam rangka mendukung Kegiatan Partai Politik Dewan Pimpinan Wilayah/Daerah {partai.nama} ({partai.singkatan}) di Wilayah Provinsi Nusa Tenggara Barat Tahun {tahunAnggaran} yang bersumber dari Anggaran Pendapatan dan Belanja Daerah Provinsi Nusa Tenggara Barat Tahun Anggaran {tahunAnggaran};
+                          </li>
+                        </ul>
+
+                        <p className="text-[10px] text-slate-800 text-justify pt-1 leading-normal">
+                          Berdasarkan hal-hal tersebut di atas, PARA PIHAK sepakat melakukan Perjanjian Hibah Daerah dengan ketentuan dan syarat-syarat sebagai berikut:
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 border-t border-slate-100 pt-2 text-[9.5px] leading-normal text-slate-700">
+                        <div className="bg-slate-50/50 p-2.5 rounded border border-slate-100">
+                          <p className="font-extrabold text-center text-slate-900 text-[10px]">Pasal 1</p>
+                          <p className="font-bold text-center text-[8px] uppercase text-slate-500 mb-1">Sumber & Besaran Pembiayaan</p>
+                          <p className="text-justify">
+                            (1) <span className="font-semibold">PIHAK KESATU</span> memberikan Bantuan Keuangan Partai Politik kepada <span className="font-semibold">PIHAK KEDUA</span> sebesar <span className="font-bold">Rp {formattedNominal},- ({nominalTerbilang})</span>.
+                          </p>
+                          <p className="text-justify mt-1">
+                            (2) Pemberian Bantuan Keuangan ini bersumber dari APBD Provinsi Nusa Tenggara Barat Tahun Anggaran {tahunAnggaran}.
+                          </p>
+                        </div>
+
+                        <div className="bg-slate-50/50 p-2.5 rounded border border-slate-100">
+                          <p className="font-extrabold text-center text-slate-900 text-[10px]">Pasal 2</p>
+                          <p className="font-bold text-center text-[8px] uppercase text-slate-500 mb-1">Penggunaan Dana Hibah</p>
+                          <p className="text-justify">
+                            (1) Dipergunakan oleh PIHAK KEDUA untuk membiayai pelaksanaan dan/atau mendukung Kegiatan Partai Politik, Dewan Pimpinan Wilayah/Daerah {partai.nama} di Wilayah NTB TA {tahunAnggaran}.
+                          </p>
+                          <p className="text-justify mt-1">
+                            (2) Penggunaan ini dituangkan dalam Rincian Kebutuhan Biaya sebagaimana tercantum dalam Lampiran yang tidak terpisahkan.
+                          </p>
+                        </div>
+                      </div>
                     </div>
                     {/* Page Footer */}
-                    <div className="flex justify-between items-center text-[9px] text-slate-400 font-sans border-t pt-2 mt-8">
+                    <div className="flex justify-between items-center text-[9px] text-slate-400 font-sans border-t pt-2 mt-4">
                       <span>Naskah Perjanjian Hibah Daerah (NPHD) &bull; {partai.singkatan} &bull; TA {tahunAnggaran}</span>
-                      <span>Halaman 2 dari 6</span>
+                      <span>Halaman 2 dari 5</span>
                     </div>
                   </div>
 
                   {/* Page 3 */}
-                  <div className={a4PageClass}>
-                    <div className="space-y-4">
-                      <p className="text-[11px] text-slate-800 leading-relaxed text-justify">
-                        PIHAK KESATU dan PIHAK KEDUA selanjutnya secara bersama-sama disebut <span className="font-bold">PARA PIHAK</span>, terlebih dahulu menerangkan hal-hal sebagai berikut:
-                      </p>
-                      <ul className="list-[lower-alpha] pl-5 space-y-2.5 text-[10px] text-slate-700 leading-relaxed text-justify">
-                        <li>
-                          Bahwa <span className="font-semibold">PIHAK KESATU</span> sebagai unsur penyelenggara urusan Pemerintah Daerah memberikan Bantuan Keuangan Partai Politik kepada <span className="font-semibold">PIHAK KEDUA</span> sebagai unsur pendukung Kegiatan Partai Politik {designation.full} {partai.nama} di Wilayah Provinsi Nusa Tenggara Barat Tahun {tahunAnggaran} yang bersumber dari Anggaran Pendapatan dan Belanja Daerah Provinsi Nusa Tenggara Barat Tahun Anggaran {tahunAnggaran};
-                        </li>
-                        <li>
-                          Bahwa Bantuan Keuangan Partai Politik dari PIHAK KESATU kepada PIHAK KEDUA sebagaimana dimaksud dalam huruf a, diberikan dalam bentuk uang yang diperuntukan dalam rangka mendukung Kegiatan Partai Politik Dewan Pimpinan Wilayah/Daerah {partai.nama} ({partai.singkatan}) di Wilayah Provinsi Nusa Tenggara Barat Tahun {tahunAnggaran} yang bersumber dari Anggaran Pendapatan dan Belanja Daerah Provinsi Nusa Tenggara Barat Tahun Anggaran {tahunAnggaran};
-                        </li>
-                      </ul>
-
-                      <p className="text-[11px] text-slate-800 text-justify pt-1">
-                        Berdasarkan hal-hal tersebut di atas, PARA PIHAK sepakat melakukan Perjanjian Hibah Daerah dengan ketentuan dan syarat-syarat sebagai berikut:
-                      </p>
-
-                      <div className="pt-2 border-t border-slate-100">
-                        <p className="font-bold text-center text-slate-900">Pasal 1</p>
-                        <p className="font-bold text-center text-[10px] uppercase text-slate-700">Jumlah dan Sumber Pembiayaan Hibah</p>
-                        <p className="text-[10px] text-slate-700 text-justify leading-relaxed mt-1.5">
-                          (1) <span className="font-semibold">PIHAK KESATU</span> memberikan Bantuan Keuangan Partai Politik kepada <span className="font-semibold">PIHAK KEDUA</span>, dan PIHAK KEDUA menerima Bantuan Keuangan bagi Partai Politik yang Mendapatkan Kursi di Dewan Perwakilan Rakyat Daerah Provinsi Nusa Tenggara Barat Hasil Pemilihan Umum Tahun {partai.tahunPemilu} Tahun Anggaran {tahunAnggaran} dari PIHAK KESATU sebesar <span className="font-bold">Rp {formattedNominal},- ({nominalTerbilang})</span>.
-                        </p>
-                        <p className="text-[10px] text-slate-700 text-justify leading-relaxed mt-1">
-                          (2) Pemberian Bantuan Keuangan Partai Politik sebagaimana dimaksud pada ayat (1), bersumber dari Anggaran Pendapatan dan Belanja Daerah Provinsi Nusa Tenggara Barat Tahun Anggaran {tahunAnggaran}.
-                        </p>
-                      </div>
-
-                      <div className="pt-2 border-t border-slate-100">
-                        <p className="font-bold text-center text-slate-900">Pasal 2</p>
-                        <p className="font-bold text-center text-[10px] uppercase text-slate-700">Penggunaan Hibah</p>
-                        <p className="text-[10px] text-slate-700 text-justify leading-relaxed mt-1.5">
-                          (1) Bantuan Keuangan Partai Politik dari PIHAK KESATU kepada PIHAK KEDUA sebagaimana dimaksud dalam Pasal 1, dipergunakan oleh PIHAK KEDUA untuk membiayai pelaksanaan dan/atau Mendukung Kegiatan Partai Politik, Dewan Pimpinan Wilayah/Daerah {partai.nama} di Wilayah Provinsi Nusa Tenggara Barat Tahun {tahunAnggaran} yang bersumber dari Anggaran Pendapatan dan Belanja Daerah Provinsi Nusa Tenggara Barat Tahun Anggaran {tahunAnggaran}.
-                        </p>
-                        <p className="text-[10px] text-slate-700 text-justify leading-relaxed mt-1">
-                          (2) Penggunaan Bantuan Keuangan Partai Politik sebagaimana dimaksud pada ayat (1), dituangkan dalam Rincian Kebutuhan Biaya PIHAK KEDUA sebagaimana tercantum dalam Lampiran yang tidak terpisahkan dari Naskah Perjanjian Hibah Daerah ini.
-                        </p>
-                      </div>
-                    </div>
-                    {/* Page Footer */}
-                    <div className="flex justify-between items-center text-[9px] text-slate-400 font-sans border-t pt-2 mt-8">
-                      <span>Naskah Perjanjian Hibah Daerah (NPHD) &bull; {partai.singkatan} &bull; TA {tahunAnggaran}</span>
-                      <span>Halaman 3 dari 6</span>
-                    </div>
-                  </div>
-
-                  {/* Page 4 */}
                   <div className={a4PageClass}>
                     <div className="space-y-3.5">
                       <div>
@@ -724,11 +726,11 @@ export default function DocumentPrintPreviewModal({
                     {/* Page Footer */}
                     <div className="flex justify-between items-center text-[9px] text-slate-400 font-sans border-t pt-2 mt-8">
                       <span>Naskah Perjanjian Hibah Daerah (NPHD) &bull; {partai.singkatan} &bull; TA {tahunAnggaran}</span>
-                      <span>Halaman 4 dari 6</span>
+                      <span>Halaman 3 dari 5</span>
                     </div>
                   </div>
 
-                  {/* Page 5 */}
+                  {/* Page 4 */}
                   <div className={a4PageClass}>
                     <div className="space-y-3.5">
                       <div>
@@ -786,11 +788,11 @@ export default function DocumentPrintPreviewModal({
                     {/* Page Footer */}
                     <div className="flex justify-between items-center text-[9px] text-slate-400 font-sans border-t pt-2 mt-8">
                       <span>Naskah Perjanjian Hibah Daerah (NPHD) &bull; {partai.singkatan} &bull; TA {tahunAnggaran}</span>
-                      <span>Halaman 5 dari 6</span>
+                      <span>Halaman 4 dari 5</span>
                     </div>
                   </div>
 
-                  {/* Page 6 */}
+                  {/* Page 5 */}
                   <div className={a4PageClass}>
                     <div className="space-y-3.5">
                       <div>
@@ -845,7 +847,7 @@ export default function DocumentPrintPreviewModal({
                     {/* Page Footer */}
                     <div className="flex justify-between items-center text-[9px] text-slate-400 font-sans border-t pt-2 mt-4">
                       <span>Naskah Perjanjian Hibah Daerah (NPHD) &bull; {partai.singkatan} &bull; TA {tahunAnggaran}</span>
-                      <span>Halaman 6 dari 6</span>
+                      <span>Halaman 5 dari 5</span>
                     </div>
                   </div>
                 </div>
