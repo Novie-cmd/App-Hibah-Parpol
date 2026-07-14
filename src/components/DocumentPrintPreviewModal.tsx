@@ -25,11 +25,11 @@ export default function DocumentPrintPreviewModal({
   const [activeDoc, setActiveDoc] = useState<DocumentType>('NPHD');
 
   // Spacing and margin states for page preview and print adjustments
-  const [marginTop, setMarginTop] = useState<number>(2.5); // cm
-  const [marginBottom, setMarginBottom] = useState<number>(2.5); // cm
-  const [marginLeft, setMarginLeft] = useState<number>(2.0); // cm
-  const [marginRight, setMarginRight] = useState<number>(2.0); // cm
-  const [rowSpacing, setRowSpacing] = useState<number>(1.0); // scale multiplier
+  const [marginTop, setMarginTop] = useState<number>(1.5); // cm
+  const [marginBottom, setMarginBottom] = useState<number>(1.5); // cm
+  const [marginLeft, setMarginLeft] = useState<number>(1.8); // cm
+  const [marginRight, setMarginRight] = useState<number>(1.8); // cm
+  const [rowSpacing, setRowSpacing] = useState<number>(0.8); // scale multiplier
 
   const getPartyDesignation = (singkatan: string) => {
     const s = singkatan.toUpperCase();
@@ -125,6 +125,10 @@ export default function DocumentPrintPreviewModal({
       {/* Dynamic Style injection for print view */}
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
+          @page {
+            size: A4;
+            margin: 0;
+          }
           body {
             background: white !important;
           }
@@ -171,11 +175,13 @@ export default function DocumentPrintPreviewModal({
           .print-page {
             page-break-after: always;
             break-after: page;
+            page-break-inside: avoid;
+            break-inside: avoid;
             margin: 0 !important;
             padding: ${marginTop}cm ${marginRight}cm ${marginBottom}cm ${marginLeft}cm !important;
             box-sizing: border-box !important;
             width: 210mm !important;
-            height: 297mm !important;
+            height: 295.5mm !important; /* Extremely robust to prevent any sub-pixel overflow onto blank pages */
             background: white !important;
             border: none !important;
             box-shadow: none !important;
@@ -195,10 +201,10 @@ export default function DocumentPrintPreviewModal({
 
         /* Screen Preview styles */
         .print-page {
-          padding-top: var(--margin-top, 2.5cm) !important;
-          padding-bottom: var(--margin-bottom, 2.5cm) !important;
-          padding-left: var(--margin-left, 2cm) !important;
-          padding-right: var(--margin-right, 2cm) !important;
+          padding-top: var(--margin-top, 1.5cm) !important;
+          padding-bottom: var(--margin-bottom, 1.5cm) !important;
+          padding-left: var(--margin-left, 1.8cm) !important;
+          padding-right: var(--margin-right, 1.8cm) !important;
           width: 210mm !important;
           height: 297mm !important;
           box-sizing: border-box !important;
@@ -207,40 +213,40 @@ export default function DocumentPrintPreviewModal({
           justify-content: space-between;
         }
 
-        /* Spacing scale overrides */
+        /* Spacing scale overrides - styled to be more compact and professional */
         .print-page .space-y-8 > :not([hidden]) ~ :not([hidden]) {
-          margin-top: calc(2rem * var(--row-spacing-scale, 1)) !important;
-        }
-        .print-page .space-y-6 > :not([hidden]) ~ :not([hidden]) {
-          margin-top: calc(1.5rem * var(--row-spacing-scale, 1)) !important;
-        }
-        .print-page .space-y-4 > :not([hidden]) ~ :not([hidden]) {
           margin-top: calc(1rem * var(--row-spacing-scale, 1)) !important;
         }
-        .print-page .space-y-3.5 > :not([hidden]) ~ :not([hidden]) {
-          margin-top: calc(0.875rem * var(--row-spacing-scale, 1)) !important;
-        }
-        .print-page .space-y-3 > :not([hidden]) ~ :not([hidden]) {
+        .print-page .space-y-6 > :not([hidden]) ~ :not([hidden]) {
           margin-top: calc(0.75rem * var(--row-spacing-scale, 1)) !important;
         }
+        .print-page .space-y-4 > :not([hidden]) ~ :not([hidden]) {
+          margin-top: calc(0.45rem * var(--row-spacing-scale, 1)) !important;
+        }
+        .print-page .space-y-3.5 > :not([hidden]) ~ :not([hidden]) {
+          margin-top: calc(0.35rem * var(--row-spacing-scale, 1)) !important;
+        }
+        .print-page .space-y-3 > :not([hidden]) ~ :not([hidden]) {
+          margin-top: calc(0.3rem * var(--row-spacing-scale, 1)) !important;
+        }
         .print-page .space-y-2 > :not([hidden]) ~ :not([hidden]) {
-          margin-top: calc(0.5rem * var(--row-spacing-scale, 1)) !important;
+          margin-top: calc(0.2rem * var(--row-spacing-scale, 1)) !important;
         }
         
         .print-page .pt-6 {
-          padding-top: calc(1.5rem * var(--row-spacing-scale, 1)) !important;
+          padding-top: calc(0.75rem * var(--row-spacing-scale, 1)) !important;
         }
         .print-page .pt-4 {
-          padding-top: calc(1rem * var(--row-spacing-scale, 1)) !important;
+          padding-top: calc(0.5rem * var(--row-spacing-scale, 1)) !important;
         }
         .print-page .mt-8 {
-          margin-top: calc(2rem * var(--row-spacing-scale, 1)) !important;
+          margin-top: calc(1rem * var(--row-spacing-scale, 1)) !important;
         }
         .print-page .mt-6 {
-          margin-top: calc(1.5rem * var(--row-spacing-scale, 1)) !important;
+          margin-top: calc(0.75rem * var(--row-spacing-scale, 1)) !important;
         }
         .print-page .mt-4 {
-          margin-top: calc(1rem * var(--row-spacing-scale, 1)) !important;
+          margin-top: calc(0.5rem * var(--row-spacing-scale, 1)) !important;
         }
       `}} />
 
@@ -402,11 +408,11 @@ export default function DocumentPrintPreviewModal({
                 {/* Reset Button */}
                 <button
                   onClick={() => {
-                    setMarginTop(2.5);
-                    setMarginBottom(2.5);
-                    setMarginLeft(2.0);
-                    setMarginRight(2.0);
-                    setRowSpacing(1.0);
+                    setMarginTop(1.5);
+                    setMarginBottom(1.5);
+                    setMarginLeft(1.8);
+                    setMarginRight(1.8);
+                    setRowSpacing(0.8);
                   }}
                   className="w-full text-center py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold rounded text-[10px] transition cursor-pointer mt-1"
                 >
