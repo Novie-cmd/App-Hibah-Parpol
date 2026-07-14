@@ -24,6 +24,13 @@ export default function DocumentPrintPreviewModal({
 }: DocumentPrintPreviewModalProps) {
   const [activeDoc, setActiveDoc] = useState<DocumentType>('NPHD');
 
+  // Spacing and margin states for page preview and print adjustments
+  const [marginTop, setMarginTop] = useState<number>(2.5); // cm
+  const [marginBottom, setMarginBottom] = useState<number>(2.5); // cm
+  const [marginLeft, setMarginLeft] = useState<number>(2.0); // cm
+  const [marginRight, setMarginRight] = useState<number>(2.0); // cm
+  const [rowSpacing, setRowSpacing] = useState<number>(1.0); // scale multiplier
+
   const getPartyDesignation = (singkatan: string) => {
     const s = singkatan.toUpperCase();
     if (
@@ -41,7 +48,7 @@ export default function DocumentPrintPreviewModal({
   };
 
   const designation = getPartyDesignation(partai.singkatan);
-  const a4PageClass = "print-page bg-white w-full p-[2.5cm_2cm] shadow-xl border border-slate-200 rounded-sm min-h-[297mm] relative flex flex-col justify-between print:shadow-none print:border-none print:rounded-none";
+  const a4PageClass = "print-page bg-white shadow-xl border border-slate-200 rounded-sm relative flex flex-col justify-between print:shadow-none print:border-none print:rounded-none select-none";
 
   // Convert number to Indonesian Words (Terbilang)
   function formatTerbilang(num: number): string {
@@ -142,7 +149,7 @@ export default function DocumentPrintPreviewModal({
             page-break-after: always;
             break-after: page;
             margin: 0 !important;
-            padding: 2.5cm 2cm 2.5cm 2cm !important;
+            padding: ${marginTop}cm ${marginRight}cm ${marginBottom}cm ${marginLeft}cm !important;
             box-sizing: border-box !important;
             width: 210mm !important;
             height: 297mm !important;
@@ -158,6 +165,56 @@ export default function DocumentPrintPreviewModal({
           .no-print {
             display: none !important;
           }
+        }
+
+        /* Screen Preview styles */
+        .print-page {
+          padding-top: var(--margin-top, 2.5cm) !important;
+          padding-bottom: var(--margin-bottom, 2.5cm) !important;
+          padding-left: var(--margin-left, 2cm) !important;
+          padding-right: var(--margin-right, 2cm) !important;
+          width: 210mm !important;
+          height: 297mm !important;
+          box-sizing: border-box !important;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        }
+
+        /* Spacing scale overrides */
+        .print-page .space-y-8 > :not([hidden]) ~ :not([hidden]) {
+          margin-top: calc(2rem * var(--row-spacing-scale, 1)) !important;
+        }
+        .print-page .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+          margin-top: calc(1.5rem * var(--row-spacing-scale, 1)) !important;
+        }
+        .print-page .space-y-4 > :not([hidden]) ~ :not([hidden]) {
+          margin-top: calc(1rem * var(--row-spacing-scale, 1)) !important;
+        }
+        .print-page .space-y-3.5 > :not([hidden]) ~ :not([hidden]) {
+          margin-top: calc(0.875rem * var(--row-spacing-scale, 1)) !important;
+        }
+        .print-page .space-y-3 > :not([hidden]) ~ :not([hidden]) {
+          margin-top: calc(0.75rem * var(--row-spacing-scale, 1)) !important;
+        }
+        .print-page .space-y-2 > :not([hidden]) ~ :not([hidden]) {
+          margin-top: calc(0.5rem * var(--row-spacing-scale, 1)) !important;
+        }
+        
+        .print-page .pt-6 {
+          padding-top: calc(1.5rem * var(--row-spacing-scale, 1)) !important;
+        }
+        .print-page .pt-4 {
+          padding-top: calc(1rem * var(--row-spacing-scale, 1)) !important;
+        }
+        .print-page .mt-8 {
+          margin-top: calc(2rem * var(--row-spacing-scale, 1)) !important;
+        }
+        .print-page .mt-6 {
+          margin-top: calc(1.5rem * var(--row-spacing-scale, 1)) !important;
+        }
+        .print-page .mt-4 {
+          margin-top: calc(1rem * var(--row-spacing-scale, 1)) !important;
         }
       `}} />
 
@@ -239,22 +296,144 @@ export default function DocumentPrintPreviewModal({
               Kuitansi Pembayaran
             </button>
 
-            <div className="pt-6 border-t border-slate-200 mt-6 text-[11px] text-slate-500 leading-relaxed font-medium px-2 bg-emerald-50/50 p-3 rounded-lg border border-emerald-100/50">
+            {/* Tata Letak & Margin Controls */}
+            <div className="pt-4 mt-4 border-t border-slate-200 space-y-3.5 px-1 bg-slate-100/65 p-3 rounded-lg border border-slate-200/50">
+              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block pl-1">Tata Letak & Margin</span>
+              
+              <div className="space-y-3">
+                {/* Margin Atas */}
+                <div>
+                  <div className="flex justify-between text-[11px] font-bold text-slate-600 mb-1">
+                    <span>Margin Atas</span>
+                    <span className="text-emerald-700">{marginTop.toFixed(1)} cm</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1.0"
+                    max="4.0"
+                    step="0.1"
+                    value={marginTop}
+                    onChange={(e) => setMarginTop(parseFloat(e.target.value))}
+                    className="w-full accent-emerald-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg appearance-none"
+                  />
+                </div>
+
+                {/* Margin Bawah */}
+                <div>
+                  <div className="flex justify-between text-[11px] font-bold text-slate-600 mb-1">
+                    <span>Margin Bawah</span>
+                    <span className="text-emerald-700">{marginBottom.toFixed(1)} cm</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1.0"
+                    max="4.0"
+                    step="0.1"
+                    value={marginBottom}
+                    onChange={(e) => setMarginBottom(parseFloat(e.target.value))}
+                    className="w-full accent-emerald-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg appearance-none"
+                  />
+                </div>
+
+                {/* Margin Kiri & Kanan */}
+                <div>
+                  <div className="flex justify-between text-[11px] font-bold text-slate-600 mb-1">
+                    <span>Margin Samping</span>
+                    <span className="text-emerald-700">{marginLeft.toFixed(1)} cm</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1.0"
+                    max="3.5"
+                    step="0.1"
+                    value={marginLeft}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value);
+                      setMarginLeft(val);
+                      setMarginRight(val);
+                    }}
+                    className="w-full accent-emerald-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg appearance-none"
+                  />
+                </div>
+
+                {/* Kerapatan Baris */}
+                <div>
+                  <div className="flex justify-between text-[11px] font-bold text-slate-600 mb-1">
+                    <span>Kerapatan Baris</span>
+                    <span className="text-emerald-700">{Math.round(rowSpacing * 100)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="1.5"
+                    step="0.05"
+                    value={rowSpacing}
+                    onChange={(e) => setRowSpacing(parseFloat(e.target.value))}
+                    className="w-full accent-emerald-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg appearance-none"
+                  />
+                </div>
+
+                {/* Reset Button */}
+                <button
+                  onClick={() => {
+                    setMarginTop(2.5);
+                    setMarginBottom(2.5);
+                    setMarginLeft(2.0);
+                    setMarginRight(2.0);
+                    setRowSpacing(1.0);
+                  }}
+                  className="w-full text-center py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold rounded text-[10px] transition cursor-pointer mt-1"
+                >
+                  Reset Tata Letak Default
+                </button>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-slate-200 mt-4 text-[11px] text-slate-500 leading-relaxed font-medium px-2">
               <span className="font-bold text-emerald-800">Petunjuk Cetak:</span>
-              <p className="mt-1">
-                Gunakan tombol <strong>Cetak Dokumen</strong> di kanan bawah. Di menu cetak browser, aktifkan opsi <strong>"Headers and footers"</strong> (jika diinginkan) atau setel margin ke <strong>Default/Custom</strong> untuk hasil yang rapi.
+              <p className="mt-0.5">
+                Sesuaikan margin & kerapatan di atas agar dokumen pas di halaman. Aktifkan opsi <strong>"Headers and footers"</strong> atau <strong>"Background graphics"</strong> jika diperlukan.
               </p>
             </div>
           </div>
 
-          {/* Right Document Preview Section */}
-          <div className="flex-1 bg-slate-100 p-8 overflow-y-auto flex justify-center">
+          {/* Right Document Preview Section with Header */}
+          <div className="flex-1 bg-slate-100 flex flex-col overflow-hidden">
             
-            {/* The Physical Paper Document Area */}
-            <div 
-              id="printable-document" 
-              className="max-w-[210mm] w-full font-serif text-slate-900 select-none leading-relaxed text-xs relative space-y-8 print:space-y-0"
-            >
+            {/* Sticky Action Bar above document */}
+            <div className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between no-print shrink-0 shadow-xs z-10 select-none">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-slate-500">Pratinjau:</span>
+                <span className="text-xs font-extrabold text-slate-800 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md border border-emerald-100 uppercase tracking-wider">
+                  {activeDoc === 'NPHD' && "NPHD (6 Halaman)"}
+                  {activeDoc === 'SPTJM' && "SPTJM (1 Halaman)"}
+                  {activeDoc === 'BAP' && "BAP (3 Halaman)"}
+                  {activeDoc === 'KUITANSI' && "Kuitansi (1 Halaman)"}
+                </span>
+              </div>
+              <button
+                onClick={handlePrint}
+                className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-sm hover:shadow-md transition flex items-center gap-1.5 text-xs cursor-pointer"
+              >
+                <Printer className="h-4 w-4" />
+                Cetak Dokumen Ini
+              </button>
+            </div>
+
+            <div className="flex-1 p-8 overflow-y-auto flex justify-center bg-slate-100">
+              
+              {/* The Physical Paper Document Area */}
+              <div 
+                id="printable-document" 
+                style={{ 
+                  '--row-spacing-scale': rowSpacing,
+                  '--margin-top': `${marginTop}cm`,
+                  '--margin-bottom': `${marginBottom}cm`,
+                  '--margin-left': `${marginLeft}cm`,
+                  '--margin-right': `${marginRight}cm`,
+                } as React.CSSProperties}
+                className="max-w-[210mm] w-full font-serif text-slate-900 select-none leading-relaxed text-xs relative space-y-8 print:space-y-0"
+              >
               
               {/* DOCUMENT 1: NPHD (Naskah Perjanjian Hibah Daerah) */}
               {activeDoc === 'NPHD' && (
@@ -308,18 +487,63 @@ export default function DocumentPrintPreviewModal({
                           Pada hari ini <span className="font-bold">{nphdDate}</span>, yang bertanda tangan di bawah ini :
                         </p>
 
-                        <ol className="list-decimal pl-5 space-y-4">
-                          <li>
-                            <p>
-                              <span className="font-bold">Drs. H. SURYA BAHARI, M.M.Pd.</span>, Jabatan Kepala Badan Kesatuan Bangsa dan Politik Dalam Negeri Provinsi Nusa Tenggara Barat, beralamat di Jalan Pendidikan No.2, Kota Mataram Provinsi Nusa Tenggara Barat, bertindak dalam jabatannya untuk dan atas nama Pemerintah Provinsi Nusa Tenggara Barat sebagai Pemberi Hibah, selanjutnya disebut <span className="font-bold">PIHAK KESATU</span>.
-                            </p>
-                          </li>
-                          <li>
-                            <p>
-                              <span className="font-bold">{partai.ketua}</span>, Jabatan Ketua {designation.full} {partai.nama} ({partai.singkatan}) Provinsi Nusa Tenggara Barat, beralamat di {partai.alamatKantor}, bertindak dalam jabatannya untuk dan atas nama {designation.full} {partai.nama} ({partai.singkatan}) Provinsi Nusa Tenggara Barat sebagai Penerima Dana Bantuan Keuangan Partai Politik, selanjutnya disebut <span className="font-bold">PIHAK KEDUA</span>.
-                            </p>
-                          </li>
-                        </ol>
+                        <div className="space-y-4 pl-1">
+                          <div className="grid grid-cols-[auto_1fr] gap-2 text-[10.5px]">
+                            <span className="font-bold">1.</span>
+                            <div>
+                              <table className="w-full text-[10px] text-slate-700 -mt-0.5 mb-1.5 border-none">
+                                <tbody>
+                                  <tr>
+                                    <td className="w-20 font-bold py-0.5 pr-1">Nama</td>
+                                    <td className="w-3 text-center">:</td>
+                                    <td className="font-extrabold text-slate-900">Drs. H. SURYA BAHARI, M.M.Pd.</td>
+                                  </tr>
+                                  <tr>
+                                    <td className="font-bold py-0.5 pr-1">Jabatan</td>
+                                    <td className="text-center">:</td>
+                                    <td className="text-slate-800">Kepala Badan Kesatuan Bangsa dan Politik Dalam Negeri Provinsi Nusa Tenggara Barat</td>
+                                  </tr>
+                                  <tr>
+                                    <td className="font-bold py-0.5 pr-1">Alamat</td>
+                                    <td className="text-center">:</td>
+                                    <td className="text-slate-800">Jalan Pendidikan No. 2, Kota Mataram, Provinsi Nusa Tenggara Barat</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                              <p className="text-[10.5px] leading-relaxed text-slate-800 text-justify">
+                                bertindak dalam jabatannya untuk dan atas nama Pemerintah Provinsi Nusa Tenggara Barat sebagai Pemberi Hibah, selanjutnya disebut <span className="font-bold text-slate-900">PIHAK KESATU</span>.
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-[auto_1fr] gap-2 text-[10.5px] pt-2">
+                            <span className="font-bold">2.</span>
+                            <div>
+                              <table className="w-full text-[10px] text-slate-700 -mt-0.5 mb-1.5 border-none">
+                                <tbody>
+                                  <tr>
+                                    <td className="w-20 font-bold py-0.5 pr-1">Nama</td>
+                                    <td className="w-3 text-center">:</td>
+                                    <td className="font-extrabold text-slate-900">{partai.ketua}</td>
+                                  </tr>
+                                  <tr>
+                                    <td className="font-bold py-0.5 pr-1">Jabatan</td>
+                                    <td className="text-center">:</td>
+                                    <td className="text-slate-800">Ketua {designation.full} {partai.nama} ({partai.singkatan}) Provinsi Nusa Tenggara Barat</td>
+                                  </tr>
+                                  <tr>
+                                    <td className="font-bold py-0.5 pr-1">Alamat</td>
+                                    <td className="text-center">:</td>
+                                    <td className="text-slate-800">{partai.alamatKantor || "Mataram, Provinsi Nusa Tenggara Barat"}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                              <p className="text-[10.5px] leading-relaxed text-slate-800 text-justify">
+                                bertindak dalam jabatannya untuk dan atas nama {designation.full} {partai.nama} ({partai.singkatan}) Provinsi Nusa Tenggara Barat sebagai Penerima Dana Bantuan Keuangan Partai Politik, selanjutnya disebut <span className="font-bold text-slate-900">PIHAK KEDUA</span>.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     {/* Page Footer */}
@@ -859,6 +1083,8 @@ export default function DocumentPrintPreviewModal({
           </div>
 
         </div>
+
+      </div>
 
         {/* Modal Footer Controls */}
         <div className="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
