@@ -607,12 +607,6 @@ export default function DocumentPrintPreviewModal({
                         11. &nbsp;Keputusan Gubernur Nusa Tenggara Barat Nomor : 100.3.3.1 - 124 Tahun {tahunAnggaran} tentang Besaran Bantuan Keuangan Kepada Partai Politik yang mendapatkan kursi di Dewan Perwakilan Rakyat Daerah Provinsi Nusa Tenggara Barat Hasil Pemilu Tahun 2024, Tahun Anggaran {tahunAnggaran}.
                       </p>
 
-                      <div className="pt-2">
-                        <p className="text-justify leading-relaxed">
-                          PIHAK KESATU dan PIHAK KEDUA selanjutnya secara bersama-sama disebut <span className="font-bold">PARA PIHAK</span>, terlebih dahulu menerangkan hal-hal sebagai berikut:
-                        </p>
-                      </div>
-
                       <div className="pl-1 text-justify">
                         <p className="leading-relaxed">
                           a. &nbsp;&nbsp;Bahwa <span className="font-semibold">PIHAK KESATU</span> sebagai unsur penyelenggara urusan Pemerintah Daerah memberikan Bantuan Keuangan Partai Politik kepada <span className="font-semibold">PIHAK KEDUA</span> sebagai unsur pendukung Kegiatan Partai Politik {designation.full} {partai.nama} di Wilayah Provinsi Nusa Tenggara Barat Tahun {tahunAnggaran} yang bersumber dari Anggaran Pendapatan dan Belanja Daerah Provinsi Nusa Tenggara Barat Tahun Anggaran {tahunAnggaran};
@@ -629,6 +623,12 @@ export default function DocumentPrintPreviewModal({
                   {/* Page 3 */}
                   <div className={a4PageClass}>
                     <div className="space-y-4 text-[14px] text-slate-700 leading-relaxed text-justify">
+                      <div className="pt-2">
+                        <p className="text-justify leading-relaxed">
+                          PIHAK KESATU dan PIHAK KEDUA selanjutnya secara bersama-sama disebut <span className="font-bold">PARA PIHAK</span>, terlebih dahulu menerangkan hal-hal sebagai berikut:
+                        </p>
+                      </div>
+
                       <div className="space-y-3 pl-1 text-justify">
                         <p className="leading-relaxed">
                           b. &nbsp;&nbsp;Bahwa Bantuan Keuangan Partai Politik dari PIHAK KESATU kepada PIHAK KEDUA sebagaimana dimaksud dalam huruf a, diberikan dalam bentuk uang yang diperuntukan dalam rangka mendukung Kegiatan Partai Politik {designation.full} {partai.nama} ({partai.singkatan}) di Wilayah Provinsi Nusa Tenggara Barat Tahun {tahunAnggaran} yang bersumber dari Anggaran Pendapatan dan Belanja Daerah Provinsi Nusa Tenggara Barat Tahun Anggaran {tahunAnggaran};
